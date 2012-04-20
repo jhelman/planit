@@ -253,6 +253,17 @@
             border-bottom-left-radius: 10px;            
         }
         
+        .tabbed-box {
+/*            position: relative;
+*/            margin: 10px;
+        }
+        
+        .tab-pane {
+            margin: 10px;
+        }
+        
+        
+        
     
     </style>
     
@@ -396,14 +407,39 @@
                     <li><a href="#3" data-toggle="tab">University</a></li>
                 </ul>
                 <div class="tab-content" id="bottom-left-box">
-                    <div class="tab-pane active" id="1">
-                        <!-- <p>1</p> -->
+                    <div class="tab-pane active" id="1" align="center">
+                            <br/>
+                            <form class="form-search">
+                                <input type="text" class="input-long search-query" placeholder="Search for course"/>
+                                <button class="btn">Search</button>
+                            </form>
                     </div>
+                    
                     <div class="tab-pane" id="2">
-                        <!-- <p>2</p> -->
+                            
+                        <div class="pagination" align="center">
+                            <ul>
+                                <li><a href="#">Prev</a></li>
+                                <li class="active"><a href="#">1</a></li>
+                                <li><a href="#">2</a></li>
+                                <li><a href="#">3</a></li>
+                                <li><a href="#">4</a></li>
+                                <li><a href="#">Next</a></li>
+                             </ul>  
+                        </div>
+                        
                     </div>
                     <div class="tab-pane" id="3">
-                        <!-- <p>3</p> -->
+                        <div class="pagination" align="center">
+                            <ul>
+                                <li><a href="#">Prev</a></li>
+                                <li class="active"><a href="#">1</a></li>
+                                <li><a href="#">2</a></li>
+                                <li><a href="#">3</a></li>
+                                <li><a href="#">4</a></li>
+                                <li><a href="#">Next</a></li>
+                             </ul>  
+                        </div>  
                     </div>
                 </div>
             </div>
