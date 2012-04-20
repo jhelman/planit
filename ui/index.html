@@ -16,6 +16,8 @@
     <script type="text/javascript" src="bootstrap/assets/bootstrap-tooltip.js"></script>
     <script type="text/javascript" src="bootstrap/assets/bootstrap-popover.js"></script>
     <script type="text/javascript" src="bootstrap/assets/bootstrap-alert.js"></script>
+    <script type="text/javascript" src="bootstrap/assets/bootstrap-tab.js"></script>
+    
     
     
     <script type="text/javascript">
@@ -45,6 +47,13 @@
         $(document).ready(function () {
             
             draw();
+            
+            $('a[data-toggle="tab"]').on('shown', function (e) {
+                var target = String(e.target).substring(String(e.target).length - 1);
+                                
+            });
+            
+            
             
             $('#add-course-alert').hide();
             
@@ -200,7 +209,50 @@
             height: 400px;
             border: 1px solid;
         }
-    
+        
+        #bottom-left-box {
+            width: 420px;
+            height: 180px;
+            position: relative; 
+            left: 100px; 
+            top: -170px;
+            border-top: 1px solid #DDDDDD;
+            -moz-border-top-right-radius: 10px;
+            border-top-right-radius: 10px;
+            border-right: 1px solid #DDDDDD;
+            -moz-border-bottom-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border-bottom: 1px solid #DDDDDD;
+            -moz-border-bottom-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            -moz-border-top-left-radius: 10px;
+            border-top-left-radius: 10px;
+
+        }
+        
+        #bottom-left-helper-box-top {
+            width: 10px;
+            height: 38px;
+            position: relative; 
+            left: 99px; 
+            top: 0px;
+            border-left: 1px solid #DDDDDD;
+           -moz-border-top-left-radius: 10px;
+            border-top-left-radius: 10px;            
+        }
+        
+        
+        #bottom-left-helper-box-bottom {
+            width: 10px;
+            height: 30px;
+            position: relative; 
+            left: 99px; 
+            top: -200px;
+            border-left: 1px solid #DDDDDD;
+           -moz-border-bottom-left-radius: 10px;
+            border-bottom-left-radius: 10px;            
+        }
+        
     
     </style>
     
@@ -326,8 +378,40 @@
         
     </div>
     
+    <br />
+    <br />
+    <br />
+    <br />
+    
     <div class="row">
-        <div class="span4 offset4">
+        <div class="span4">
+            
+            <div id="bottom-left-helper-box-top">
+                &nbsp;
+            </div>
+            <div class="tabbable tabs-left">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#1" data-toggle="tab">Search</a></li>
+                    <li><a href="#2" data-toggle="tab">Major</a></li>
+                    <li><a href="#3" data-toggle="tab">University</a></li>
+                </ul>
+                <div class="tab-content" id="bottom-left-box">
+                    <div class="tab-pane active" id="1">
+                        <!-- <p>1</p> -->
+                    </div>
+                    <div class="tab-pane" id="2">
+                        <!-- <p>2</p> -->
+                    </div>
+                    <div class="tab-pane" id="3">
+                        <!-- <p>3</p> -->
+                    </div>
+                </div>
+            </div>
+            <div id="bottom-left-helper-box-bottom">
+                &nbsp;
+            </div>
+            
+            
             
         </div>
     </div>
