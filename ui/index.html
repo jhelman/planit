@@ -17,6 +17,8 @@
     <script type="text/javascript" src="bootstrap/assets/bootstrap-popover.js"></script>
     <script type="text/javascript" src="bootstrap/assets/bootstrap-alert.js"></script>
     <script type="text/javascript" src="bootstrap/assets/bootstrap-tab.js"></script>
+    <script type="text/javascript" src="bootstrap/assets/bootstrap-typeahead.js"></script>
+    
     
     
     
@@ -48,10 +50,15 @@
             
             draw();
             
-            $('a[data-toggle="tab"]').on('shown', function (e) {
-                var target = String(e.target).substring(String(e.target).length - 1);
-                                
-            });
+            // $('a[data-toggle="tab"]').on('shown', function (e) {
+            //     var target = String(e.target).substring(String(e.target).length - 1);
+            //                     
+            // });
+            
+            $('#class-search').typeahead({'items': 4,
+                'source': ['CS106A', 'CS106B', 'CS107', 'CS108', 'CS109', 'Econ1A', 'Econ1B', 'Chem31A', 
+                           'Chem31B', 'Physics41'],
+                });
             
             
             
@@ -254,16 +261,25 @@
         }
         
         .tabbed-box {
-/*            position: relative;
-*/            margin: 10px;
+            margin: 10px;
         }
         
         .tab-pane {
             margin: 10px;
         }
         
+        .requirement {
+            text-align: left;
+            border: 1px solid #ffffff;
+            border-radius: 10px;
+            -mox-border-radius: 10px;
+            background-color: blue;
+            height: 30px;
+        }
         
-        
+        .requirement-fulfilled {
+            color: #bbbbbb;
+        }
     
     </style>
     
@@ -402,15 +418,15 @@
             </div>
             <div class="tabbable tabs-left">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#1" data-toggle="tab">Search</a></li>
-                    <li><a href="#2" data-toggle="tab">Major</a></li>
-                    <li><a href="#3" data-toggle="tab">University</a></li>
+                    <li><a href="#1" data-toggle="tab">Search&nbsp;&nbsp;</a></li>
+                    <li><a href="#2" data-toggle="tab">Major&nbsp;&nbsp;<span class="badge badge-error">5</span></a></li>
+                    <li class="active"><a href="#3" data-toggle="tab">GER&nbsp;&nbsp;<span class="badge badge-error">3</span></a></li>
                 </ul>
                 <div class="tab-content" id="bottom-left-box">
-                    <div class="tab-pane active" id="1" align="center">
+                    <div class="tab-pane" id="1" align="center">
                             <br/>
                             <form class="form-search">
-                                <input type="text" class="input-long search-query" placeholder="Search for course"/>
+                                <input type="text" id="class-search" class="input-long search-query" data-provide="typeahead" placeholder="Search for course"/>
                                 <button class="btn">Search</button>
                             </form>
                     </div>
@@ -429,7 +445,20 @@
                         </div>
                         
                     </div>
-                    <div class="tab-pane" id="3">
+                    <div class="tab-pane active" id="3">
+                        
+                        <!-- <ul class="nav nav-pills nav-stacked">
+                            <li><a href="#">DB-Humanities</a></li>
+                            <li><a href="#">DB-Math</a></li>
+                            
+                        </ul> -->
+                        
+                        
+                        <div class="requirement">DB-Humanities</div>
+                        <div class="requirement">DB-Math</div>
+                        <div class="requirement-fulfilled">DB-EngrAppSci&nbsp;<i class="icon-ok"></i></div>
+
+                        
                         <div class="pagination" align="center">
                             <ul>
                                 <li><a href="#">Prev</a></li>
