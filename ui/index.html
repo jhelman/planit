@@ -190,7 +190,7 @@
         var ecSubreqsNum = 2;
         
         
-        function makeRequirementsHTML(reqArray) {
+        function makeSubreqsHTML(reqArray) {
             
             var html = ""; 
             for (var i in reqArray) {
@@ -215,10 +215,10 @@
             var html;
             var subreqsMessage;
             if (reqID == 'db') {
-                html = makeRequirementsHTML(dbSubreqs);
+                html = makeSubreqsHTML(dbSubreqs);
                 subreqsMessage = generateSubreqsMessage(dbSubreqs, dbSubreqsNum);
             } else if (reqID == 'ec') {
-                html = makeRequirementsHTML(ecSubreqs);
+                html = makeSubreqsHTML(ecSubreqs);
                 subreqsMessage = generateSubreqsMessage(ecSubreqs, ecSubreqsNum);
             }
                     
@@ -231,6 +231,8 @@
         
         function clickedSubreq(subreq) {
             var subreqName = $(subreq).find('p').html();
+            
+            // Fix this kludge!!!
             var pos = subreqName.indexOf('<i class="icon-ok"');
             if (pos != -1) {
                 subreqName = subreqName.substring(0, pos);
