@@ -170,7 +170,146 @@
             clearTimeout(fading_alert_timeout);
             $('#add-course-alert').fadeOut();
         }
-
+        
+        
+        var selectedReq = null;
+        
+        function clickedReq(req) {
+            if (selectedReq != null) {
+                selectedReq.css('background-color', '#ffffff');
+            }
+            selectedReq = $(req);
+            
+            loadSubrequirements(req.id);
+            $(req).css('background-color', '#d9edf7');            
+        }
+        
+        var dbSubreqs = ['DB-Humanities', 'DB-Math', 'DB-EngrAppSci', 'DB-NatSci', 'DB-SocSci'];
+        var dbSubreqsNum = 5;
+        var ecSubreqs = ['EC-Gender', 'EC-GlobalCom', 'EC-AmerCul', 'EC-EthicReas'];
+        var ecSubreqsNum = 2;
+        
+        
+        function makeRequirementsHTML(reqArray) {
+            
+            var html = ""; 
+            for (var i in reqArray) {
+                html += "<div class='requirement' id='" + reqArray[i] + "' onclick='clickedSubreq(this)'><p>" 
+                + reqArray[i] + "</p></div>";
+            }
+            return html;
+        }
+        
+        
+        function generateSubreqsMessage(subreqs, subreqsCount) {
+                        
+            if (subreqs.length == subreqsCount)
+                return "Select all of the following:";
+            
+            return "Select " + subreqsCount + " out of " + subreqs.length + " the following:";
+            
+        }
+        
+        function loadSubrequirements(reqID) {
+                        
+            var html;
+            var subreqsMessage;
+            if (reqID == 'db') {
+                html = makeRequirementsHTML(dbSubreqs);
+                subreqsMessage = generateSubreqsMessage(dbSubreqs, dbSubreqsNum);
+            } else if (reqID == 'ec') {
+                html = makeRequirementsHTML(ecSubreqs);
+                subreqsMessage = generateSubreqsMessage(ecSubreqs, ecSubreqsNum);
+            }
+                    
+            $('#subreqs').html(html);
+            $('#subreqs-message').html(subreqsMessage); 
+        }
+        
+        
+        var selectedSubreq = null;
+        
+        function clickedSubreq(subreq) {
+            var subreqName = $(subreq).find('p').html();
+            var pos = subreqName.indexOf('<i class="icon-ok"');
+            if (pos != -1) {
+                subreqName = subreqName.substring(0, pos);
+            } 
+            
+            if (selectedSubreq != null) {
+                selectedSubreq.css('background-color', '#ffffff');
+            }
+            selectedSubreq = $(subreq);
+            
+            loadClasses(subreq.id, subreqName);
+            $(subreq).css('background-color', '#d9edf7');            
+        }
+        
+        var dbhumClasses = ['Music 18A', 'Music 18B'];
+        var dbmathClasses = ['Math 51', 'Math 52', 'Math 53'];
+        var ecglobalcomClasses = ['Econ 114'];
+        var ecamerculClasses = ['Music 18A'];
+        
+        
+        function loadClasses(subreqID, subreqName) {
+                        
+            var html = ""; 
+            var classesMessage = "";
+            if (subreqID == 'DB-Humanities') {
+                html = makeClassesHTML(dbhumClasses);
+                classesMessage = generateClassesMessage(dbhumClasses, subreqName);
+            } else if (subreqID == 'DB-Math') {
+                html = makeClassesHTML(dbmathClasses);
+                classesMessage = generateClassesMessage(dbmathClasses, subreqName);
+            } else if (subreqID == 'EC-GlobalCom') {
+                html = makeClassesHTML(ecglobalcomClasses);
+                classesMessage = generateClassesMessage(ecglobalcomClasses, subreqName);
+            } else if (subreqID == 'EC-AmerCul') {
+                html = makeClassesHTML(ecamerculClasses);
+                classesMessage = generateClassesMessage(ecamerculClasses, subreqName);
+            }
+                    
+            $('#classes').html(html);
+            $('#classes-message').html(classesMessage); 
+        }
+        
+        function generateClassesMessage(classes, subreqName) {    
+            return "Select from the " + classes.length + " classes satisfying the " + subreqName + " requirement:";
+        }        
+        
+        function makeClassesHTML(classes) {
+            
+            var html = "";
+            for (var i in classes) {
+                html += "<div class='requirement' id='" + classes[i] + "' onclick='clickedClass(this)'><p>" 
+                + classes[i] + "</p></div>";
+    
+            }
+    
+            return html;
+        }
+        
+        function clickedClass(classObject) {
+            
+            // alert(classID.id);
+            
+            satisfyRequirements(classObject);
+            
+        }
+        
+        
+        function satisfyRequirements(classObject) {
+            
+            $('#DB-Humanities').addClass('requirement-fulfilled');
+            
+            // $('#DB-Humanities').append('<i class="icon-ok"></i>');
+            
+            $('<i class="icon-ok" style="margin-left: 5px;"></i>').appendTo($('#DB-Humanities').find('p'));
+            // $('\xA0').appendTo($('#DB-Humanities').find('p'));
+            
+            
+        }
+        
         
     
     </script>
@@ -219,7 +358,7 @@
         
         #bottom-left-box {
             width: 420px;
-            height: 180px;
+            height: 240px;
             position: relative; 
             left: 100px; 
             top: -170px;
@@ -251,35 +390,78 @@
         
         #bottom-left-helper-box-bottom {
             width: 10px;
-            height: 30px;
+            height: 90px;
             position: relative; 
             left: 99px; 
-            top: -200px;
+            top: -260px;
             border-left: 1px solid #DDDDDD;
            -moz-border-bottom-left-radius: 10px;
             border-bottom-left-radius: 10px;            
-        }
-        
-        .tabbed-box {
-            margin: 10px;
         }
         
         .tab-pane {
             margin: 10px;
         }
         
+        
         .requirement {
             text-align: left;
-            border: 1px solid #ffffff;
             border-radius: 10px;
             -mox-border-radius: 10px;
-            background-color: blue;
             height: 30px;
+            padding-right: 12px;
+            padding-left: 12px;
+            position: relative;
+            display: table;
+            margin-bottom: 10px;
+            cursor: pointer;
         }
         
-        .requirement-fulfilled {
-            color: #bbbbbb;
+        
+        .requirement p {
+            display: table-cell;
+            vertical-align: middle;
         }
+        
+        
+        .requirement-fulfilled {
+/*            background-color: #ffffff;
+            color: #dddddd;*/
+        }
+        
+        .results-box {
+            margin: 10px;
+            border-radius: 10px;
+            -moz-border-radius: 10px;
+            border: 1px solid #dddddd;
+        }
+        
+        #requirements-results-box {
+            position: relative;
+            left: 200px;
+            top: -10px;
+            height: 240px;
+            width: 200px;
+        }
+        
+        .requirements {
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+        
+        #search-results-box {
+            position: relative;
+            left: 95px;
+            top: -10px;
+            height: 240px;
+            width: 500px;
+        }
+        
+        
+        .interior-div {
+            margin: 10px;
+        }
+        
     
     </style>
     
@@ -420,10 +602,10 @@
                 <ul class="nav nav-tabs">
                     <li><a href="#1" data-toggle="tab">Search&nbsp;&nbsp;</a></li>
                     <li><a href="#2" data-toggle="tab">Major&nbsp;&nbsp;<span class="badge badge-error">5</span></a></li>
-                    <li class="active"><a href="#3" data-toggle="tab">GER&nbsp;&nbsp;<span class="badge badge-error">3</span></a></li>
+                    <li class="active"><a href="#3" data-toggle="tab">GER&nbsp;&nbsp;<span class="badge badge-error">8</span></a></li>
                 </ul>
                 <div class="tab-content" id="bottom-left-box">
-                    <div class="tab-pane" id="1" align="center">
+                    <div class="tab-pane interior-div" id="1" align="center">
                             <br/>
                             <form class="form-search">
                                 <input type="text" id="class-search" class="input-long search-query" data-provide="typeahead" placeholder="Search for course"/>
@@ -453,32 +635,73 @@
                             
                         </ul> -->
                         
+                        Requirement groups:
                         
-                        <div class="requirement">DB-Humanities</div>
-                        <div class="requirement">DB-Math</div>
-                        <div class="requirement-fulfilled">DB-EngrAppSci&nbsp;<i class="icon-ok"></i></div>
+                        <div class="requirements">
+                            <div class="requirement" onclick="clickedReq(this);" id="db"><p>Disciplinary Breadth&nbsp;<span class="badge badge-error">6</span></p></div>
+                            <div class="requirement" onclick="clickedReq(this);" id="ec"><p>Ethics and Culture&nbsp;<span class="badge badge-error">2</span><p></div>
+                        </div>
 
-                        
-                        <div class="pagination" align="center">
-                            <ul>
-                                <li><a href="#">Prev</a></li>
-                                <li class="active"><a href="#">1</a></li>
-                                <li><a href="#">2</a></li>
-                                <li><a href="#">3</a></li>
-                                <li><a href="#">4</a></li>
-                                <li><a href="#">Next</a></li>
-                             </ul>  
-                        </div>  
+                        <!-- <br /><br />
+                                                <div class="pagination" align="center">
+                                                    <ul>
+                                                        <li><a href="#">Prev</a></li>
+                                                        <li class="active"><a href="#">1</a></li>
+                                                        <li><a href="#">2</a></li>
+                                                        <li><a href="#">3</a></li>
+                                                        <li><a href="#">4</a></li>
+                                                        <li><a href="#">Next</a></li>
+                                                     </ul>  
+                                                </div>   -->
                     </div>
                 </div>
             </div>
             <div id="bottom-left-helper-box-bottom">
                 &nbsp;
             </div>
-            
-            
+                        
             
         </div>
+        
+        <div class="span4">
+            
+            <div class="results-box" id="requirements-results-box">
+                
+                <div class="interior-div">
+                    <p id="subreqs-message"></p>
+                
+                    <div class="requirements" id="subreqs">
+                        <!-- <div class="requirement requirement-selected"><p>DB-Humanities</p></div>
+                                              <div class="requirement"><p>DB-Math</p></div>
+                                              <div class="requirement requirement-fulfilled"><p>DB-EngrAppSci&nbsp;<i class="icon-ok"></i></p></div> -->
+                    </div>
+                    
+                </div>
+                
+            </div>
+                        
+            
+        </div>
+        
+        <div class="span4">
+            
+            <div class="results-box" id="search-results-box">
+                
+                <div class="interior-div">
+                    
+                    <p id="classes-message"></p>
+                    
+                    <div class="classes-div" id="classes">
+                        
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        
     </div>
     
 </body>
