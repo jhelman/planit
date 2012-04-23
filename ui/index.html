@@ -42,7 +42,7 @@
             $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
             $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
-            
+            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'bottom'});
         }
         
                 
@@ -318,23 +318,27 @@
     
     <style type="text/css">
     
-        td.courseName {
+        table.course {
             width: 200px;
+        }
+    
+        td.courseName {
+            width: 55%;
         }
         
         td.units {
-            width: 140px;
+            width: 17.5%;
         }
         
         td.info {
-            width: 60px;
+            width: 27.5%;
         }
         
         tr.possible-course {
             background-color: #FFF4B8;
         }
         
-        .icon-trash, .icon-ok {
+        .icon-trash, .icon-ok, .icon-calendar {
             cursor: pointer;
         }
         
@@ -353,8 +357,8 @@
         .quarter-div {
             -moz-border-radius: 10px;
             border-radius: 10px;
-            width: 420px;
-            height: 400px;
+            width: 230px;
+            height: 300px;
             border: 1px solid;
         }
         
@@ -463,8 +467,7 @@
         .interior-div {
             margin: 10px;
         }
-        
-    
+            
     </style>
     
     
@@ -473,39 +476,73 @@
 
 
 
-<body style="margin: 50px">
+<body style="margin-left: 50px; margin-top: 20px;">
     
     <div class="row">
     
-        <div class="span6">
+        <div class="span3">
             
-            <div class="quarter-div" id="qdiv1"><center><br />
+            <center><table><tr><td><h4>Autumn 2011-2012</h4></td><td>&nbsp;</td><td><i class="icon-calendar"></i></td></tr></table></center>
             
-                <table id="course1" class="table table-bordered course" style="width: 400px;">
+            <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center><br />
+            
+                <table id="course1" class="table table-bordered course">
                     <tr>
                         <td class="courseName">CS 106A</td>
-                        <td style="units">5 Units</td>
+                        <td style="units">5</td>
                         <td class="info"><center><i class="icon-move"></i>&nbsp;
                             <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
                     </tr>
                 </table>
-                <table id="course2" class="table table-bordered course" style="width: 400px">
+                <table id="course2" class="table table-bordered course">
                     <tr>
                         <td class="courseName">Econ 1A</td>
-                        <td style="units">5 Units</td>
+                        <td style="units">5</td>
                         <td class="info"><center><i class="icon-move"></i>&nbsp;
                             <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
                     </tr>
                 </table>
-                <table id="course3" class="table table-bordered" style="width: 400px">
+                <table id="course3" class="table table-bordered course">
                     <tr class="possible-course">
                         <td class="courseName">Chem 31A</td>
-                        <td style="units">5 Units</td>
+                        <td style="units">5</td>
                         <td class="info">
                             <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
                     </tr>
                 </table>
-            
+                <table id="course2" class="table table-bordered course">
+                    <tr>
+                        <td class="courseName">Econ 1A</td>
+                        <td style="units">5</td>
+                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                            <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
+                    </tr>
+                </table>
+                <table id="course3" class="table table-bordered course">
+                    <tr class="possible-course">
+                        <td class="courseName">Chem 31A</td>
+                        <td style="units">5</td>
+                        <td class="info">
+                            <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
+                    </tr>
+                </table>
+                <table id="course2" class="table table-bordered course">
+                    <tr>
+                        <td class="courseName">Econ 1A</td>
+                        <td style="units">5</td>
+                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                            <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
+                    </tr>
+                </table>
+                <table id="course3" class="table table-bordered course">
+                    <tr class="possible-course">
+                        <td class="courseName">Chem 31A</td>
+                        <td style="units">5</td>
+                        <td class="info">
+                            <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
+                    </tr>
+                </table>
+    
             </center></div>
             
             <div class="alert alert-error fade in hide" id="remove-course-alert">
@@ -526,23 +563,25 @@
     
         </div>
         
-        <div class="span6">
+        <div class="span3">
+            
+            <center><table><tr><td><h4>Winter 2011-2012</h4></td><td>&nbsp;</td><td><i class="icon-calendar"></i></td></tr></table></center>
             
             <div class="quarter-div" id="qdiv2"><center><br />
                      
                 <div id="classes2">
-                    <table id="course4" class="table table-bordered course" style="width: 400px;">
+                    <table id="course4" class="table table-bordered course">
                         <tr>
                             <td class="courseName">PWR 1</td>
-                            <td style="units">4 Units</td>
+                            <td style="units">4</td>
                             <td class="info"><center><i class="icon-move"></i>&nbsp;
                                 <i class="icon-trash" onclick="removeCourse('PWR 1');"></i></center></td>
                         </tr>
                     </table>
-                    <table class="table table-bordered course" style="width: 400px">
+                    <table class="table table-bordered course">
                         <tr id="tr5">
                             <td class="courseName">Econ 1B</td>
-                            <td style="units">5 Units</td>
+                            <td style="units">5</td>
                             <td class="info"><center><i class="icon-move"></i>&nbsp;
                                 <i class="icon-trash" onclick="removeCourse('Econ 1B');"></i></center></td>
                         </tr>
@@ -553,30 +592,33 @@
         </div>
         
         
-        <div class="span6">
+        <div class="span3">
+            
+            <center><table><tr><td><h4>Spring 2011-2012</h4></td><td>&nbsp;</td><td><i class="icon-calendar"></i></td></tr></table></center>
+            
             
             <div class="quarter-div" id="qdiv3"><center><br />
             
-                <table class="table table-bordered course" style="width: 400px;">
+                <table class="table table-bordered course">
                     <tr id="tr6">
                         <td class="courseName">CS 106B</td>
-                        <td style="units">5 Units</td>
+                        <td style="units">5</td>
                         <td class="info"><center><i class="icon-move"></i>&nbsp;
                             <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
                     </tr>
                 </table>
-                <table class="table table-bordered course" style="width: 400px">
+                <table class="table table-bordered course">
                     <tr id="tr7">
                         <td class="courseName">CS 103</td>
-                        <td style="units">5 Units</td>
+                        <td style="units">5</td>
                         <td class="info"><center><i class="icon-move"></i>&nbsp;
                             <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
                     </tr>
                 </table>
-                <table class="table table-bordered course" style="width: 400px">
+                <table class="table table-bordered course">
                     <tr id="tr7">
                         <td class="courseName">Physics 41</td>
-                        <td style="units">4 Units</td>
+                        <td style="units">4</td>
                         <td class="info"><center><i class="icon-move"></i>&nbsp;
                             <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
                     </tr>
