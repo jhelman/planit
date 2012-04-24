@@ -473,6 +473,10 @@
         .interior-div {
             margin: 10px;
         }
+        
+        .year-label {
+            margin-bottom: 10px;
+        }
             
     </style>
     
@@ -482,7 +486,29 @@
 
 
 
-<body style="margin-left: 50px; margin-top: 20px;">
+<body style="margin-left: 50px; margin-top: 20px;">    
+    
+    <div class="row">
+        
+        <table>
+            <tr>
+                <td>
+                    <h3 class="year-label">Freshman Year</h3>
+                </td>
+                <td style="width: 700px">&nbsp;</td>
+                <td>
+                    <button class="btn">jhelman</button>
+                </td>
+            </tr>
+        </table>
+     
+        
+    </div>
+        
+        
+      
+        
+    </div>
     
     <div class="row">
     
@@ -495,7 +521,14 @@
             </tr></table></center>
                         
             <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
-                        
+                <table id="course3" class="table table-bordered table-condensed course">
+                    <tr class="possible-course">
+                        <td class="courseName">Chem 31A</td>
+                        <td style="units">5</td>
+                        <td class="info">
+                            <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
+                    </tr>
+                </table>
                 <table id="course1" class="table table-bordered table-condensed course">
                     <tr>
                         <td class="courseName">CS 106A</td>
@@ -512,12 +545,21 @@
                             <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
                     </tr>
                 </table>
+                
+                <table id="course2" class="table table-bordered table-condensed course">
+                    <tr>
+                        <td class="courseName">Econ 1A</td>
+                        <td style="units">5</td>
+                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                            <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
+                    </tr>
+                </table>
                 <table id="course3" class="table table-bordered table-condensed course">
-                    <tr class="possible-course">
+                    <tr>
                         <td class="courseName">Chem 31A</td>
                         <td style="units">5</td>
-                        <td class="info">
-                            <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
+                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                            <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
                     </tr>
                 </table>
                 <table id="course2" class="table table-bordered table-condensed course">
@@ -529,30 +571,13 @@
                     </tr>
                 </table>
                 <table id="course3" class="table table-bordered table-condensed course">
-                    <tr class="possible-course">
-                        <td class="courseName">Chem 31A</td>
-                        <td style="units">5</td>
-                        <td class="info">
-                            <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
-                    </tr>
-                </table>
-                <table id="course2" class="table table-bordered table-condensed course">
                     <tr>
-                        <td class="courseName">Econ 1A</td>
+                        <td class="courseName">Chem 31A</td>
                         <td style="units">5</td>
                         <td class="info"><center><i class="icon-move"></i>&nbsp;
                             <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
                     </tr>
                 </table>
-                <table id="course3" class="table table-bordered table-condensed course">
-                    <tr class="possible-course">
-                        <td class="courseName">Chem 31A</td>
-                        <td style="units">5</td>
-                        <td class="info">
-                            <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
-                    </tr>
-                </table>
-                    
             </center></div>
             
             <div class="alert alert-error fade in hide" id="remove-course-alert">
@@ -647,7 +672,9 @@
         </div>
         
         
+        
     </div>
+    
     
     <br />
     <br />
