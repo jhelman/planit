@@ -28,6 +28,13 @@
             
         function draw() {
             
+			{% for term in terms %}
+			{% for course in term.courses%}
+			$('#{{ course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 
+				'placement': 'right'});
+			{% endfor %}
+			{% endfor  %}
+			
             // Need to populate on page load or on course add
             $('#course1').popover({'title': 'CS 106A', 'content': 'Introductory CS Class',
                 'placement': 'right'});
@@ -84,8 +91,31 @@
                 },
                      
             });
-            
-            
+			
+			
+			// still hard-coding winter as only droppable for now
+			$('#Winter2011-2012').droppable({
+				accept: function (elem) {
+					//concatenation of all courses across all terms
+					{% for course in terms.0.courses|add:terms.1.courses|add:terms.2.courses %}
+					
+					// this would actually be replaced by more complicated logic
+					// right now it's just letting you drag anything to winter except Econ 1A
+					{% if course.identifier != "Econ 1A" %}
+					if (elem.attr('id') == '{{ course.condensedID }}') return true;
+					{% endif %}
+					{% endfor %}
+					return false;
+				},
+				
+                drop: function (event, ui) {
+                                        
+                    ui.draggable.appendTo('#Winter2011-2012');
+                    
+                }
+            });
+			
+			
             // Complicated application logic to accept which course (Dan)
             $('#qdiv2').droppable({accept: '#course1',
             
@@ -97,6 +127,23 @@
                 }
             
             });
+			
+            $('#Spring2011-2012').droppable({
+                
+                over: function (event, ui) {
+                    $(this).css('backgroundColor', 'red');
+                },
+                
+                out: function (event, ui) {
+                    $(this).css('backgroundColor', 'white');   
+                },
+                
+                deactivate: function (event, ui) {
+                    $(this).css('backgroundColor', 'white');   
+                }
+                
+            });
+			
             
             // App logic to figure out which quarters to gray out (Dan)
             $('#qdiv3').droppable({
@@ -482,7 +529,36 @@
 
 
 <body style="margin-left: 50px; margin-top: 20px;">
+	
+	<div class="row">
+		{% for term in terms %}
+			<div class="span3">
+				
+	            <center><table><tr>
+	                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
+	                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+	                <td><i class="icon-calendar"></i></td>
+	            </tr></table></center>
+				
+				<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;"><center>
+					{% for course in term.courses %}
+		                <table id="{{ course.condensedID }}" class="table table-bordered table-condensed course">
+		                    <tr>
+		                        <td class="courseName">{{ course.identifier }}</td>
+		                        <td style="units"> {{course.units }}</td>
+		                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+		                            <i class="icon-trash" onclick="removeCourse('{{ course.identifier }}');"></i></center></td>
+		                    </tr>
+		                </table>
+					{% endfor %}
+				</div>
+				
+			</div>
+		{% endfor %}
+	</div>
     
+	
+	
     <div class="row">
     
         <div class="span3">
