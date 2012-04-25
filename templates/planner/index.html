@@ -545,36 +545,37 @@
 	<!-- Will need to modify this to loop over the different years -->
 	<table>
 		
+		{% for year in years %}
 		<!-- Row for quarter boxes -->
-		<tr style="background-color: #eeeeee;">
-			<td class="year-label"><center><h4>Freshman<br/>(2011-2012)</h4></center></td>
-			<!-- Freshman Year -->
+			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}; ">
+				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
 			
 			
-			{% for term in terms %}
-				<td>	
-		            <center><table><tr>
-		                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
-		                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-		                <td><i class="icon-calendar"></i></td>
-		            </tr></table></center>
+				{% for term in year.terms %}
+					<td>	
+			            <!-- <center><table><tr>
+			                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
+			                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+			                <td><i class="icon-calendar"></i></td>
+			            </tr></table></center> -->
 				
-					<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;"><center>
-						{% for course in term.courses %}
-			                <table id="{{ course.condensedID }}" class="table table-bordered table-condensed course">
-			                    <tr>
-			                        <td class="courseName">{{ course.identifier }}</td>
-			                        <td style="units"> {{course.units }}</td>
-			                        <td class="info"><center><i class="icon-move"></i>&nbsp;
-			                            <i class="icon-trash" onclick="removeCourse('{{ course.identifier }}');"></i></center></td>
-			                    </tr>
-			                </table>
-						{% endfor %}
-					</div>
-				</td>
-			{% endfor %}
-			<td>&nbsp;</td>
-		</tr>
+						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;"><center>
+							{% for course in term.courses %}
+				                <table id="{{ course.condensedID }}" class="table table-bordered table-condensed course">
+				                    <tr>
+				                        <td class="courseName">{{ course.identifier }}</td>
+				                        <td style="units"> {{course.units }}</td>
+				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+				                            <i class="icon-trash" onclick="removeCourse('{{ course.identifier }}');"></i></center></td>
+				                    </tr>
+				                </table>
+							{% endfor %}
+						</div>
+					</td>
+				{% endfor %}
+				<td>&nbsp;</td>
+			</tr>
+		{% endfor %}
 	</table>
    
     
@@ -582,10 +583,9 @@
     <table>
         
         <tr style="background-color: #eeeeee;">
-            
+			
             <td class="year-label"><center><h4>Freshman<br/>(2011-2012)</h4></center></td>
-            
-            
+
             <!-- Freshman year -->
             <td>
             
