@@ -423,6 +423,7 @@
             height: 130px;
             border: 1px solid;
             padding-top: 4px;
+            align: center;
            
         }
         
@@ -601,12 +602,12 @@
 			                <td><i class="icon-calendar"></i></td>
 			            </tr></table></center> -->
 				
-						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;"><center>
+						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
 							{% for course in term.courses %}
 				                <table id="{{ course.condensedID }}" class="table table-bordered table-condensed course">
 				                    <tr>
 				                        <td class="courseName">{{ course.identifier }}</td>
-				                        <td style="units"> {{course.units }}</td>
+				                        <td style="units">{{course.units }}</td>
 				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
 				                            <i class="icon-trash" onclick="removeCourse('{{ course.identifier }}');"></i></center></td>
 				                    </tr>
