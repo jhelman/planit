@@ -477,7 +477,7 @@
         
         .year-label {
             vertical-align: middle;
-            width: 150px;
+            width: 130px;
         }
         
         .spacing-row {
@@ -485,6 +485,10 @@
             margin: 0px;
             padding: 0px;
         }   
+        
+        .spacing-td {
+            width: 10px;
+        }
             
     </style>
     
@@ -498,13 +502,30 @@
     
     <table>
         
-        <tr style="background-color: #eeeeee;">
+        <tr>
+            <td>&nbsp;</td>
+            <td class="year-label;" style="background-color: #eeeeee"><center><h4>Freshman<br/>(2011-2012)</h4></center></td>
+            <td class="spacing-td"></td>
             
-            <td class="year-label"><center><h4>Freshman<br/>(2011-2012)</h4></center></td>
+            <td class="year-label" style="background-color:#d9edf7"><center><h4>Sophomore<br/>(2012-2013)</h4></center></td>
+            <td class="spacing-td"></td>
+            
+            <td class="year-label" style="background-color: #eeeeee"><center><h4>Junior<br/>(2011-2012)</h4></center></td>
+            <td class="spacing-td"></td>
+            
+            <td class="year-label" style="background-color:#d9edf7"><center><h4>Senior<br/>(2014-2015)</h4></center></td>
+        
+        
+        </tr>
+            
+          <tr>  
+              
+            <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
+             
             
             
             <!-- Freshman year -->
-            <td>
+            <td style="background-color: #eeeeee">
             
                 <!-- <center><table><tr>
                     <td><h4>Autumn 2011-2012</h4></td><td>&nbsp;</td>
@@ -590,7 +611,122 @@
     
             </td>
             
-            <td>
+            <td class="spacing-td"></td>
+            
+            <td style="background-color:#d9edf7">
+            
+                <!-- <center><table><tr>
+                    <td><h4>Autumn 2011-2012</h4></td><td>&nbsp;</td>
+                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                    <td><i class="icon-calendar"></i></td>
+                </tr></table></center> -->
+                        
+                <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
+
+                    <table id="course1" class="table table-bordered table-condensed course">
+                        <tr>
+                            <td class="courseName">CS 106A</td>
+                            <td style="units">5</td>
+                            <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
+                        </tr>
+                    </table>
+                    <table id="course2" class="table table-bordered table-condensed course">
+                        <tr>
+                            <td class="courseName">Econ 1A</td>
+                            <td style="units">5</td>
+                            <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
+                        </tr>
+                    </table>
+                
+               
+                </center></div>
+            
+    
+            </td>
+            
+            <td class="spacing-td"></td>
+            
+            
+            <td style="background-color: #eeeeee">
+            
+                <!-- <center><table><tr>
+                    <td><h4>Autumn 2011-2012</h4></td><td>&nbsp;</td>
+                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                    <td><i class="icon-calendar"></i></td>
+                </tr></table></center> -->
+                        
+                <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
+
+                    <table id="course1" class="table table-bordered table-condensed course">
+                        <tr>
+                            <td class="courseName">CS 106A</td>
+                            <td style="units">5</td>
+                            <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
+                        </tr>
+                    </table>
+                    <table id="course2" class="table table-bordered table-condensed course">
+                        <tr>
+                            <td class="courseName">Econ 1A</td>
+                            <td style="units">5</td>
+                            <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
+                        </tr>
+                    </table>
+                
+               
+                </center></div>
+            
+    
+            </td>
+            
+            <td class="spacing-td"></td>
+            
+            
+            <td style="background-color:#d9edf7">
+            
+                <!-- <center><table><tr>
+                    <td><h4>Autumn 2011-2012</h4></td><td>&nbsp;</td>
+                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                    <td><i class="icon-calendar"></i></td>
+                </tr></table></center> -->
+                        
+                <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
+
+                    <table id="course1" class="table table-bordered table-condensed course">
+                        <tr>
+                            <td class="courseName">CS 106A</td>
+                            <td style="units">5</td>
+                            <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
+                        </tr>
+                    </table>
+                    <table id="course2" class="table table-bordered table-condensed course">
+                        <tr>
+                            <td class="courseName">Econ 1A</td>
+                            <td style="units">5</td>
+                            <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
+                        </tr>
+                    </table>
+                
+               
+                </center></div>
+            
+    
+            </td>
+            
+            
+        </tr>
+        <tr>
+            
+            
+            <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
+            
+            
+            <td style="background-color: #eeeeee">
             
                 <!-- <center><table><tr>
                     <td><h4>Winter 2011-2012</h4></td><td>&nbsp;</td>
@@ -621,158 +757,20 @@
                 </center></div>
                         
             </td>
-        
-        
-            <td>
             
-            <!-- <center><table><tr>
-                <td><h4>Spring 2011-2012</h4></td><td>&nbsp;</td>
-                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                <td><i class="icon-calendar"></i></td>
-            </tr></table></center> -->
+            <td class="spacing-td"></td>
             
             
-                <div class="quarter-div" id="qdiv3"><center>
-            
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr6">
-                            <td class="courseName">CS 106B</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">CS 103</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">Physics 41</td>
-                            <td style="units">4</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
-                        </tr>
-                    </table>
-            
-                </center></div>
-                        
-            </td>
-        
-        
-        </tr>
-        
-        
-        <!-- Spacing row -->
-        
-        <tr class="spacing-row"></tr>
-        
+            <td style="background-color:#d9edf7">
 
-        
-        <tr style="background-color: #d9edf7">
-            
-            <td class="year-label"><center><h4>Sophomore<br/>(2012-2013)</h4></center></td>
-
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Autumn 2012-2013</h4></td><td>&nbsp;</td>
+                   <!-- <center><table><tr>
+                    <td><h4>Winter 2011-2012</h4></td><td>&nbsp;</td>
                     <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
                     <td><i class="icon-calendar"></i></td>
                 </tr></table></center> -->
-                        
-                <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr class="possible-course">
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info">
-                                <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course1" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">CS 106A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                </center></div>
-            
-                <div class="alert alert-error fade in hide" id="remove-course-alert">
-                    <a class="close" onclick="cancelRemoveCourse();">&times;</a>
-                    <h4 class="alert-heading" id="remove-course-alert-head"></h4>
-                    <div id="remove-course-alert-div"></div>
-                    <div style="padding-top: 5px">
-                        <input type="button" class="btn btn-danger" value="Delete Course"/>
-                        <input type="button" class="btn" value="Cancel" onclick="cancelRemoveCourse();"/>
-                    </div>
-                </div>
-    
-                <div class="alert alert-success fade in hide" id="add-course-alert">
-                    <a class="close" onclick="closeAddCourse();">&times;</a>
-                    <h4 class="alert-heading" id="add-course-alert-head"></h4>
-                    <div id="add-course-alert-div"></div>
-                </div>
-    
-            </td>
-            
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Winter 2012-2013</h4></td><td>&nbsp;</td>
-                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                    <td><i class="icon-calendar"></i></td>
-                </tr></table></center> -->
-                        
+
                 <div class="quarter-div" id="qdiv2"><center>
-                     
+
                     <div id="classes2">
                         <table id="course4" class="table table-bordered table-condensed course">
                             <tr>
@@ -792,396 +790,260 @@
                         </table>
                     </div>
                 </center></div>
-                        
-            </td>
-        
-        
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Spring 2012-2013</h4></td><td>&nbsp;</td>
-                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                    <td><i class="icon-calendar"></i></td>
-                </tr></table></center> -->
-            
-            
-                <div class="quarter-div" id="qdiv3"><center>
-            
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr6">
-                            <td class="courseName">CS 106B</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">CS 103</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">Physics 41</td>
-                            <td style="units">4</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
-                        </tr>
-                    </table>
-            
-                </center></div>
-                        
-            </td>
-        
-        
-        </tr>
-        
-        
-        <tr class="spacing-row"></tr>
 
-        
-        <tr style="background-color: #eeeeee;">
-            
-            <td class="year-label"><center><h4>Junior<br />(2013-2014)</h4></center></td>
-            
-            
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Autumn 2013-2014</h4></td><td>&nbsp;</td>
-                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                    <td><i class="icon-calendar"></i></td>
-                </tr></table></center> -->
-                        
-                <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr class="possible-course">
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info">
-                                <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course1" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">CS 106A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                </center></div>
-            
-                <div class="alert alert-error fade in hide" id="remove-course-alert">
-                    <a class="close" onclick="cancelRemoveCourse();">&times;</a>
-                    <h4 class="alert-heading" id="remove-course-alert-head"></h4>
-                    <div id="remove-course-alert-div"></div>
-                    <div style="padding-top: 5px">
-                        <input type="button" class="btn btn-danger" value="Delete Course"/>
-                        <input type="button" class="btn" value="Cancel" onclick="cancelRemoveCourse();"/>
-                    </div>
-                </div>
-    
-                <div class="alert alert-success fade in hide" id="add-course-alert">
-                    <a class="close" onclick="closeAddCourse();">&times;</a>
-                    <h4 class="alert-heading" id="add-course-alert-head"></h4>
-                    <div id="add-course-alert-div"></div>
-                </div>
-    
             </td>
+        
+            <td class="spacing-td"></td>
+        
+        
+            <td style="background-color: #eeeeee">
+
+                    <!-- <center><table><tr>
+                        <td><h4>Winter 2011-2012</h4></td><td>&nbsp;</td>
+                        <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                        <td><i class="icon-calendar"></i></td>
+                    </tr></table></center> -->
+
+                    <div class="quarter-div" id="qdiv2"><center>
+
+                        <div id="classes2">
+                            <table id="course4" class="table table-bordered table-condensed course">
+                                <tr>
+                                    <td class="courseName">PWR 1</td>
+                                    <td style="units">4</td>
+                                    <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                        <i class="icon-trash" onclick="removeCourse('PWR 1');"></i></center></td>
+                                </tr>
+                            </table>
+                            <table class="table table-bordered table-condensed course">
+                                <tr id="tr5">
+                                    <td class="courseName">Econ 1B</td>
+                                    <td style="units">5</td>
+                                    <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                        <i class="icon-trash" onclick="removeCourse('Econ 1B');"></i></center></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </center></div>
+
+                </td>
             
-            <td>
+                <td class="spacing-td"></td>
+            
+            
+                <td style="background-color:#d9edf7">
+
+                        <!-- <center><table><tr>
+                            <td><h4>Winter 2011-2012</h4></td><td>&nbsp;</td>
+                            <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                            <td><i class="icon-calendar"></i></td>
+                        </tr></table></center> -->
+
+                        <div class="quarter-div" id="qdiv2"><center>
+
+                            <div id="classes2">
+                                <table id="course4" class="table table-bordered table-condensed course">
+                                    <tr>
+                                        <td class="courseName">PWR 1</td>
+                                        <td style="units">4</td>
+                                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                            <i class="icon-trash" onclick="removeCourse('PWR 1');"></i></center></td>
+                                    </tr>
+                                </table>
+                                <table class="table table-bordered table-condensed course">
+                                    <tr id="tr5">
+                                        <td class="courseName">Econ 1B</td>
+                                        <td style="units">5</td>
+                                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                            <i class="icon-trash" onclick="removeCourse('Econ 1B');"></i></center></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </center></div>
+
+                    </td>
+                        
+                </tr>
+                
+                <tr>
+                    
+                    
+                    <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
+                  
+                    
+        
+        
+                <td style="background-color: #eeeeee">
             
                 <!-- <center><table><tr>
-                    <td><h4>Winter 2013-2014</h4></td><td>&nbsp;</td>
+                    <td><h4>Spring 2011-2012</h4></td><td>&nbsp;</td>
                     <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
                     <td><i class="icon-calendar"></i></td>
                 </tr></table></center> -->
-                        
-                <div class="quarter-div" id="qdiv2"><center>
-                     
-                    <div id="classes2">
-                        <table id="course4" class="table table-bordered table-condensed course">
-                            <tr>
-                                <td class="courseName">PWR 1</td>
-                                <td style="units">4</td>
+            
+            
+                    <div class="quarter-div" id="qdiv3"><center>
+            
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr6">
+                                <td class="courseName">CS 106B</td>
+                                <td style="units">5</td>
                                 <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                    <i class="icon-trash" onclick="removeCourse('PWR 1');"></i></center></td>
+                                    <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
                             </tr>
                         </table>
                         <table class="table table-bordered table-condensed course">
-                            <tr id="tr5">
-                                <td class="courseName">Econ 1B</td>
+                            <tr id="tr7">
+                                <td class="courseName">CS 103</td>
                                 <td style="units">5</td>
                                 <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                    <i class="icon-trash" onclick="removeCourse('Econ 1B');"></i></center></td>
-                            </tr>
-                        </table>
-                    </div>
-                </center></div>
-                        
-            </td>
-        
-        
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Spring 2013-2014</h4></td><td>&nbsp;</td>
-                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                    <td><i class="icon-calendar"></i></td>
-                </tr></table></center> -->
-            
-            
-                <div class="quarter-div" id="qdiv3"><center>
-            
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr6">
-                            <td class="courseName">CS 106B</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">CS 103</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">Physics 41</td>
-                            <td style="units">4</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
-                        </tr>
-                    </table>
-            
-                </center></div>
-                        
-            </td>
-        
-        
-        </tr>
-        
-        
-        <tr class="spacing-row"></tr>
-        
-
-        
-        <tr style="background-color: #d9edf7">
-            
-            
-            <td class="year-label"><center><h4>Senior<br />(2014-2015)</h4></center></td>
-            
-            
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Autumn 2014-2015</h4></td><td>&nbsp;</td>
-                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                    <td><i class="icon-calendar"></i></td>
-                </tr></table></center>
-                         -->
-                <div class="quarter-div" id="qdiv1" style="overflow: scroll;"><center>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr class="possible-course">
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info">
-                                <center><i class="icon-ok" onclick="addCourse('Chem 31A', 'course3');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course1" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">CS 106A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course2" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Econ 1A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table id="course3" class="table table-bordered table-condensed course">
-                        <tr>
-                            <td class="courseName">Chem 31A</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Econ 1A');"></i></center></td>
-                        </tr>
-                    </table>
-                </center></div>
-            
-                <div class="alert alert-error fade in hide" id="remove-course-alert">
-                    <a class="close" onclick="cancelRemoveCourse();">&times;</a>
-                    <h4 class="alert-heading" id="remove-course-alert-head"></h4>
-                    <div id="remove-course-alert-div"></div>
-                    <div style="padding-top: 5px">
-                        <input type="button" class="btn btn-danger" value="Delete Course"/>
-                        <input type="button" class="btn" value="Cancel" onclick="cancelRemoveCourse();"/>
-                    </div>
-                </div>
-    
-                <div class="alert alert-success fade in hide" id="add-course-alert">
-                    <a class="close" onclick="closeAddCourse();">&times;</a>
-                    <h4 class="alert-heading" id="add-course-alert-head"></h4>
-                    <div id="add-course-alert-div"></div>
-                </div>
-    
-            </td>
-            
-            <td>
-            
-                <!-- <center><table><tr>
-                    <td><h4>Winter 2014-2015</h4></td><td>&nbsp;</td>
-                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-                    <td><i class="icon-calendar"></i></td>
-                </tr></table></center> -->
-                        
-                <div class="quarter-div" id="qdiv2"><center>
-                     
-                    <div id="classes2">
-                        <table id="course4" class="table table-bordered table-condensed course">
-                            <tr>
-                                <td class="courseName">PWR 1</td>
-                                <td style="units">4</td>
-                                <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                    <i class="icon-trash" onclick="removeCourse('PWR 1');"></i></center></td>
+                                    <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
                             </tr>
                         </table>
                         <table class="table table-bordered table-condensed course">
-                            <tr id="tr5">
-                                <td class="courseName">Econ 1B</td>
-                                <td style="units">5</td>
+                            <tr id="tr7">
+                                <td class="courseName">Physics 41</td>
+                                <td style="units">4</td>
                                 <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                    <i class="icon-trash" onclick="removeCourse('Econ 1B');"></i></center></td>
+                                    <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
                             </tr>
                         </table>
-                    </div>
-                </center></div>
-                        
-            </td>
-        
-        
-            <td>
             
+                    </center></div>
+                        
+                </td>
+                
+                <td class="spacing-td"></td>
+                
+                
+                <td style="background-color:#d9edf7">
+
                 <!-- <center><table><tr>
-                    <td><h4>Spring 2014-2015</h4></td><td>&nbsp;</td>
+                    <td><h4>Spring 2011-2012</h4></td><td>&nbsp;</td>
                     <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
                     <td><i class="icon-calendar"></i></td>
                 </tr></table></center> -->
-            
-            
-                <div class="quarter-div" id="qdiv3"><center>
-            
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr6">
-                            <td class="courseName">CS 106B</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">CS 103</td>
-                            <td style="units">5</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
-                        </tr>
-                    </table>
-                    <table class="table table-bordered table-condensed course">
-                        <tr id="tr7">
-                            <td class="courseName">Physics 41</td>
-                            <td style="units">4</td>
-                            <td class="info"><center><i class="icon-move"></i>&nbsp;
-                                <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
-                        </tr>
-                    </table>
-            
-                </center></div>
-                        
-            </td>
+
+
+                    <div class="quarter-div" id="qdiv3"><center>
+
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr6">
+                                <td class="courseName">CS 106B</td>
+                                <td style="units">5</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr7">
+                                <td class="courseName">CS 103</td>
+                                <td style="units">5</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr7">
+                                <td class="courseName">Physics 41</td>
+                                <td style="units">4</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
+                            </tr>
+                        </table>
+
+                    </center></div>
+
+                </td>
+                <td class="spacing-td"></td>
+                
+                
+                <td style="background-color: #eeeeee">
+
+                <!-- <center><table><tr>
+                    <td><h4>Spring 2011-2012</h4></td><td>&nbsp;</td>
+                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                    <td><i class="icon-calendar"></i></td>
+                </tr></table></center> -->
+
+
+                    <div class="quarter-div" id="qdiv3"><center>
+
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr6">
+                                <td class="courseName">CS 106B</td>
+                                <td style="units">5</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr7">
+                                <td class="courseName">CS 103</td>
+                                <td style="units">5</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr7">
+                                <td class="courseName">Physics 41</td>
+                                <td style="units">4</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
+                            </tr>
+                        </table>
+
+                    </center></div>
+
+                </td>
         
+                <td class="spacing-td"></td>
+                
         
+                <td style="background-color:#d9edf7">
+
+                <!-- <center><table><tr>
+                    <td><h4>Spring 2011-2012</h4></td><td>&nbsp;</td>
+                    <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+                    <td><i class="icon-calendar"></i></td>
+                </tr></table></center> -->
+
+
+                    <div class="quarter-div" id="qdiv3"><center>
+
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr6">
+                                <td class="courseName">CS 106B</td>
+                                <td style="units">5</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('CS 106B');"></i></center></td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr7">
+                                <td class="courseName">CS 103</td>
+                                <td style="units">5</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('CS 103');"></i></center></td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed course">
+                            <tr id="tr7">
+                                <td class="courseName">Physics 41</td>
+                                <td style="units">4</td>
+                                <td class="info"><center><i class="icon-move"></i>&nbsp;
+                                    <i class="icon-trash" onclick="removeCourse('Physics 41');"></i></center></td>
+                            </tr>
+                        </table>
+
+                    </center></div>
+
+                </td>
+            
         </tr>
+        
+    
           
     </table>
     
