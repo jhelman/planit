@@ -27,6 +27,7 @@ def index(request):
     for term in terms:
         for course in term['courses']:
             setattr(course, 'condensedID', course.identifier.replace(' ', ''))
+            
     years[0]['year'] = '2011-2012'
     years[0]['name'] = 'Freshman'
     years[0]['terms'] = terms

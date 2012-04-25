@@ -18,7 +18,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/assets/bootstrap-alert.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/assets/bootstrap-tab.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/assets/bootstrap-typeahead.js"></script>
-    
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/assets/bootstrap-dropdown.js"></script>
         
     
     <script type="text/javascript">
@@ -50,6 +50,9 @@
             $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
             $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'bottom'});
             $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
+            
+            
+            $('.dropdown-toggle').dropdown();
             
         }
         
@@ -361,6 +364,14 @@
         }
         
         
+        
+        function createNewFYP() {
+            
+            
+            
+        }
+        
+        
     
     </script>
     
@@ -368,7 +379,7 @@
     
         table.course {
             width: 200px;
-            margin: 5px;
+            margin: 3px;
         }
     
         td.courseName {
@@ -409,7 +420,7 @@
             -moz-border-radius: 10px;
             border-radius: 10px;
             width: 220px;
-            height: 180px;
+            height: 130px;
             border: 1px solid;
             padding-top: 4px;
            
@@ -527,10 +538,17 @@
         }
         
         .spacing-row {
-            height: 5px;
+            height: 0px;
             margin: 0px;
             padding: 0px;
-        }   
+        }  
+        
+        
+        .user-button-div {
+            position: absolute;
+            left: 900px;
+        }
+        
             
     </style>
     
@@ -540,10 +558,34 @@
 
 
 
-<body style="margin-top: 20px;"> 
+<body style="margin-top: 5px;">  
+    <div class="btn-group user-button-div">
+        <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+            <i class="icon-user icon-white"></i>&nbsp;&nbsp;jhelman&nbsp;
+            <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li><a href="#">CS FYP1</a></li>
+            <li><a href="#">CS FYP2</a></li>
+            <li><a href="#">ME FYP1</a></li>
+            <li class="divider"></li>
+            <li><a href="#" onclick="createNewFYP()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+            <li class="divider"></li>
+            
+            <li><a href="#">Logout</a></li>
+        </ul>
+    </div>     
 	
 	<!-- Will need to modify this to loop over the different years -->
 	<table>
+		
+        <tr>
+            <td>&nbsp;</td>
+            <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
+            <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
+            <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
+        </td>
+		
 		
 		{% for year in years %}
 		<!-- Row for quarter boxes -->
@@ -577,10 +619,17 @@
 			</tr>
 		{% endfor %}
 	</table>
-   
     
 	
     <table>
+        
+        <tr>
+            <td>&nbsp;</td>
+            <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
+            <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
+            <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
+        </td>
+        
         
         <tr style="background-color: #eeeeee;">
 			
