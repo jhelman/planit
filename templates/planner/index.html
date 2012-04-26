@@ -127,6 +127,16 @@
                 }
                 
             }); 
+            
+            
+            // Draw the navbar
+            
+            // alert($('#nav-table').height() + 100);
+            
+            $('#account-menu').css('top', $('#nav-table').height());
+            $('#account-menu').css('right', 20);
+            
+            
         });
         
         // Functions to make the remove course message (need to actually remove!!)
@@ -334,6 +344,33 @@
         }
         
         
+        function overMenuLink(elem) {
+            $(elem).removeClass('menu-link');
+            $(elem).addClass('menu-link-over');
+        }
+        
+        function outMenuLink(elem) {
+            $(elem).removeClass('menu-link-over');
+            $(elem).addClass('menu-link');
+        }
+        
+        var accountMenuOut = false;
+        
+        function toggleAccountMenu() {
+            $('#account-menu').toggle();
+            if (accountMenuOut == false) {
+                 $('#account-triangle').removeClass('account-triangle-down');
+                 $('#account-triangle').addClass('account-triangle-up');
+                 accountMenuOut = true;
+             } else {
+                 $('#account-triangle').removeClass('account-triangle-up');
+                 $('#account-triangle').addClass('account-triangle-down');
+                 accountMenuOut = false;
+             }
+        }
+        
+        
+        
     
     </script>
     
@@ -514,6 +551,121 @@
             left: 900px;
         }
         
+        
+        #nav-table {
+            width: 100%;
+            height: 30px;
+            background-color: #3843d1;
+            margin-bottom: 5px;
+        }
+        
+        
+        #nav-table a:link {
+            color: white;
+            text-decoration: none;
+        }
+        
+        #nav-table a:visited {
+            color: white;
+            text-decoration: none;
+        }
+        
+        #nav-table a:active {
+            color: white;
+            text-decoration: none;
+        }
+        
+        #nav-table a:hover {
+            color: white;
+            text-decoration: none;
+        }
+        
+        #site-title {
+            color: white;
+        }
+        
+        #account-link {
+            color: white;
+        }
+        
+        
+        #account-menu {
+            width: 200px;
+            border: 1px solid #dddddd;
+            z-index: 100;
+            position: absolute;
+            background-color: white;
+            -moz-border-radius: 2px;
+            border-radius: 2px;
+            padding-left: 3px;
+            padding-right: 3px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            display: none;
+        }
+        
+        #account-menu a:link {
+            color: black;
+            text-decoration: none;
+        }
+        
+        #account-menu a:visited {
+            color: black;
+            text-decoration: none;
+        }
+        
+        #account-menu a:active {
+            color: black;
+            text-decoration: none;
+        }
+        
+        #account-menu a:hover {
+            color: black;
+            text-decoration: none;
+        }
+        
+        #account-menu hr {
+            padding: 0px;
+            margin: 2px;
+        }
+
+        .menu-link {
+            display: table-cell;
+            vertical-align: middle;
+            height: 30px;
+            width: 200px;
+            padding-left: 4px;
+        }
+
+        .menu-link-over {
+            background-color: #eeeeee;
+        }
+   
+        .account-triangle-down {
+            display: inline;
+            width: 0px;
+            height: 0px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid white;
+            position: relative;
+            top: 10px;
+        }
+        
+        .account-triangle-up {
+            display: inline;
+            width: 0px;
+            height: 0px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 5px solid white;
+            position: relative;
+            top: -10px;
+        }
+        
+        
+        
+        
             
     </style>
     
@@ -523,23 +675,122 @@
 
 
 
-<body style="margin-top: 5px;">  
-    <div class="btn-group user-button-div">
-        <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
-            <i class="icon-user icon-white"></i>&nbsp;&nbsp;jhelman&nbsp;
-            <span class="caret"></span>
+<body style="margin-top: 0px;"> 
+    
+    <!-- <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container">
+                
+                <a href="#"><h4 style="color: white">planit</h4></a>
+                
+                <ul class="nav">
+                  <li class="dropdown">
+                    <a href="#"
+                          class="dropdown-toggle"
+                          data-toggle="dropdown">
+                          Account
+                          <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a href="#">hi</a></li>
+                      <li><a href="#">hi</a></li>
+                      
+                    </ul>
+                  </li>
+                </ul>
+                
+            </div>
+        </div>
+    </div> -->
+    
+    
+    <table id="nav-table">
+        <tr>
+            <td style="width: 10px">&nbsp;</td>
+            <td><h3 id="site-title">planit</h4></td>
+               
+              
+            <td id="account-link" align="right">
+               
+               <a href="#" onclick="toggleAccountMenu();">
+                   <table>
+                       <tr>
+                           <td><i class="icon-user icon-white"></i></td>
+                           <td>&nbsp;</td>
+                           <td><h4>Jonathan Helman</h4></td>
+                           <td>&nbsp;</td>
+                           <td><div id="account-triangle" class="account-triangle-down"></div></td>
+                       </tr>
+                   </table>
+               </a>
+               
+               
+            </td>
+           
+            <td style="width: 20px">&nbsp;</td>
+               
+        </tr>
+    </table>
+           
+    <div id="account-menu">
+       
+       <a href="#">
+           <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
+                onmouseout="$(this).toggleClass('menu-link-over')">CS FYP1</div>
         </a>
-        <ul class="dropdown-menu">
-            <li><a href="#">CS FYP1</a></li>
-            <li><a href="#">CS FYP2</a></li>
-            <li><a href="#">ME FYP1</a></li>
-            <li class="divider"></li>
-            <li><a href="#" onclick="createNewFYP()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
-            <li class="divider"></li>
+       
+        <a href="#">
+               <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
+                    onmouseout="$(this).toggleClass('menu-link-over')">CS FYP2</div>
+        </a>
             
-            <li><a href="#">Logout</a></li>
-        </ul>
-    </div>     
+        <a href="#">
+            <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
+                 onmouseout="$(this).toggleClass('menu-link-over')">CS FYP3</div>
+        </a>
+       
+        <a href="#">
+            <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
+                onmouseout="$(this).toggleClass('menu-link-over')">CS FYP4</div>
+        </a>
+       
+        <hr/>
+        
+        <a href="#">
+            <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
+                onmouseout="$(this).toggleClass('menu-link-over')">
+                <i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</div>
+        </a>
+        
+        <hr/>
+        
+        <a href="#">
+            <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
+                onmouseout="$(this).toggleClass('menu-link-over')">Logout</div>
+        </a>  
+       
+       
+       
+   </div>
+
+    
+     
+    <!-- <div class="btn-group user-button-div">
+            <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+                <i class="icon-user icon-white"></i>&nbsp;&nbsp;jhelman&nbsp;
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="#">CS FYP1</a></li>
+                <li><a href="#">CS FYP2</a></li>
+                <li><a href="#">ME FYP1</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="createNewFYP()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                <li class="divider"></li>
+                
+                <li><a href="#">Logout</a></li>
+            </ul>
+        </div>      -->
 	
 	<table>
         <tr>
