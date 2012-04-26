@@ -1,0 +1,20 @@
+<program name='cs'>
+    <math>
+        <min_units val='15' />
+        <tag val='mat' />
+    </math>
+
+    <science>
+        <min_courses val='3' />
+        <tag val='sci' />
+    </science>
+
+    <tis>
+        <group li='cs181' />
+    </tis>
+
+    <systems>
+        <group li='cs140 cs143 cs155 cs244b' />
+        <min_courses val='2' />
+    </systems>
+</program>
