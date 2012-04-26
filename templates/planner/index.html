@@ -28,12 +28,14 @@
             
         function draw() {
             
-			{% for term in terms %}
+			{% for year in years %}
+			{% for term in year.terms %}
 			{% for course in term.courses%}
-			$('#{{ course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 
+			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 
 				'placement': 'right'});
 			{% endfor %}
-			{% endfor  %}
+			{% endfor %}
+			{% endfor %}
 			
             // Need to populate on page load or on course add
             $('#course1').popover({'title': 'CS 106A', 'content': 'Introductory CS Class',
@@ -589,7 +591,7 @@
 		
 		
 		{% for year in years %}
-		<!-- Row for quarter boxes -->
+		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
 			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}; ">
 				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
 			
@@ -604,7 +606,7 @@
 				
 						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
 							{% for course in term.courses %}
-				                <table id="{{ course.condensedID }}" class="table table-bordered table-condensed course">
+				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
 				                    <tr>
 				                        <td class="courseName">{{ course.identifier }}</td>
 				                        <td style="units">{{course.units }}</td>
