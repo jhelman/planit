@@ -92,14 +92,15 @@
 			// still hard-coding winter as only droppable for now
 			$('#Winter2011-2012').droppable({
 				accept: function (elem) {
-					//concatenation of all courses across all terms
-					{% for course in terms.0.courses|add:terms.1.courses|add:terms.2.courses %}
+					{% for term in years.0.terms %}
+					{% for course in term.courses %}
 					
 					// this would actually be replaced by more complicated logic
 					// right now it's just letting you drag anything to winter except Econ 1A
 					{% if course.identifier != "Econ 1A" %}
-					if (elem.attr('id') == '{{ course.condensedID }}') return true;
+					if (elem.attr('id') == '{{ term.condensedName|add:course.condensedID }}') return true;
 					{% endif %}
+					{% endfor %}
 					{% endfor %}
 					return false;
 				},
