@@ -1,0 +1,59 @@
+import datetime
+import django.db import models
+
+class Requirement(models.Model):
+    def is_fulfilled(self):
+        return False
+
+    def fulfilled_by(self):
+        return []
+
+class Group(models.Model):
+    pass
+
+class Course(models.Model):
+    tag = models.CharField(maxlength=300)
+
+% for req in reqs:
+class ${req[0].title()}(Requirement):
+% for key in req[1]:
+    % if key == 'tag':
+    fulfill_tag = models.CharField(max_length=300, default='${req[1][key]}')
+    % elif key == 'min_units':
+    min_units = models.IntegerField(default=${req[1][key]})
+    def is_fulfilled(self):
+        return sum([o.units for o in Course.objects.filter(tag=self.fulfill_tag)]) >= self.min_units
+
+    def fulfilled_by(self):
+        return Course.objects.filter(tag=self.fulfill_tag)
+
+    % elif key == 'min_courses' and 'group' not in req[1]:
+    min_courses = models.IntegerField(default=${req[1][key]})
+    def is_fulfilled(self):
+        return len(Course.objects.filter(tag=self.fulfill_tag)) >= self.min_courses
+    % elif key == 'group' and 'min_courses' not in req[1]:
+    
+    fulfill_set = set(${req[1][key]})
+    def is_fulfilled(self):
+        return set(Course.objects.all()) >= set(self.fulfill_set) 
+    
+    def fulfilled_by(self):
+        return self.fulfill_set
+    % elif key == 'group':
+    min_courses = models.IntegerField(default=${req[1][key]})
+    def is_fulfilled(self):
+        return len(set(Course.objects.all()) & set(self.fulfill_set)) >= self.min_courses 
+    
+    def fulfiled_by(self):
+        return self.fulfill_set
+    % endif 
+% endfor
+
+    def __str__(self):
+        return "Requirement: ${req[0].title()}"
+
+% endfor
+
+
+if __name__ == '__main__':
+    pass
