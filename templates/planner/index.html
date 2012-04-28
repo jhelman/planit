@@ -160,13 +160,13 @@
             alertBox.find('.alert-body').html('Are you sure you want to delete ' + courseName + '?');
             alertBox.find('.alert-delete-course-id').html(courseElem.attr('id'));
                         
-            alertBox.css('left', qDiv.position().left);
-            alertBox.css('top', qDiv.position().top + 15);
-            cover.css('left', qDiv.position().left);
-            cover.css('top', qDiv.position().top);
+            alertBox.css('left', courseElem.position().left);
+            alertBox.css('top', courseElem.position().top + courseElem.height());
+            // cover.css('left', qDiv.position().left);
+            // cover.css('top', qDiv.position().top);
                         
-            qDiv.find('.cover').fadeIn();
-            alertBox.fadeIn();
+            // qDiv.find('.cover').fadeIn();
+            alertBox.slideDown();
         }
         
         
@@ -587,7 +587,7 @@
         }  
         
         .delete-alert {
-           width: 170px;
+           width: 150px;
            align: center;
            display: none;
            z-index: 20;
