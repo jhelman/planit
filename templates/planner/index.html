@@ -128,34 +128,61 @@
                 
             }); 
 
-            $('#delete-alert').css('left', $('#Autumn2011-2012Econ1A').position().left);
-            $('#delete-alert').css('top', $('#Autumn2011-2012Econ1A').position().top + 
-                $('#Autumn2011-2012Econ1A').height() + 5);
+            // $('#delete-alert').css('left', $('#Autumn2011-2012Econ1A').position().left);
+            // $('#delete-alert').css('top', $('#Autumn2011-2012Econ1A').position().top + 
+            //     $('#Autumn2011-2012Econ1A').height() + 5);
             
             // alert($('#Autumn2011-2012').position().left);
-             //            
-             // $('#delete-alert').css('left', $('#Autumn2011-2012').position().left + 10);
-             // $('#delete-alert').css('top', $('#Autumn2011-2012').position().top + 15);
-             // 
-             // $('#quarter-div-cover1').css('left', $('#Autumn2011-2012').position().left);
-             // $('#quarter-div-cover1').css('top', $('#Autumn2011-2012').position().top);
+            
+            // $('#delete-alert').css('left', $('#Autumn2011-2012').position().left + 10);
+            // $('#delete-alert').css('top', $('#Autumn2011-2012').position().top + 15);
+            
+            $('#quarter-div-cover1').css('left', $('#Autumn2011-2012').position().left);
+            $('#quarter-div-cover1').css('top', $('#Autumn2011-2012').position().top);
 
         });
         
+        
+        
         // Functions to make the remove course message (need to actually remove!!)
-        function removeCourse(courseName) {
-            // $('#remove-course-alert').alert();      
-            // $('#remove-course-alert-head').html('Delete ' + courseName + '?');
-            // $('#remove-course-alert-div').html('Are you sure you want to delete ' + courseName + 
-            //     ' from this quarter?');
-            // $('#remove-course-alert').slideDown();
-            // $('#quarter-div-cover1').fadeIn();
-            $('#delete-alert').slideDown();
-            // $('.quarter-div').css('background-color', 'black');
+        function removeCourse(courseID) {
+            var courseElem = $('#' + courseID);
+            var courseName = courseElem.find('.courseName').html();
+            
+            courseElem.find('.icon-trash').tooltip('hide');
+            courseElem.popover('hide');
+            
+            var qDiv = courseElem.parent();
+            var cover = qDiv.find('.cover');
+            var alertBox = qDiv.find('.delete-alert');
+            
+            alertBox.find('.alert-heading').html('Delete ' + courseName + '?');
+            alertBox.find('.alert-body').html('Are you sure you want to delete ' + courseName + '?');
+            alertBox.find('.alert-delete-course-id').html(courseElem.attr('id'));
+                        
+            alertBox.css('left', qDiv.position().left);
+            alertBox.css('top', qDiv.position().top + 15);
+            cover.css('left', qDiv.position().left);
+            cover.css('top', qDiv.position().top);
+                        
+            qDiv.find('.cover').fadeIn();
+            alertBox.fadeIn();
         }
         
-        function cancelRemoveCourse() {
-            $('#remove-course-alert').slideUp();
+        
+        function cancelDeleteCourse(quarterID) {
+            var qDiv = $('#' + quarterID);
+            
+            qDiv.find('.delete-alert').hide();
+            qDiv.find('.cover').hide();
+        }
+        
+        
+        function confirmDeleteCourse(quarterID) {
+            var qDiv = $('#' + quarterID);
+            $('#' + qDiv.find('.alert-delete-course-id').html()).remove();
+            
+            cancelDeleteCourse(quarterID);
         }
         
         
@@ -433,17 +460,12 @@
             padding-top: 4px;
         }
         
-        .quarter-div-cover {
-            -moz-border-radius: 10px;
-            border-radius: 10px;
-            width: 220px;
-            height: 130px;
-            border: 1px solid;
-            padding-top: 4px;
+        .cover {
             background-color: black;
             position: absolute;
             display: none;
             opacity: 0.75;
+            z-index: 10;
         }
         
         
@@ -564,12 +586,12 @@
             padding: 0px;
         }  
         
-        #delete-alert {
-           position: absolute;
-           z-index: 1000;
-           width: 150px;
+        .delete-alert {
+           width: 170px;
+           align: center;
            display: none;
-           
+           z-index: 20;
+           position: absolute;
         }
         
         
@@ -737,35 +759,40 @@
 			            </tr></table></center> -->
 				
 						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
-							<div class="alert alert-error" id="delete-alert">
-                        	    <a class="close" data-dismiss="alert" href="#">&times;</a>
-                        	    <h4 class="alert-heading">Delete Class?</h4>
-                        	    Are you sure you want to delete this class?
+						    	
+						    <div class="quarter-div cover"></div>
+
+    				        <div class="alert alert-error delete-alert">
+                        	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
+                        	    <h4 class="alert-heading"></h4>
+                        	    <span class="alert-body"></span>
+                        	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
                         	    <br />
-                        	    <button class="btn btn-danger">Delete</button>
-                        	    <button class="btn">Cancel</button>
+                        	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
+                        	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                             </div>
+						    	
 							{% for course in term.courses %}
 				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
 				                    <tr>
 				                        <td class="courseName">{{ course.identifier }}</td>
 				                        <td style="units">{{ course.units }}</td>
 				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
-				                            <i class="icon-trash" onclick="removeCourse('{{ course.identifier }}');"></i></center></td>
+				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></center></td>
 				                    </tr>
 				                </table>
 							{% endfor %}
 						</div>
+						
+						
+						
+						
 					</td>
 				{% endfor %}
 				<td>&nbsp;</td>
 			</tr>
 		{% endfor %}
 	</table>
-	
-	<div class="quarter-div-cover" id="quarter-div-cover1">
-	    &nbsp;
-    </div>
 	
     
     <br />
