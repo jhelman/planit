@@ -128,17 +128,10 @@
                 
             }); 
 
-            // $('#delete-alert').css('left', $('#Autumn2011-2012Econ1A').position().left);
-            // $('#delete-alert').css('top', $('#Autumn2011-2012Econ1A').position().top + 
-            //     $('#Autumn2011-2012Econ1A').height() + 5);
+            // $('#new-plan-modal').modal({'show': false});
             
-            // alert($('#Autumn2011-2012').position().left);
+            $('#new-plan-modal').modal({'show': false});
             
-            // $('#delete-alert').css('left', $('#Autumn2011-2012').position().left + 10);
-            // $('#delete-alert').css('top', $('#Autumn2011-2012').position().top + 15);
-            
-            $('#quarter-div-cover1').css('left', $('#Autumn2011-2012').position().left);
-            $('#quarter-div-cover1').css('top', $('#Autumn2011-2012').position().top);
 
         });
         
@@ -370,38 +363,64 @@
         
         
         
-        function createNewFYP() {
+        function openNewPlanModal() {
+            
+            $('#new-plan-modal').modal('show');
+            
+        }
+        
+        
+        function validateNewPlan() {
+                        
+            var planName = $('#plan-name').attr('value');
+            var major = $('#major').attr('value');
+            
+            var flag = 0;
+            
+            if (planName.length == 0) {
+                $('#plan-name').parent().parent().addClass('error');
+                $('#plan-name-help-block').show();
+                flag = 1;
+            } else {
+                $('#plan-name').parent().parent().removeClass('error');
+                $('#plan-name-help-block').hide();
+                
+            }
+             
+             
+            if (major.length == 0) {
+                $('#major').parent().parent().addClass('error');
+                $('#major-help-block').show();
+                flag = 1;
+            } else {
+                $('#major').parent().parent().removeClass('error');
+                $('#major-help-block').hide();
+                
+            }   
+           
+            return (flag == 0 ? true : false);
+            
+        }
+        
+        
+        
+        function createNewPlan() {
+            
+            if (validateNewPlan() == false) {
+                return;
+            }
+            
+            $('#new-plan-modal').modal('hide');
+            
+            var planName = $('#plan-name').attr('value');
+            var major = $('#major').attr('value');
             
             
             
+            
+            $('#plan-name').attr('value', '');
+            $('#major').attr('value', '');
         }
-        
-        
-        function overMenuLink(elem) {
-            $(elem).removeClass('menu-link');
-            $(elem).addClass('menu-link-over');
-        }
-        
-        function outMenuLink(elem) {
-            $(elem).removeClass('menu-link-over');
-            $(elem).addClass('menu-link');
-        }
-        
-        var accountMenuOut = false;
-        
-        function toggleAccountMenu() {
-            $('#account-menu').toggle();
-            if (accountMenuOut == false) {
-                 $('#account-triangle').removeClass('account-triangle-down');
-                 $('#account-triangle').addClass('account-triangle-up');
-                 accountMenuOut = true;
-             } else {
-                 $('#account-triangle').removeClass('account-triangle-up');
-                 $('#account-triangle').addClass('account-triangle-down');
-                 accountMenuOut = false;
-             }
-        }
-        
         
         
     
@@ -607,44 +626,90 @@
 <body style="margin-top: 35px;"> 
     
     <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner">
+        <div class="navbar-inner">
                 <div class="container-fluid">
-                    
-                    <a href="#" class="brand"><font color="white">planit</font></a>
+                
+                <a href="#" class="brand"><font color="white">planit</font></a>
 
-                                        
-                    <ul class="nav pull-right">
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                CS FYP1&nbsp;<b class="caret"></b>  
-                            </a>
-                            <ul class="dropdown-menu">
+                                    
+                <ul class="nav pull-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            CS FYP1&nbsp;<b class="caret"></b>  
+                        </a>
+                        <ul class="dropdown-menu">
 
-                                <li><a href="#">CS FYP1&nbsp;<i class="icon-ok"></i></a></li>
-                                <li><a href="#">CS FYP2</a></li>
-                                <li><a href="#">ME FYP1</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#" onclick="createNewFYP()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
-                            </ul>
-                         </li>
-                        <li class="divider-vertical"></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="icon-user icon-white"></i>&nbsp;Jonathan Helman&nbsp;<b class="caret"></b>  
-                            </a>
-                            <ul class="dropdown-menu">
-                            
-                                <li><a href="#">Account Settings</a></li>
+                            <li><a href="#">CS FYP1&nbsp;<i class="icon-ok"></i></a></li>
+                            <li><a href="#">CS FYP2</a></li>
+                            <li><a href="#">ME FYP1</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                        </ul>
+                     </li>
+                    <li class="divider-vertical"></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="icon-user icon-white"></i>&nbsp;Jonathan Helman&nbsp;<b class="caret"></b>  
+                        </a>
+                        <ul class="dropdown-menu">
+                        
+                            <li><a href="#">Account Settings</a></li>
 
-                                <li><a href="#">Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-             
-                    
-                </div>
+                            <li><a href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+         
+                
             </div>
         </div>
+    </div>
+    
+    
+    <div class="modal fade" id="new-plan-modal">
+        <div class="modal-header">
+            <button class="close" data-dismiss="modal">&times;</button>
+            <h3>Create New Four-Year Plan</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" id="new-plan-form">
+                
+                 <fieldset>
+                     <div class="control-group">
+                         <label class="control-label" for="plan-name">Four-Year Plan Name</label>
+                         <div class="controls">
+                             <input type="text" id="plan-name"></input>
+                             <p class="help-inline" id="plan-name-help-block" style="display: none;">Required</p>
+                         </div>
+                    </div>
+                </fieldset>
+                   
+                   
+                 <fieldset>
+                     <div class="control-group">
+                         <label class="control-label" for="major">Major</label>
+                         <div class="controls">
+                             <select id="major">
+                                 <option value="">Choose a major</option>
+                                 <option value="Computer Science">Computer Science</option>
+                                 <option value="Electrical Engineering">Electrical Engineering</option>
+                                 <option value="Physics">Physics</option>
+                             </select>
+                             <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
+                         </div>
+                    </div>
+                </fieldset>
+
+            </form>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" onclick="createNewPlan()">Create Plan</button>
+        </div>
+        
+    </div>
+        
     
     
 	<table>
@@ -658,7 +723,7 @@
 		
 		{% for year in years %}
 		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}; ">
+			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}">
 				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
 			
 			
