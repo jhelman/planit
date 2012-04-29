@@ -131,6 +131,7 @@
             // $('#new-plan-modal').modal({'show': false});
             
             $('#new-plan-modal').modal({'show': false});
+            $('#account-settings-modal').modal({'show': false});
             
 
         });
@@ -432,12 +433,24 @@
             var major = $('#major').attr('value');
             
             
-            
-            
             $('#plan-name').attr('value', '');
             $('#major').attr('value', '');
         }
         
+        
+        
+        function openAccountSettingsModal() {
+            $('#account-settings-modal').modal('show');
+        }
+        
+        function saveAccountSettings() {
+            var fullname = $('#account-settings-fullname').attr('value');
+            if (fullname.length == 0) {
+                fullname = $('#account-settings-fullname').attr('placeholder');
+            }
+
+            $('#account-settings-modal').modal('hide');
+        }
         
     
     </script>
@@ -696,7 +709,7 @@
                         </a>
                         <ul class="dropdown-menu">
                         
-                            <li><a href="#">Account Settings</a></li>
+                            <li><a href="#" onclick="openAccountSettingsModal()">Account Settings</a></li>
 
                             <li><a href="#">Logout</a></li>
                         </ul>
@@ -752,6 +765,55 @@
         </div>
         
     </div>   
+    
+    
+    <div class="modal fade" id="account-settings-modal">
+           <div class="modal-header">
+               <button class="close" data-dismiss="modal">&times;</button>
+               <h3>Account Settings: jhelman@stanford.edu</h3>
+           </div>
+           <div class="modal-body">
+               <form class="form-horizontal" id="account-settings-form">
+
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="account-settings-fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" id="account-settings-fullname" placeholder="Jonathan Helman"></input>
+                            </div>
+                       </div>
+                   </fieldset>
+
+
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="graduation-year">Graduation Year</label>
+                            <div class="controls">
+                                <select id="graduation-year">
+                                    <option value="2012">2012</option>
+                                    <option value="2013">2013</option>
+                                    <option value="2014">2014</option>
+                                    <option value="2015">2015</option>
+                                    <option value="2016">2016</option>
+                                </select>
+                            </div>
+                       </div>
+                   </fieldset>
+
+               </form>
+           </div>
+
+           <div class="modal-footer">
+               <button class="btn" data-dismiss="modal">Cancel</button>
+               <button class="btn btn-primary" onclick="saveAccountSettings()">Save Account Settings</button>
+           </div>
+
+       </div>   
+    
+    
+    
+    
+    
     
         
     <table><tr>
