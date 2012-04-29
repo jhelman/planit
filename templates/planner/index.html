@@ -119,11 +119,11 @@
                 },
                 
                 out: function (event, ui) {
-                    $(this).css('backgroundColor', 'white');   
+                    $(this).css('backgroundColor', '#eeeeee');   
                 },
                 
                 deactivate: function (event, ui) {
-                    $(this).css('backgroundColor', 'white');   
+                    $(this).css('backgroundColor', '#eeeeee');   
                 }
                 
             }); 
@@ -170,10 +170,27 @@
             qDiv.find('.cover').hide();
         }
         
+        function updateQuarterUnits(unitChange, quarterID) {
+            
+            
+            $('#' + quarterID + '-units').html(parseInt($('#' + quarterID + '-units').html()) + unitChange);        
+            
+        }
+        
+        function updateTotalUnits(unitChange) {
+            $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
+        }
+        
         
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
-            $('#' + qDiv.find('.alert-delete-course-id').html()).remove();
+            var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
+            var numUnits = courseElem.find('.units').html();
+            
+            courseElem.remove();
+            
+            updateQuarterUnits(parseInt("-" + numUnits), quarterID);
+            updateTotalUnits(parseInt("-" + numUnits));
             
             cancelDeleteCourse(quarterID);
         }
@@ -788,7 +805,7 @@
                     				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
                     				                    <tr>
                     				                        <td class="courseName">{{ course.identifier }}</td>
-                    				                        <td style="units">{{ course.units }}</td>
+                    				                        <td class="units">{{ course.units }}</td>
                     				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
                     				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></center></td>
                     				                    </tr>
@@ -802,7 +819,7 @@
                 				            <div class="quarter-info-div">
                 				                <span class="quarter-info-span">
                 				                    Units<br/>
-                    				                15<br/>
+                    				                <span id="{{ term.condensedName }}-units">15</span><br/>
                     				                <br/>
 				            
                     				                <i class="icon-calendar"></i>
@@ -829,7 +846,7 @@
             <br/><br/>
             <b>Major</b>: Computer Science
             <br/>
-            <b>Total Units</b>: 180
+            <b>Total Units</b>: <span id="total-units">180</span>
             <br/>
             
             
