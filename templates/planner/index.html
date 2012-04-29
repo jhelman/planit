@@ -41,7 +41,7 @@
             $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
             $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
-            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'bottom'});
+            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
             $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             
             
@@ -471,12 +471,17 @@
         }
     
         .quarter-div {
-            -moz-border-radius: 10px;
-            border-radius: 10px;
             width: 220px;
             height: 130px;
-            border: 1px solid;
             padding-top: 4px;
+            -moz-border-top-left-radius: 10px;
+            border-top-left-radius: 10px;
+            -moz-border-bottom-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-left: 1px solid;
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            border-right: 1px dashed;
         }
         
         .cover {
@@ -487,6 +492,27 @@
             z-index: 10;
         }
         
+        .quarter-info-div {
+            -moz-border-top-right-radius: 10px;
+            border-top-right-radius: 10px;
+            -moz-border-bottom-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border-right: 1px solid;
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            height: 134px;
+            width: 45px;
+            margin: 0px;
+            text-align: center;
+        }
+        
+        
+        .quarter-info-span {
+            position: relative; 
+            top: 25px; 
+            font-weight: bold;
+            margin-left: 6px;
+        }
         
         #bottom-left-box {
             width: 420px;
@@ -613,6 +639,7 @@
            position: absolute;
         }
         
+
         
             
     </style>
@@ -708,69 +735,108 @@
             <button class="btn btn-primary" onclick="createNewPlan()">Create Plan</button>
         </div>
         
-    </div>
+    </div>   
+    
         
+    <table><tr>
+        
+        <td>
     
-    
-	<table>
-        <tr>
-            <td>&nbsp;</td>
-            <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
-            <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
-            <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
-        </td>
+	        <table>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
+                    <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
+                    <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
+                </tr>
 		
 		
-		{% for year in years %}
-		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}">
-				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
+        		{% for year in years %}
+        		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
+        			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}">
+        				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
 			
 			
-				{% for term in year.terms %}
-					<td>	
-			            <!-- <center><table><tr>
-			                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
-			                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-			                <td><i class="icon-calendar"></i></td>
-			            </tr></table></center> -->
+        				{% for term in year.terms %}
+        					<td>	
+        			            <!-- <center><table><tr>
+        			                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
+        			                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+        			                <td><i class="icon-calendar"></i></td>
+        			            </tr></table></center> -->
 				
-						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
+				
+        				        <table>
+        				            <tr>
+        				                <td style="padding: 0px">
+				
+        						            <div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
 						    	
-						    <div class="quarter-div cover"></div>
+                    						    <div class="quarter-div cover"></div>
 
-    				        <div class="alert alert-error delete-alert">
-                        	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
-                        	    <h4 class="alert-heading"></h4>
-                        	    <span class="alert-body"></span>
-                        	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
-                        	    <br />
-                        	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
-                        	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
-                            </div>
+                        				        <div class="alert alert-error delete-alert">
+                                            	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
+                                            	    <h4 class="alert-heading"></h4>
+                                            	    <span class="alert-body"></span>
+                                            	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
+                                            	    <br />
+                                            	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
+                                            	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
+                                                </div>
 						    	
-							{% for course in term.courses %}
-				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
-				                    <tr>
-				                        <td class="courseName">{{ course.identifier }}</td>
-				                        <td style="units">{{ course.units }}</td>
-				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
-				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></center></td>
-				                    </tr>
-				                </table>
-							{% endfor %}
-						</div>
+                    							{% for course in term.courses %}
+                    				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
+                    				                    <tr>
+                    				                        <td class="courseName">{{ course.identifier }}</td>
+                    				                        <td style="units">{{ course.units }}</td>
+                    				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                    				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></center></td>
+                    				                    </tr>
+                    				                </table>
+                    							{% endfor %}
+                    						</div>
+						
+        					            </td>
+				    
+                				        <td style="padding: 0px">
+                				            <div class="quarter-info-div">
+                				                <span class="quarter-info-span">
+                				                    Units<br/>
+                    				                15<br/>
+                    				                <br/>
+				            
+                    				                <i class="icon-calendar"></i>
+                    				            </span>
+                				            </div>
+                				        </td>
+        			                </tr>
+        		                </table>
 						
 						
 						
-						
-					</td>
-				{% endfor %}
-				<td>&nbsp;</td>
-			</tr>
-		{% endfor %}
-	</table>
+        					</td>
+        				{% endfor %}
+        				<td>&nbsp;</td>
+        			</tr>
+        		{% endfor %}
+        	</table>
 	
+	
+        </td>
+        
+        <td style="padding-left: 20px; vertical-align: top;">
+            
+            <br/><br/>
+            <b>Major</b>: Computer Science
+            <br/>
+            <b>Total Units</b>: 180
+            <br/>
+            
+            
+        </td>
+        
+        
+    </tr></table>
     
     <br />
     <br />
