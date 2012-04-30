@@ -41,7 +41,7 @@
             $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
             $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
-            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'bottom'});
+            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
             $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             
             
@@ -121,43 +121,80 @@
                 },
                 
                 out: function (event, ui) {
-                    $(this).css('backgroundColor', 'white');   
+                    $(this).css('backgroundColor', '#eeeeee');   
                 },
                 
                 deactivate: function (event, ui) {
-                    $(this).css('backgroundColor', 'white');   
+                    $(this).css('backgroundColor', '#eeeeee');   
                 }
                 
             }); 
 
-            $('#delete-alert').css('left', $('#Autumn2011-2012Econ1A').position().left);
-            $('#delete-alert').css('top', $('#Autumn2011-2012Econ1A').position().top + 
-                $('#Autumn2011-2012Econ1A').height() + 5);
+            // $('#new-plan-modal').modal({'show': false});
             
-            // alert($('#Autumn2011-2012').position().left);
-             //            
-             // $('#delete-alert').css('left', $('#Autumn2011-2012').position().left + 10);
-             // $('#delete-alert').css('top', $('#Autumn2011-2012').position().top + 15);
-             // 
-             // $('#quarter-div-cover1').css('left', $('#Autumn2011-2012').position().left);
-             // $('#quarter-div-cover1').css('top', $('#Autumn2011-2012').position().top);
+            $('#new-plan-modal').modal({'show': false});
+            $('#account-settings-modal').modal({'show': false});
+            
 
         });
         
+        
+        
         // Functions to make the remove course message (need to actually remove!!)
-        function removeCourse(courseName) {
-            // $('#remove-course-alert').alert();      
-            // $('#remove-course-alert-head').html('Delete ' + courseName + '?');
-            // $('#remove-course-alert-div').html('Are you sure you want to delete ' + courseName + 
-            //     ' from this quarter?');
-            // $('#remove-course-alert').slideDown();
-            // $('#quarter-div-cover1').fadeIn();
-            $('#delete-alert').slideDown();
-            // $('.quarter-div').css('background-color', 'black');
+        function removeCourse(courseID) {
+            var courseElem = $('#' + courseID);
+            var courseName = courseElem.find('.courseName').html();
+            
+            courseElem.find('.icon-trash').tooltip('hide');
+            courseElem.popover('hide');
+            
+            var qDiv = courseElem.parent();
+            var cover = qDiv.find('.cover');
+            var alertBox = qDiv.find('.delete-alert');
+            
+            alertBox.find('.alert-heading').html('Delete ' + courseName + '?');
+            alertBox.find('.alert-body').html('Are you sure you want to delete ' + courseName + '?');
+            alertBox.find('.alert-delete-course-id').html(courseElem.attr('id'));
+                        
+            alertBox.css('left', qDiv.position().left);
+            alertBox.css('top', qDiv.position().top + 15);
+            cover.css('left', qDiv.position().left);
+            cover.css('top', qDiv.position().top);
+                        
+            qDiv.find('.cover').fadeIn();
+            alertBox.fadeIn();
         }
         
-        function cancelRemoveCourse() {
-            $('#remove-course-alert').slideUp();
+        
+        function cancelDeleteCourse(quarterID) {
+            var qDiv = $('#' + quarterID);
+            
+            qDiv.find('.delete-alert').hide();
+            qDiv.find('.cover').hide();
+        }
+        
+        function updateQuarterUnits(unitChange, quarterID) {
+            
+            $('#' + quarterID + '-units').html(parseInt($('#' + quarterID + '-units').html()) + unitChange);        
+            
+        }
+        
+        function updateTotalUnits(unitChange) {
+            $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
+        }
+        
+        
+        function confirmDeleteCourse(quarterID) {
+            var qDiv = $('#' + quarterID);
+            var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
+            var numUnits = courseElem.find('.units').html();
+            
+            courseElem.remove();
+            
+            updateQuarterUnits(parseInt("-" + numUnits), quarterID);
+            updateTotalUnits(parseInt("-" + numUnits));
+            
+            cancelDeleteCourse(quarterID);
         }
         
         
@@ -345,39 +382,77 @@
         
         
         
-        function createNewFYP() {
+        function openNewPlanModal() {
+            
+            $('#new-plan-modal').modal('show');
+            
+        }
+        
+        
+        function validateNewPlan() {
+                        
+            var planName = $('#plan-name').attr('value');
+            var major = $('#major').attr('value');
+            
+            var flag = 0;
+            
+            if (planName.length == 0) {
+                $('#plan-name').parent().parent().addClass('error');
+                $('#plan-name-help-block').show();
+                flag = 1;
+            } else {
+                $('#plan-name').parent().parent().removeClass('error');
+                $('#plan-name-help-block').hide();
+                
+            }
+             
+             
+            if (major.length == 0) {
+                $('#major').parent().parent().addClass('error');
+                $('#major-help-block').show();
+                flag = 1;
+            } else {
+                $('#major').parent().parent().removeClass('error');
+                $('#major-help-block').hide();
+                
+            }   
+           
+            return (flag == 0 ? true : false);
+            
+        }
+        
+        
+        
+        function createNewPlan() {
+            
+            if (validateNewPlan() == false) {
+                return;
+            }
+            
+            $('#new-plan-modal').modal('hide');
+            
+            var planName = $('#plan-name').attr('value');
+            var major = $('#major').attr('value');
             
             
-            
+            $('#plan-name').attr('value', '');
+            $('#major').attr('value', '');
         }
         
         
-        function overMenuLink(elem) {
-            $(elem).removeClass('menu-link');
-            $(elem).addClass('menu-link-over');
+        
+        function openAccountSettingsModal() {
+            $('#account-settings-modal').modal('show');
         }
         
-        function outMenuLink(elem) {
-            $(elem).removeClass('menu-link-over');
-            $(elem).addClass('menu-link');
+        function saveAccountSettings() {
+            var fullname = $('#account-settings-fullname').attr('value');
+            if (fullname.length == 0) {
+                fullname = $('#account-settings-fullname').attr('placeholder');
+            }
+
+            $('#account-settings-modal').modal('hide');
         }
-        
-        var accountMenuOut = false;
-        
-        function toggleAccountMenu() {
-            $('#account-menu').toggle();
-            if (accountMenuOut == false) {
-                 $('#account-triangle').removeClass('account-triangle-down');
-                 $('#account-triangle').addClass('account-triangle-up');
-                 accountMenuOut = true;
-             } else {
-                 $('#account-triangle').removeClass('account-triangle-up');
-                 $('#account-triangle').addClass('account-triangle-down');
-                 accountMenuOut = false;
-             }
-        }
-        
-        
         
     
     </script>
@@ -427,27 +502,48 @@
         }
     
         .quarter-div {
-            -moz-border-radius: 10px;
-            border-radius: 10px;
             width: 220px;
             height: 130px;
-            border: 1px solid;
             padding-top: 4px;
+            -moz-border-top-left-radius: 10px;
+            border-top-left-radius: 10px;
+            -moz-border-bottom-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-left: 1px solid;
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            border-right: 1px dashed;
         }
         
-        .quarter-div-cover {
-            -moz-border-radius: 10px;
-            border-radius: 10px;
-            width: 220px;
-            height: 130px;
-            border: 1px solid;
-            padding-top: 4px;
+        .cover {
             background-color: black;
             position: absolute;
             display: none;
             opacity: 0.75;
+            z-index: 10;
         }
         
+        .quarter-info-div {
+            -moz-border-top-right-radius: 10px;
+            border-top-right-radius: 10px;
+            -moz-border-bottom-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border-right: 1px solid;
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            height: 134px;
+            width: 45px;
+            margin: 0px;
+            text-align: center;
+        }
+        
+        
+        .quarter-info-span {
+            position: relative; 
+            top: 30px; 
+            font-weight: bold;
+            margin-left: 6px;
+        }
         
         #bottom-left-box {
             width: 420px;
@@ -566,14 +662,15 @@
             padding: 0px;
         }  
         
-        #delete-alert {
-           position: absolute;
-           z-index: 1000;
-           width: 150px;
+        .delete-alert {
+           width: 171px;
+           align: center;
            display: none;
-           
+           z-index: 20;
+           position: absolute;
         }
         
+
         
             
     </style>
@@ -587,188 +684,239 @@
 <body style="margin-top: 35px;"> 
     
     <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner">
+        <div class="navbar-inner">
                 <div class="container-fluid">
-                    
-                    <a href="#" class="brand"><font color="white">planit</font></a>
+                
+                <a href="#" class="brand"><font color="white">planit</font></a>
 
-                                        
-                    <ul class="nav pull-right">
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                CS FYP1&nbsp;<b class="caret"></b>  
-                            </a>
-                            <ul class="dropdown-menu">
+                                    
+                <ul class="nav pull-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            CS FYP1&nbsp;<b class="caret"></b>  
+                        </a>
+                        <ul class="dropdown-menu">
 
-                                <li><a href="#">CS FYP1&nbsp;<i class="icon-ok"></i></a></li>
-                                <li><a href="#">CS FYP2</a></li>
-                                <li><a href="#">ME FYP1</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#" onclick="createNewFYP()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
-                            </ul>
-                         </li>
-                        <li class="divider-vertical"></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="icon-user icon-white"></i>&nbsp;Jonathan Helman&nbsp;<b class="caret"></b>  
-                            </a>
-                            <ul class="dropdown-menu">
-                            
-                                <li><a href="#">Account Settings</a></li>
+                            <li><a href="#">CS FYP1&nbsp;<i class="icon-ok"></i></a></li>
+                            <li><a href="#">CS FYP2</a></li>
+                            <li><a href="#">ME FYP1</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                        </ul>
+                     </li>
+                    <li class="divider-vertical"></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="icon-user icon-white"></i>&nbsp;Jonathan Helman&nbsp;<b class="caret"></b>  
+                        </a>
+                        <ul class="dropdown-menu">
+                        
+                            <li><a href="#" onclick="openAccountSettingsModal()">Account Settings</a></li>
 
-                                <li><a href="#">Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-             
-                    
-                </div>
+                            <li><a href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+         
+                
             </div>
         </div>
-    
-    
-    <!-- <table id="nav-table">
-            <tr>
-                <td style="width: 10px">&nbsp;</td>
-                <td><h3 id="site-title">planit</h4></td>
-                  
-                <td id="plan-name-td">CS FYP1</td>
-                <td id="account-link">
-                   
-                   <a href="#" onclick="toggleAccountMenu();">
-                       <table>
-                           <tr>
-                               <td><i class="icon-user icon-white"></i></td>
-                               <td>&nbsp;</td>
-                               <td>Jonathan Helman</td>
-                               <td>&nbsp;</td>
-                               <td><div id="account-triangle" class="account-triangle-down"></div></td>
-                           </tr>
-                       </table>
-                   </a>
-                   
-                   
-                </td>
-               
-                <td style="width: 20px">&nbsp;</td>
-                   
-            </tr>
-        </table>
-               
-        <div id="account-menu">
-           
-           <a href="#">
-               <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
-                    onmouseout="$(this).toggleClass('menu-link-over')">CS FYP1</div>
-            </a>
-           
-            <a href="#">
-                   <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
-                        onmouseout="$(this).toggleClass('menu-link-over')">CS FYP2</div>
-            </a>
-                
-            <a href="#">
-                <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
-                     onmouseout="$(this).toggleClass('menu-link-over')">CS FYP3</div>
-            </a>
-           
-            <a href="#">
-                <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
-                    onmouseout="$(this).toggleClass('menu-link-over')">CS FYP4</div>
-            </a>
-           
-            <hr/>
-            
-            <a href="#">
-                <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
-                    onmouseout="$(this).toggleClass('menu-link-over')">
-                    <i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</div>
-            </a>
-            
-            <hr/>
-            
-            <a href="#">
-                <div class="menu-link" onmouseover="$(this).toggleClass('menu-link-over')" 
-                    onmouseout="$(this).toggleClass('menu-link-over')">Logout</div>
-            </a>  
-           
-           
-           
-       </div> -->
-    
-    
-     
-    <!-- <div class="btn-group user-button-div">
-            <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
-                <i class="icon-user icon-white"></i>&nbsp;&nbsp;jhelman&nbsp;
-                <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a href="#">CS FYP1</a></li>
-                <li><a href="#">CS FYP2</a></li>
-                <li><a href="#">ME FYP1</a></li>
-                <li class="divider"></li>
-                <li><a href="#" onclick="createNewFYP()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
-                <li class="divider"></li>
-                
-                <li><a href="#">Logout</a></li>
-            </ul>
-        </div>      -->
-	
-	<table>
-        <tr>
-            <td>&nbsp;</td>
-            <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
-            <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
-            <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
-        </td>
-		
-		
-		{% for year in years %}
-		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}; ">
-				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
-			
-			
-				{% for term in year.terms %}
-					<td>	
-			            <!-- <center><table><tr>
-			                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
-			                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-			                <td><i class="icon-calendar"></i></td>
-			            </tr></table></center> -->
-				
-						<div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
-							<div class="alert alert-error" id="delete-alert">
-                        	    <a class="close" data-dismiss="alert" href="#">&times;</a>
-                        	    <h4 class="alert-heading">Delete Class?</h4>
-                        	    Are you sure you want to delete this class?
-                        	    <br />
-                        	    <button class="btn btn-danger">Delete</button>
-                        	    <button class="btn">Cancel</button>
-                            </div>
-							{% for course in term.courses %}
-				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
-				                    <tr>
-				                        <td class="courseName">{{ course.identifier }}</td>
-				                        <td style="units">{{ course.units }}</td>
-				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
-				                            <i class="icon-trash" onclick="removeCourse('{{ course.identifier }}');"></i></center></td>
-				                    </tr>
-				                </table>
-							{% endfor %}
-						</div>
-					</td>
-				{% endfor %}
-				<td>&nbsp;</td>
-			</tr>
-		{% endfor %}
-	</table>
-	
-	<div class="quarter-div-cover" id="quarter-div-cover1">
-	    &nbsp;
     </div>
+    
+    
+    <div class="modal fade" id="new-plan-modal">
+        <div class="modal-header">
+            <button class="close" data-dismiss="modal">&times;</button>
+            <h3>Create New Four-Year Plan</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" id="new-plan-form">
+                
+                 <fieldset>
+                     <div class="control-group">
+                         <label class="control-label" for="plan-name">Four-Year Plan Name</label>
+                         <div class="controls">
+                             <input type="text" id="plan-name"></input>
+                             <p class="help-inline" id="plan-name-help-block" style="display: none;">Required</p>
+                         </div>
+                    </div>
+                </fieldset>
+                   
+                   
+                 <fieldset>
+                     <div class="control-group">
+                         <label class="control-label" for="major">Major</label>
+                         <div class="controls">
+                             <select id="major">
+                                 <option value="">Choose a major</option>
+                                 <option value="Computer Science">Computer Science</option>
+                                 <option value="Electrical Engineering">Electrical Engineering</option>
+                                 <option value="Physics">Physics</option>
+                             </select>
+                             <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
+                         </div>
+                    </div>
+                </fieldset>
+
+            </form>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" onclick="createNewPlan()">Create Plan</button>
+        </div>
+        
+    </div>   
+    
+    
+    <div class="modal fade" id="account-settings-modal">
+           <div class="modal-header">
+               <button class="close" data-dismiss="modal">&times;</button>
+               <h3>Account Settings: jhelman@stanford.edu</h3>
+           </div>
+           <div class="modal-body">
+               <form class="form-horizontal" id="account-settings-form">
+
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="account-settings-fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" id="account-settings-fullname" placeholder="Jonathan Helman"></input>
+                            </div>
+                       </div>
+                   </fieldset>
+
+
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="graduation-year">Graduation Year</label>
+                            <div class="controls">
+                                <select id="graduation-year">
+                                    <option value="2012">2012</option>
+                                    <option value="2013">2013</option>
+                                    <option value="2014">2014</option>
+                                    <option value="2015">2015</option>
+                                    <option value="2016">2016</option>
+                                </select>
+                            </div>
+                       </div>
+                   </fieldset>
+
+               </form>
+           </div>
+
+           <div class="modal-footer">
+               <button class="btn" data-dismiss="modal">Cancel</button>
+               <button class="btn btn-primary" onclick="saveAccountSettings()">Save Account Settings</button>
+           </div>
+
+       </div>   
+    
+    
+    
+    
+    
+    
+        
+    <table><tr>
+        
+        <td>
+    
+	        <table>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
+                    <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
+                    <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
+                </tr>
+		
+		
+        		{% for year in years %}
+        		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
+        			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}">
+        				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
+			
+			
+        				{% for term in year.terms %}
+        					<td>	
+        			            <!-- <center><table><tr>
+        			                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
+        			                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
+        			                <td><i class="icon-calendar"></i></td>
+        			            </tr></table></center> -->
+				
+				
+        				        <table>
+        				            <tr>
+        				                <td style="padding: 0px">
+				
+        						            <div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
+						    	
+                    						    <div class="quarter-div cover"></div>
+
+                        				        <div class="alert alert-error delete-alert">
+                                            	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
+                                            	    <h4 class="alert-heading"></h4>
+                                            	    <span class="alert-body"></span>
+                                            	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
+                                            	    <br />
+                                            	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
+                                            	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
+                                                </div>
+						    	
+                    							{% for course in term.courses %}
+                    				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
+                    				                    <tr>
+                    				                        <td class="courseName">{{ course.identifier }}</td>
+                    				                        <td class="units">{{ course.units }}</td>
+                    				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
+                    				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></center></td>
+                    				                    </tr>
+                    				                </table>
+                    							{% endfor %}
+                    						</div>
+						
+        					            </td>
+				    
+                				        <td style="padding: 0px">
+                				            <div class="quarter-info-div">
+                				                <span class="quarter-info-span">
+                				                    Units<br/>
+                    				                <span id="{{ term.condensedName }}-units">15</span><br/>
+                    				                <br/>
+				            
+                    				                <i class="icon-calendar"></i>
+                    				            </span>
+                				            </div>
+                				        </td>
+        			                </tr>
+        		                </table>
+						
+						
+						
+        					</td>
+        				{% endfor %}
+        				<td>&nbsp;</td>
+        			</tr>
+        		{% endfor %}
+        	</table>
 	
+	
+        </td>
+        
+        <td style="padding-left: 20px; vertical-align: top;">
+            
+            <br/><br/>
+            <b>Major</b>: Computer Science
+            <br/>
+            <b>Total Units</b>: <span id="total-units">180</span>
+            <br/>
+            
+            
+        </td>
+        
+        
+    </tr></table>
     
     <br />
     <br />
