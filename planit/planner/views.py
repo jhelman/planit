@@ -35,8 +35,11 @@ def index(request):
         terms[2]['courses'].append(Course.objects.filter(identifier='Physics 41')[0])
 
         for term in terms:
+            units = 0
             for course in term['courses']:
                 setattr(course, 'condensedID', course.identifier.replace(' ', ''))
+                units += course.units
+            term['units'] = units
         years[i]['terms'] = terms
             
     args['years'] = years
