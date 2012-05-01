@@ -11,6 +11,8 @@
     
     
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.css"/>
+    
     
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script>
@@ -19,6 +21,9 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-typeahead.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
+    
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script>
+    
         
     
     <script type="text/javascript">
@@ -134,6 +139,42 @@
             
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
+            $('#schedule-modal').modal();
+            
+            var classes = {
+                events: [
+                    {'id': 1, 'start': new Date(2011, 4, 31, 10), 'end': new Date(2011, 4, 31, 11), 'title': 'hello'}
+                ]
+            };
+            
+            
+            $('#schedule-modal-calendar').weekCalendar({
+                
+                buttons: false,
+                title: '',
+                daysToShow: 5,
+                allowCalEventOverlap: true,
+                readonly: true,
+                displayOddEven: true,
+                minDate: new Date(2011, 5, 4),
+                maxDate: new Date(2011, 4, 30),
+                businessHours: {'start': 9, 'end': 18, 'limitDisplay': true},
+                data: classes,
+                timeslotsPerHour: 2,
+                height: function () { return 425; },
+                getHeaderDate: function(date, calendar) { 
+                    switch (date.getDay()) {
+                        case 0: return 'Sunday';
+                        case 1: return 'Monday';
+                        case 2: return 'Tuesday';
+                        case 3: return 'Wednesday';
+                        case 4: return 'Thursday';
+                        case 5: return 'Friday';
+                        case 6: return 'Saturday';
+                        default: return '';
+                    }
+                }
+            });
             
 
         });
@@ -671,6 +712,19 @@
         }
         
 
+        #schedule-modal {
+            width: 1000px;
+            margin-left: -500px;
+            height: 534px;
+            margin-top: -267px;
+        }
+        
+        #schedule-modal-calendar {
+            width: 900px;
+            margin-top: -25px;
+            margin-left: auto; 
+            margin-right: auto;
+        }
         
             
     </style>
@@ -770,54 +824,68 @@
     
     
     <div class="modal fade" id="account-settings-modal">
-           <div class="modal-header">
-               <button class="close" data-dismiss="modal">&times;</button>
-               <h3>Account Settings: jhelman@stanford.edu</h3>
-           </div>
-           <div class="modal-body">
-               <form class="form-horizontal" id="account-settings-form">
+        <div class="modal-header">
+           <button class="close" data-dismiss="modal">&times;</button>
+           <h3>Account Settings: jhelman@stanford.edu</h3>
+        </div>
+        <div class="modal-body">
+           <form class="form-horizontal" id="account-settings-form">
 
-                    <fieldset>
-                        <div class="control-group">
-                            <label class="control-label" for="account-settings-fullname">Full Name</label>
-                            <div class="controls">
-                                <input type="text" id="account-settings-fullname" placeholder="Jonathan Helman"></input>
-                            </div>
-                       </div>
-                   </fieldset>
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="account-settings-fullname">Full Name</label>
+                        <div class="controls">
+                            <input type="text" id="account-settings-fullname" placeholder="Jonathan Helman"></input>
+                        </div>
+                   </div>
+               </fieldset>
 
 
-                    <fieldset>
-                        <div class="control-group">
-                            <label class="control-label" for="graduation-year">Graduation Year</label>
-                            <div class="controls">
-                                <select id="graduation-year">
-                                    <option value="2012">2012</option>
-                                    <option value="2013">2013</option>
-                                    <option value="2014">2014</option>
-                                    <option value="2015">2015</option>
-                                    <option value="2016">2016</option>
-                                </select>
-                            </div>
-                       </div>
-                   </fieldset>
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="graduation-year">Graduation Year</label>
+                        <div class="controls">
+                            <select id="graduation-year">
+                                <option value="2012">2012</option>
+                                <option value="2013">2013</option>
+                                <option value="2014">2014</option>
+                                <option value="2015">2015</option>
+                                <option value="2016">2016</option>
+                            </select>
+                        </div>
+                   </div>
+               </fieldset>
 
-               </form>
-           </div>
+           </form>
+       </div>
 
-           <div class="modal-footer">
-               <button class="btn" data-dismiss="modal">Cancel</button>
-               <button class="btn btn-primary" onclick="saveAccountSettings()">Save Account Settings</button>
-           </div>
+       <div class="modal-footer">
+           <button class="btn" data-dismiss="modal">Cancel</button>
+           <button class="btn btn-primary" onclick="saveAccountSettings()">Save Account Settings</button>
+       </div>
 
-       </div>   
+    </div>   
     
     
     
+    <div class="modal fade" id="schedule-modal">
+        <div class="modal-header">
+           <button class="close" data-dismiss="modal">&times;</button>
+           <h3><span class="schedule-modal-title">Autumn 2011-2012 Weekly Schedule</span></h3>
+        </div>
+        <div class="modal-body" style="text-align: center">
+            <div id="schedule-modal-calendar"></div>
+            
+        </div>
+
+       <div class="modal-footer">
+           <button class="btn" data-dismiss="modal">Close</button>
+       </div>
+
+    </div>
     
     
     
-        
     <table><tr>
         
         <td>
