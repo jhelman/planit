@@ -143,8 +143,11 @@
             
             var classes = {
                 events: [
-                    {'id': 1, 'start': new Date(2011, 4, 31, 10), 'end': new Date(2011, 4, 31, 11), 'title': 'CS 106A'},
-                    {'id': 2, 'start': new Date(2011, 4, 31, 13), 'end': new Date(2011, 4, 31, 14), 'title': 'Econ 1A'}
+					{% for course in years.0.terms.0.courses %}
+						{% for day in course.days %}
+							{'id': {{forloop.parentloop.counter}}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+						{% endfor %}
+					{% endfor %}
                     
                 ]
             };
@@ -158,8 +161,8 @@
                 allowCalEventOverlap: true,
                 readonly: true,
                 displayOddEven: true,
-                minDate: new Date(2011, 5, 4),
-                maxDate: new Date(2011, 4, 30),
+                minDate: new Date(2011, 4, 24),
+                maxDate: new Date(2011, 4, 28),
                 businessHours: {'start': 9, 'end': 18, 'limitDisplay': true},
                 data: classes,
                 timeslotsPerHour: 2,

@@ -39,6 +39,22 @@ def index(request):
             for course in term['courses']:
                 setattr(course, 'condensedID', course.identifier.replace(' ', ''))
                 units += course.units
+                days = []
+                start = 23
+                for weekday in course.weekdays:
+                    if weekday == 'M':
+                        days.append(start)
+                    if weekday == 'T':
+                        days.append(start + 1)
+                    if weekday == 'W':
+                        days.append(start + 2)
+                    if weekday == 'R':
+                        days.append(start + 3)
+                    if weekday == 'F':
+                        days.append(start + 4)
+                setattr(course, 'days', days)
+                        
+                        
             term['units'] = units
         years[i]['terms'] = terms
             
