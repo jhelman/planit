@@ -54,6 +54,24 @@
             
         }
         
+           
+        var scheduleArray = {};
+        {% for year in years %}
+        {% for term in year.terms %}
+                     scheduleArray['{{ term.condensedName }}'] = {
+                         events: [
+                 {% for course in term.courses %}
+                     {% for day in course.days %}
+                         {'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+                     {% endfor %}
+                 {% endfor %}
+                            
+                         ]
+                     };
+        
+        {% endfor %}
+        {% endfor %}
+           
                 
         $(document).ready(function () {
             
@@ -139,39 +157,23 @@
             
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
-            $('#schedule-modal').modal();
+            $('#schedule-modal').modal({'show': false});
             
-            var classes = {
-                events: [
-					{% for course in years.0.terms.0.courses %}
-						{% for day in course.days %}
-							{'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
-						{% endfor %}
-					{% endfor %}
-                    
-                ]
-            };
-			
-			var scheduleArray = {};
-			{% for year in years %}
-			{% for term in year.terms %}
-	            scheduleArray['{{ term.condensedName }}'] = {
-	                events: [
-						{% for course in term.courses %}
-							{% for day in course.days %}
-								{'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
-							{% endfor %}
-						{% endfor %}
-                    
-	                ]
-	            };
-			
-			{% endfor %}
-			{% endfor %}
             
+                    //             var classes = {
+                    //                 events: [
+                    // {% for course in years.0.terms.0.courses %}
+                    //  {% for day in course.days %}
+                    //      {'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+                    //  {% endfor %}
+                    // {% endfor %}
+                    //                     
+                    //                 ]
+                    //             };
+			
             
             $('#schedule-modal-calendar').weekCalendar({
-                
+                                        
                 buttons: false,
                 title: '',
                 daysToShow: 5,
@@ -181,7 +183,6 @@
                 minDate: new Date(2011, 4, 24),
                 maxDate: new Date(2011, 4, 28),
                 businessHours: {'start': 9, 'end': 18, 'limitDisplay': true},
-                data: classes,
                 timeslotsPerHour: 2,
                 height: function () { return 425; },
                 getHeaderDate: function(date, calendar) { 
@@ -515,6 +516,27 @@
             }
 
             $('#account-settings-modal').modal('hide');
+        }
+        
+        var termNames = ['Autumn', 'Winter', 'Spring', 'Summer'];
+        
+        function convertFromCondensedName(condensedName) {
+            
+            for (var i in termNames) {
+                if (condensedName.indexOf(termNames[i]) != -1) {
+                    return termNames[i] + ' ' + condensedName.substring(termNames[i].length);
+                }
+            }
+            
+            return false;
+        }
+        
+        function openCalendar(quarterName, tt) {
+            $(tt).tooltip('hide');
+            $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');
+            $('#schedule-modal-calendar').weekCalendar('option', 'data', scheduleArray[quarterName]);
+            $('#schedule-modal-calendar').weekCalendar('refresh');
+            $('#schedule-modal').modal('show');
         }
         
     
@@ -893,7 +915,7 @@
     <div class="modal fade" id="schedule-modal">
         <div class="modal-header">
            <button class="close" data-dismiss="modal">&times;</button>
-           <h3><span class="schedule-modal-title">Autumn 2011-2012 Weekly Schedule</span></h3>
+           <h3><span id="schedule-modal-title"></span></h3>
         </div>
         <div class="modal-body" style="text-align: center">
             <div id="schedule-modal-calendar"></div>
@@ -975,7 +997,7 @@
                     				                <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
                     				                <br/>
 				            
-                    				                <i class="icon-calendar"></i>
+                    				                <i class="icon-calendar" onclick="openCalendar('{{ term.condensedName }}', this);"></i>
                     				            </span>
                 				            </div>
                 				        </td>
