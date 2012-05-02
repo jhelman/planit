@@ -14,6 +14,8 @@ def index(request):
     years[3]['year'] = '2014-2015'
     years[3]['name'] = 'Senior'
     
+    totalUnits = 0
+    
     for i in range(4):
         terms = [{}, {}, {}]
         terms[0]['courses'] = []
@@ -56,7 +58,9 @@ def index(request):
                         
                         
             term['units'] = units
+            totalUnits += units
         years[i]['terms'] = terms
             
     args['years'] = years
+    args['totalUnits'] = totalUnits
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
