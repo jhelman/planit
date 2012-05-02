@@ -1,5 +1,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.utils import simplejson
+from django.http import HttpResponse
 from models import Course
 
 def index(request):
@@ -63,4 +65,15 @@ def index(request):
             
     args['years'] = years
     args['totalUnits'] = totalUnits
+    print "INDEX"
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
+    
+def search(request, prefix):
+    results = Course.objects.filter(identifier__startswith=prefix)[:5]
+    responseData = {}
+    responseData["classes"] = []
+    for course in results:
+        responseData["classes"].append(course.identifier)
+    print "SEARCH"
+    return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
+    
