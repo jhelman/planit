@@ -184,6 +184,7 @@
                 maxDate: new Date(2011, 4, 28),
                 businessHours: {'start': 9, 'end': 18, 'limitDisplay': true},
                 timeslotsPerHour: 2,
+                timeSeparator: ' - ',
                 height: function () { return 425; },
                 getHeaderDate: function(date, calendar) { 
                     switch (date.getDay()) {
@@ -757,8 +758,8 @@
         
 
         #schedule-modal {
-            width: 1000px;
-            margin-left: -500px;
+            width: 950px;
+            margin-left: -475px;
             height: 534px;
             margin-top: -267px;
         }
@@ -917,7 +918,7 @@
            <button class="close" data-dismiss="modal">&times;</button>
            <h3><span id="schedule-modal-title"></span></h3>
         </div>
-        <div class="modal-body" style="text-align: center">
+        <div class="modal-body" style="text-align: center;">
             <div id="schedule-modal-calendar"></div>
             
         </div>

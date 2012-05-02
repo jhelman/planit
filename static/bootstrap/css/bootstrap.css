@@ -3762,8 +3762,8 @@ a.thumbnail:hover {
 }
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  opacity: 0.8;
-  filter: alpha(opacity=80);
+  opacity: 0.65;
+  filter: alpha(opacity=65);
 }
 .modal {
   position: fixed;
