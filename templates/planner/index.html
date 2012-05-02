@@ -145,12 +145,29 @@
                 events: [
 					{% for course in years.0.terms.0.courses %}
 						{% for day in course.days %}
-							{'id': {{forloop.parentloop.counter}}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+							{'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
 						{% endfor %}
 					{% endfor %}
                     
                 ]
             };
+			
+			var scheduleArray = {};
+			{% for year in years %}
+			{% for term in year.terms %}
+	            scheduleArray['{{ term.condensedName }}'] = {
+	                events: [
+						{% for course in term.courses %}
+							{% for day in course.days %}
+								{'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+							{% endfor %}
+						{% endfor %}
+                    
+	                ]
+	            };
+			
+			{% endfor %}
+			{% endfor %}
             
             
             $('#schedule-modal-calendar').weekCalendar({
