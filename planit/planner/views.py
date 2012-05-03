@@ -65,15 +65,15 @@ def index(request):
             
     args['years'] = years
     args['totalUnits'] = totalUnits
-    print "INDEX"
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
     results = Course.objects.filter(identifier__startswith=prefix)[:5]
     responseData = {}
-    responseData["classes"] = []
+    classNames = []
     for course in results:
-        responseData["classes"].append(course.identifier)
-    print "SEARCH"
+        classNames.append(course.identifier)
+    classNames.sort()
+    responseData["classes"] = classNames
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
