@@ -3760,6 +3760,8 @@ a.thumbnail:hover {
 .modal-backdrop.fade {
   opacity: 0;
 }
+
+/* EDITED by Jon Helman: Changed opacity to 0.65 (5/2/12) */
 .modal-backdrop,
 .modal-backdrop.fade.in {
   opacity: 0.65;
@@ -3807,6 +3809,7 @@ a.thumbnail:hover {
 .modal-header .close {
   margin-top: 2px;
 }
+
 .modal-body {
   overflow-y: auto;
   max-height: 400px;

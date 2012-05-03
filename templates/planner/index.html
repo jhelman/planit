@@ -11,7 +11,7 @@
     
     
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.css"/>
     
     
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script>
@@ -22,7 +22,9 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-typeahead.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
     
-    <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script>
+    <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
+    
+    <script type="text/javascript" src="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.js"></script>
     
         
     
@@ -54,20 +56,26 @@
             
         }
         
+        // {'id': {{ forloop.parentloop.counter }}, 'start': Math.ceil(.getTime())/1000, 'end': Math.ceil(new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}).getTime()/1000), 'title': '{{ course.identifier }}' },
+        
            
         var scheduleArray = {};
         {% for year in years %}
         {% for term in year.terms %}
-                     scheduleArray['{{ term.condensedName }}'] = {
-                         events: [
+                     scheduleArray['{{ term.condensedName }}'] = [
+
                  {% for course in term.courses %}
                      {% for day in course.days %}
-                         {'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+                        {
+                            'start': new Date(2012, 3, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 
+                            'end': new Date(2012, 3, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 
+                            'title': '{{ course.identifier }}',
+                            'allDay': false 
+                        },
                      {% endfor %}
                  {% endfor %}
                             
-                         ]
-                     };
+                     ];
         
         {% endfor %}
         {% endfor %}
@@ -172,35 +180,32 @@
                     //             };
 			
             
-            $('#schedule-modal-calendar').weekCalendar({
-                                        
-                buttons: false,
-                title: '',
-                daysToShow: 5,
-                allowCalEventOverlap: true,
-                readonly: true,
-                displayOddEven: true,
-                minDate: new Date(2011, 4, 24),
-                maxDate: new Date(2011, 4, 28),
-                businessHours: {'start': 9, 'end': 18, 'limitDisplay': true},
-                timeslotsPerHour: 2,
-                timeSeparator: ' - ',
-                height: function () { return 425; },
-                getHeaderDate: function(date, calendar) { 
-                    switch (date.getDay()) {
-                        case 0: return 'Sunday';
-                        case 1: return 'Monday';
-                        case 2: return 'Tuesday';
-                        case 3: return 'Wednesday';
-                        case 4: return 'Thursday';
-                        case 5: return 'Friday';
-                        case 6: return 'Saturday';
-                        default: return '';
-                    }
-                }
+            $('#schedule-modal-calendar').fullCalendar({ 
+                firstDay: 1,
+                weekends: false,
+                header: false,
+                defaultView: 'agendaWeek',
+                minTime: '8:00',
+                maxTime: '18:00',
+                slotMinutes: 30,
+                allDaySlot: false,
+                columnFormat: {week: 'dddd, M/dd/yy'},
+                // eventSources: [scheduleArray['Autumn2011-2012'], scheduleArray['Winter2011-2012']] 
             });
             
+            $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
+            
+            $('#schedule-modal').on('shown', function () {
+                $('#schedule-modal-calendar').fullCalendar('removeEvents');
+                $('#schedule-modal-calendar').fullCalendar('addEventSource', scheduleArray[quarterScheduleToShow]);
 
+            });
+            
+            $('#schedule-modal').on('hide', function () {
+                $('#schedule-modal-calendar').fullCalendar('removeEvents');
+            });
+            
+            
         });
         
         
@@ -220,6 +225,7 @@
             alertBox.find('.alert-heading').html('Delete ' + courseName + '?');
             alertBox.find('.alert-body').html('Are you sure you want to delete ' + courseName + '?');
             alertBox.find('.alert-delete-course-id').html(courseElem.attr('id'));
+            alertBox.find('.alert-delete-course-name').html(courseName);
                         
             alertBox.css('left', qDiv.position().left);
             alertBox.css('top', qDiv.position().top + 15);
@@ -248,6 +254,37 @@
             $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
         }
         
+        function removeClassFromSchedule(course, quarterID) {            
+            var curSchedule = scheduleArray[quarterID];
+            var numToRemove = 0;
+            var posToRemove = -1;
+            
+            for (var i in curSchedule) {
+                if (curSchedule[i].title == course) {
+                    if (posToRemove == -1) {
+                        posToRemove = i;
+                    }
+                    numToRemove++;
+                }
+            }
+            
+            if (posToRemove != -1) {
+                curSchedule.splice(posToRemove, numToRemove);
+            }
+                        
+        }
+        
+        // function getCourseName(longName) {
+        //     
+        //     for (var i in termNames) {
+        //         if (longName.indexOf(termNames[i]) != -1) {
+        //             return longName.substring(termNames[i].length + 9);
+        //         }
+        //     }
+        //     return false;
+        //     
+        // }
+        
         
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
@@ -258,6 +295,9 @@
             
             updateQuarterUnits(parseInt("-" + numUnits), quarterID);
             updateTotalUnits(parseInt("-" + numUnits));
+            
+            var course = qDiv.find('.alert-delete-course-name').html();
+            removeClassFromSchedule(course, quarterID);
             
             cancelDeleteCourse(quarterID);
         }
@@ -532,13 +572,18 @@
             return false;
         }
         
+        
+        var quarterScheduleToShow = null;
+        
         function openCalendar(quarterName, tt) {
+            
             $(tt).tooltip('hide');
-            $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');
-            $('#schedule-modal-calendar').weekCalendar('option', 'data', scheduleArray[quarterName]);
-            $('#schedule-modal-calendar').weekCalendar('refresh');
-            $('#schedule-modal').modal('show');
+            $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');            
+            
+            quarterScheduleToShow = quarterName;
+            $('#schedule-modal').modal('show');  
         }
+        
         
     
     </script>
@@ -758,19 +803,30 @@
         
 
         #schedule-modal {
-            width: 950px;
-            margin-left: -475px;
-            height: 534px;
-            margin-top: -267px;
+            width: 900px;
+            margin-left: -450px;
+            margin-top: -300px;
         }
         
         #schedule-modal-calendar {
-            width: 900px;
-            margin-top: -25px;
+            width: 850px;
             margin-left: auto; 
             margin-right: auto;
         }
         
+        #schedule-modal-body {
+            max-height: 1000px;
+        }
+       
+        .modal-backdrop,
+        .modal-backdrop.fade.in {
+          opacity: 0.65;
+          filter: alpha(opacity=65);
+        }
+        
+        .fc-state-highlight { /* <td> today cell */ /* TODO: add .fc-today to <th> */
+        	background: #fff;
+        }
             
     </style>
     
@@ -918,13 +974,14 @@
            <button class="close" data-dismiss="modal">&times;</button>
            <h3><span id="schedule-modal-title"></span></h3>
         </div>
-        <div class="modal-body" style="text-align: center;">
+        <div class="modal-body" id="schedule-modal-body">
             <div id="schedule-modal-calendar"></div>
             
         </div>
 
        <div class="modal-footer">
            <button class="btn" data-dismiss="modal">Close</button>
+           
        </div>
 
     </div>
@@ -972,6 +1029,8 @@
                                             	    <h4 class="alert-heading"></h4>
                                             	    <span class="alert-body"></span>
                                             	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
+                                            	    <span class="alert-delete-course-name" style="display: none; visibility; hidden;"></span>
+                                            	    
                                             	    <br />
                                             	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
                                             	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
