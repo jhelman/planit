@@ -69,10 +69,13 @@ def index(request):
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
-    SEARCH_LIMIT = 5
     responseData = {}
-    results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')[:SEARCH_LIMIT]
+    results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+    classNames = []
+    for course in results:
+        classNames.append(course.identifier)
     data = serializers.serialize('json', results)
     responseData["classes"] = data
+    responseData["classNames"] = classNames
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
