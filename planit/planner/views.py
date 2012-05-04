@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils import simplejson
 from django.http import HttpResponse
+from django.core import serializers
 from models import Course
 
 def index(request):
@@ -68,12 +69,10 @@ def index(request):
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
-    results = Course.objects.filter(identifier__startswith=prefix)[:5]
+    SEARCH_LIMIT = 5
     responseData = {}
-    classNames = []
-    for course in results:
-        classNames.append(course.identifier)
-    classNames.sort()
-    responseData["classes"] = classNames
+    results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')[:SEARCH_LIMIT]
+    data = serializers.serialize('json', results)
+    responseData["classes"] = data
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
