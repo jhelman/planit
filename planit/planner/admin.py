@@ -1,4 +1,9 @@
-from planner.models import Course
+from planner.models import *
 from django.contrib import admin
 
 admin.site.register(Course)
+admin.site.register(Instructor)
+admin.site.register(University)
+admin.site.register(Enrollment)
+admin.site.register(Term)
+admin.site.register(Plan)
