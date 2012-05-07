@@ -67,7 +67,7 @@
                  {% for course in term.courses %}
                      {% for day in course.days %}
                         {
-                            'start': new Date(2012, 3, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 
+                            'start': new Date(2012, 3, {{ day }}, {{ course.start_time.hour }}, {{ course.start_time.minute }}), 
                             'end': new Date(2012, 3, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 
                             'title': '{{ course.identifier }}',
                             'allDay': false 
@@ -172,7 +172,7 @@
                     //                 events: [
                     // {% for course in years.0.terms.0.courses %}
                     //  {% for day in course.days %}
-                    //      {'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.startTime.hour }}, {{ course.startTime.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
+                    //      {'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.start_time.hour }}, {{ course.start_time.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
                     //  {% endfor %}
                     // {% endfor %}
                     //                     
