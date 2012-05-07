@@ -33,6 +33,8 @@
             
         var FADING_ALERT_TIME = 2000;
         var fading_alert_timeout;
+        
+        var searchJSON = null;
             
         function draw() {
             
@@ -48,7 +50,6 @@
             // Static
             $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
             $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
             $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             
@@ -206,33 +207,31 @@
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
             });
             
-            var searchJSON = null;
             
-            
-            $('#course-search').typeahead({
-                source: function (typeahead, query) {
-                    $.ajax({
-                        url: '/search/' + query,
-                        success: function (data, textStatus, jqXHR) {
-                            searchJSON = eval(data.classes);
-                            typeahead.process(data.classNames);
-                        }
-                    });   
-                 },
-                 
-                 property: '',
-                 
-                 onselect: function (obj) {
-                     for (var i in searchJSON) {
-                         if (searchJSON[i].fields.identifier == obj) {
-                             createSearchResults([ searchJSON[i] ]);
-                             return;
-                         }
-                     }
-                 }
-            
-            
-            });
+            // $('#course-search').typeahead({
+            //                 source: function (typeahead, query) {
+            //                     $.ajax({
+            //                         url: '/search/' + query,
+            //                         success: function (data, textStatus, jqXHR) {
+            //                             searchJSON = eval(data.classes);
+            //                             typeahead.process(data.classNames);
+            //                         }
+            //                     });   
+            //                  },
+            //                  
+            //                  property: '',
+            //                  
+            //                  onselect: function (obj) {
+            //                      for (var i in searchJSON) {
+            //                          if (searchJSON[i].fields.identifier == obj) {
+            //                              createSearchResults([ searchJSON[i] ]);
+            //                              return;
+            //                          }
+            //                      }
+            //                  }
+            //             
+            //             
+            //             });
         
         });
         
@@ -271,15 +270,12 @@
             qDiv.find('.cover').hide();
         }
         
-        function updateQuarterUnits(unitChange, quarterID) {
+        function updateQuarterUnits(quarterID, unitChange) {
             
             $('#' + quarterID + '-units').html(parseInt($('#' + quarterID + '-units').html()) + unitChange);        
-            
-        }
-        
-        function updateTotalUnits(unitChange) {
             $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
         }
+
         
         function removeClassFromSchedule(course, quarterID) {            
             var curSchedule = scheduleArray[quarterID];
@@ -320,8 +316,7 @@
             
             courseElem.remove();
             
-            updateQuarterUnits(parseInt("-" + numUnits), quarterID);
-            updateTotalUnits(parseInt("-" + numUnits));
+            updateQuarterUnits(quarterID, parseInt("-" + numUnits));
             
             var course = qDiv.find('.alert-delete-course-name').html();
             removeClassFromSchedule(course, quarterID);
@@ -331,41 +326,41 @@
         
         
         // Functions to add a course
-        function addCourse(courseName, courseId) {
-            $('#add-course-alert').alert();
-            $('#add-course-alert-head').html('Added ' + courseName);
-            $('#add-course-alert').fadeIn(function () {
-                fading_alert_timeout = setTimeout("closeAddCourse()", FADING_ALERT_TIME);
-            });
-                        
-            $('.icon-ok').tooltip('hide');
-            
-            $('#' + courseId).find('tr').removeClass('possible-course');
-                        
-            $($('#' + courseId).find('tr').children()[2]).html('<center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash" onclick="removeCourse(\'Chem 31A\');"></i></center>');
-        
-            $('#' + courseId).draggable({handle: '.icon-move', revert: 'invalid',
-                                    
-                helper: function (event) {
-                    // var courseName = event.currentTarget.firstElementChild.firstElementChild.children[0].innerHTML;
-                    //                     var numUnits = event.currentTarget.firstElementChild.firstElementChild.children[1].innerHTML;
-                    //                     return $('<table class="table table-bordered" style="width: 400px;"><tr><td class="course">' + 
-                    //                         courseName + '</td><td style="units">' + numUnits + 
-                    //                         '</td><td class="info"><center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash"></i></center></td></tr></table>').appendTo('body');
-                
-                    var copy = $(event.currentTarget).clone();
-                    copy.find('i').unbind('onclick');
-                    return copy.appendTo('body');
-                
-                },
-                     
-            });
-            
-        
-            draw();
-        
-        }
-        
+        // function addCourse(courseName, courseId) {
+        //             $('#add-course-alert').alert();
+        //             $('#add-course-alert-head').html('Added ' + courseName);
+        //             $('#add-course-alert').fadeIn(function () {
+        //                 fading_alert_timeout = setTimeout("closeAddCourse()", FADING_ALERT_TIME);
+        //             });
+        //                         
+        //             $('.icon-ok').tooltip('hide');
+        //             
+        //             $('#' + courseId).find('tr').removeClass('possible-course');
+        //                         
+        //             $($('#' + courseId).find('tr').children()[2]).html('<center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash" onclick="removeCourse(\'Chem 31A\');"></i></center>');
+        //         
+        //             $('#' + courseId).draggable({handle: '.icon-move', revert: 'invalid',
+        //                                     
+        //                 helper: function (event) {
+        //                     // var courseName = event.currentTarget.firstElementChild.firstElementChild.children[0].innerHTML;
+        //                     //                     var numUnits = event.currentTarget.firstElementChild.firstElementChild.children[1].innerHTML;
+        //                     //                     return $('<table class="table table-bordered" style="width: 400px;"><tr><td class="course">' + 
+        //                     //                         courseName + '</td><td style="units">' + numUnits + 
+        //                     //                         '</td><td class="info"><center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash"></i></center></td></tr></table>').appendTo('body');
+        //                 
+        //                     var copy = $(event.currentTarget).clone();
+        //                     copy.find('i').unbind('onclick');
+        //                     return copy.appendTo('body');
+        //                 
+        //                 },
+        //                      
+        //             });
+        //             
+        //         
+        //             draw();
+        //         
+        //         }
+        //         
         function closeAddCourse() {
             clearTimeout(fading_alert_timeout);
             $('#add-course-alert').fadeOut();
@@ -612,25 +607,115 @@
         }
         
         
+        function getJSONForCourse(courseName) {
+         
+            for (var i in searchJSON) {
+                 if (searchJSON[i].fields.identifier == courseName) {
+                     return searchJSON[i];
+                 }
+             }
+            
+        }
+        
+        function makeCondensedName(longName) {
+            return longName.replace(" ", "");
+        }
+        
+        
+        function makeAddedCourseHTML(quarterID, courseObj) {
+            
+            // if conflict, change the class from possible-course to something else
+            
+            return '<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
+                'class="table table-bordered table-condensed course possible-course">' + 
+                '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
+                courseObj.units + '</td><td class="info"><i class="icon-ok" onclick="confirmAddCourse(\'' + 
+                quarterID + makeCondensedName(courseObj.identifier) + 
+                '\');"></i></td></tr></table>';
+                            
+        }
+        
+        function createRolloversForAddedCourse(quarterID, courseObj) {
+            
+            $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
+                        
+            $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover({
+               title: courseObj.identifier,
+               content: courseObj.name,
+               placement: 'right'
+            });
+            
+        }
+        
+        function confirmAddCourse(courseTableID) {
+            var quarterID = $('#' + courseTableID).parent().attr('id');
+            var units = parseInt($('#' + courseTableID).find('.units').html());
+            
+            $('#' + courseTableID).removeClass('possible-course');
+            $('#' + courseTableID).css('background-color', 'none');
+            $('#' + courseTableID).popover('hide');
+            
+            $('#' + courseTableID).find('.icon-ok').tooltip('hide');
+            $('#' + courseTableID).find('.icon-ok').remove();
+            
+            var infoTD = $('#' + courseTableID).find('.info');
+            infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
+                '<i class="icon-trash" onclick="removeCourse(\'' + courseTableID + '\');"></i>');
+                
+            updateQuarterUnits(quarterID, units);
+                
+            resetAddedUnits(quarterID, units);
+            
+        }
+        
+        
+        function resetAddedUnits(quarterID, units) {
+            var addedUnits = parseInt($('#' + quarterID + '-added-units').html().substring(1));
+            
+            if (addedUnits == units) {
+                $('#' + quarterID + '-added-units').html("+0");        
+                $('#' + quarterID + '-added-units').hide();
+            } else {
+                $('#' + quarterID + '-added-units').html("+" + (addedUnits - units));  
+            }
+            
+        }
+        
+        function updateAddedUnits(quarterID, units) {
+            $('#' + quarterID + '-added-units').html("+" + (parseInt($('#' + quarterID + '-added-units').html().substring(1)) + units));        
+            $('#' + quarterID + '-added-units').show();
+        }
+        
+        
         function addCourse(classLink) {
                         
             var courseName = $(classLink).find('.shortName').html();
-                        
-            var i;
-            for (i in searchJSON) {
-                 if (searchJSON[i].fields.identifier == courseName) {
-                     break;
-                 }
-             }
              
-             var courseObj = searchJSON[i];
-             
+            var courseObj = getJSONForCourse(courseName);
+            
+            // loop through all quarters - for now, just adding fall freshman year
+            
+            $('#Autumn2011-2012').prepend(makeAddedCourseHTML('Autumn2011-2012', courseObj.fields));
+            
+            createRolloversForAddedCourse('Autumn2011-2012', courseObj.fields);
+            
+            // addToCalendar(courseObj.fields);
+            
+            updateAddedUnits('Autumn2011-2012', courseObj.fields.units);
+                         
         }
         
         
         
         
         function createSearchResults(courses) {
+                        
+            $('#search-results-nav').empty();
+            
+            if (courses.length == 0) {
+                $('#requirements-toolbox-label').html('No results found.');
+                return;
+            }
             
             $('#requirements-toolbox-label').html('Search results (' + courses.length + '): ');
             
@@ -639,7 +724,7 @@
                 var courseShortName = courses[i].fields.identifier;
                 var courseLongName = courses[i].fields.name;
                 
-                $('#search-results-nav').append('<li><a href="#" id="' + courseShortName.replace(" ", "")
+                $('#search-results-nav').append('<li><a href="#" id="' + makeCondensedName(courseShortName)
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + courseShortName 
                     + '</span>: ' + courseLongName +  '</a></li>');
                     
@@ -877,8 +962,8 @@
                     				                    <tr>
                     				                        <td class="courseName">{{ course.identifier }}</td>
                     				                        <td class="units">{{ course.units }}</td>
-                    				                        <td class="info"><center><i class="icon-move"></i>&nbsp;
-                    				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></center></td>
+                    				                        <td class="info"><i class="icon-move"></i>&nbsp;
+                    				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></td>
                     				                    </tr>
                     				                </table>
                     							{% endfor %}
@@ -891,6 +976,7 @@
                 				                <span class="quarter-info-span">
                 				                    Units<br/>
                     				                <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
+                    				                <span id="{{ term.condensedName }}-added-units" class="added-units">+0</span><br/>
                     				                <br/>
 				            
                     				                <i class="icon-calendar" onclick="openCalendar('{{ term.condensedName }}', this);"></i>
@@ -938,7 +1024,7 @@
                             
                             <div id="search-div">
                                 <div id="course-search-form">
-                                    <input type="text" id="course-search" placeholder="Search for classes" class="input-medium search-query"/>
+                                    <input type="text" id="course-search" onkeyup="runSearch();" placeholder="Search for classes" class="input-medium search-query"/>
                                     <button class="btn" onclick="runSearch()">Search</button>
                                 </div>
                             </div>
