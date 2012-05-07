@@ -206,19 +206,35 @@
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
             });
             
+            var searchJSON = null;
+            
             
             $('#course-search').typeahead({
-                  source: function (typeahead, query) {
-                      $.ajax({
-                          url: 'search/' + query,
-                          success: function (data, textStatus, jqXHR) {
-                             typeahead.process(
-                          }
+                source: function (typeahead, query) {
+                    $.ajax({
+                        url: '/search/' + query,
+                        success: function (data, textStatus, jqXHR) {
+                            searchJSON = eval(data.classes);
+                            typeahead.process(data.classNames);
+                        }
+                    });   
+                 },
+                 
+                 property: '',
+                 
+                 onselect: function (obj) {
+                     for (var i in searchJSON) {
+                         if (searchJSON[i].fields.identifier == obj) {
+                             createSearchResults([ searchJSON[i] ]);
+                             return;
+                         }
+                     }
+                 }
             
             
-            
-        });
+            });
         
+        });
         
         
         // Functions to make the remove course message (need to actually remove!!)
@@ -596,7 +612,57 @@
         }
         
         
+        function addCourse(classLink) {
+                        
+            var courseName = $(classLink).find('.shortName').html();
+                        
+            var i;
+            for (i in searchJSON) {
+                 if (searchJSON[i].fields.identifier == courseName) {
+                     break;
+                 }
+             }
+             
+             var courseObj = searchJSON[i];
+             
+        }
         
+        
+        
+        
+        function createSearchResults(courses) {
+            
+            $('#requirements-toolbox-label').html('Search results (' + courses.length + '): ');
+            
+            for (var i in courses) {
+                
+                var courseShortName = courses[i].fields.identifier;
+                var courseLongName = courses[i].fields.name;
+                
+                $('#search-results-nav').append('<li><a href="#" id="' + courseShortName.replace(" ", "")
+                    + '-search-result" onclick="addCourse(this)"><span class="shortName">' + courseShortName 
+                    + '</span>: ' + courseLongName +  '</a></li>');
+                    
+                $('#' + courseShortName.replace(" ", "") + '-search-result').popover({
+                    title: courseShortName,
+                    content: courseLongName,
+                    placement: 'left'
+                });
+                
+            }
+            
+        }
+        
+        
+        function runSearch() {
+            
+            $.ajax({
+                url: '/search/' + $('#course-search').attr('value'),
+                success: function (data, textStatus, jqXHR) {
+                    createSearchResults(eval(data.classes));
+                }
+            });
+        }
         
     
     </script>    
@@ -871,11 +937,19 @@
                         <div id="requirements-toolbox">
                             
                             <div id="search-div">
-                                <form class="form-search" id="course-search-form">
+                                <div id="course-search-form">
                                     <input type="text" id="course-search" placeholder="Search for classes" class="input-medium search-query"/>
-                                    <button class="btn">Search</button>
-                                </form>
+                                    <button class="btn" onclick="runSearch()">Search</button>
+                                </div>
                             </div>
+                            
+                            <b><span id="requirements-toolbox-label"></span></b>
+                            
+                            <br/>
+                            
+                            <ul id="search-results-nav" class="nav nav-pills nav-stacked">
+       
+                            </ul>
                             
                         </div>
   
