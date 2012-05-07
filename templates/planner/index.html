@@ -12,6 +12,7 @@
     
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}main.css"/>
     
     
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script>
@@ -19,7 +20,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-typeahead.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap-typeahead-extension/bootstrap-typeahead.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
     
     <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
@@ -189,7 +190,7 @@
                 maxTime: '18:00',
                 slotMinutes: 30,
                 allDaySlot: false,
-                columnFormat: {week: 'dddd, M/dd/yy'},
+                columnFormat: {week: 'dddd'},
                 // eventSources: [scheduleArray['Autumn2011-2012'], scheduleArray['Winter2011-2012']] 
             });
             
@@ -204,6 +205,16 @@
             $('#schedule-modal').on('hide', function () {
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
             });
+            
+            
+            $('#course-search').typeahead({
+                  source: function (typeahead, query) {
+                      $.ajax({
+                          url: 'search/' + query,
+                          success: function (data, textStatus, jqXHR) {
+                             typeahead.process(
+                          }
+            
             
             
         });
@@ -585,251 +596,10 @@
         }
         
         
+        
+        
     
-    </script>
-    
-    <style type="text/css">
-    
-        table.course {
-            width: 200px;
-            margin-top: 3px;
-            margin-bottom: 3px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-    
-        td.courseName {
-            width: 55%;
-        }
-        
-        td.units {
-            width: 17.5%;
-        }
-        
-        td.info {
-            width: 27.5%;
-        }
-        
-        tr.possible-course {
-            background-color: #FFF4B8;
-        }
-        
-        .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
-            cursor: pointer;
-        }
-        
-        .icon-move {
-            cursor: move;
-        }
-    
-        #remove-course-alert {
-            margin-top: 20px;
-            width: 200px;
-        }
-        
-        #add-course-alert {
-            margin-top: 10px;
-            width: 230px;
-        }
-    
-        .quarter-div {
-            width: 220px;
-            height: 130px;
-            padding-top: 4px;
-            -moz-border-top-left-radius: 10px;
-            border-top-left-radius: 10px;
-            -moz-border-bottom-left-radius: 10px;
-            border-bottom-left-radius: 10px;
-            border-left: 1px solid;
-            border-top: 1px solid;
-            border-bottom: 1px solid;
-            border-right: 1px dashed;
-        }
-        
-        .cover {
-            background-color: black;
-            position: absolute;
-            display: none;
-            opacity: 0.75;
-            z-index: 10;
-        }
-        
-        .quarter-info-div {
-            -moz-border-top-right-radius: 10px;
-            border-top-right-radius: 10px;
-            -moz-border-bottom-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-            border-right: 1px solid;
-            border-top: 1px solid;
-            border-bottom: 1px solid;
-            height: 134px;
-            width: 45px;
-            margin: 0px;
-            text-align: center;
-        }
-        
-        
-        .quarter-info-span {
-            position: relative; 
-            top: 30px; 
-            font-weight: bold;
-            margin-left: 6px;
-        }
-        
-        #bottom-left-box {
-            width: 420px;
-            height: 240px;
-            position: relative; 
-            left: 100px; 
-            top: -170px;
-            border-top: 1px solid #DDDDDD;
-            -moz-border-top-right-radius: 10px;
-            border-top-right-radius: 10px;
-            border-right: 1px solid #DDDDDD;
-            -moz-border-bottom-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-            border-bottom: 1px solid #DDDDDD;
-            -moz-border-bottom-left-radius: 10px;
-            border-bottom-left-radius: 10px;
-            -moz-border-top-left-radius: 10px;
-            border-top-left-radius: 10px;
-
-        }
-        
-        #bottom-left-helper-box-top {
-            width: 10px;
-            height: 38px;
-            position: relative; 
-            left: 99px; 
-            top: 0px;
-            border-left: 1px solid #DDDDDD;
-           -moz-border-top-left-radius: 10px;
-            border-top-left-radius: 10px;            
-        }
-        
-        
-        #bottom-left-helper-box-bottom {
-            width: 10px;
-            height: 90px;
-            position: relative; 
-            left: 99px; 
-            top: -260px;
-            border-left: 1px solid #DDDDDD;
-           -moz-border-bottom-left-radius: 10px;
-            border-bottom-left-radius: 10px;            
-        }
-        
-        .tab-pane {
-            margin: 10px;
-        }
-        
-        
-        .requirement {
-            text-align: left;
-            border-radius: 10px;
-            -mox-border-radius: 10px;
-            height: 30px;
-            padding-right: 12px;
-            padding-left: 12px;
-            position: relative;
-            display: table;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        
-        
-        .requirement p {
-            display: table-cell;
-            vertical-align: middle;
-        }
-        
-        
-        .requirement-fulfilled {
-/*            background-color: #ffffff;
-            color: #dddddd;*/
-        }
-        
-        .results-box {
-            margin: 10px;
-            border-radius: 10px;
-            -moz-border-radius: 10px;
-            border: 1px solid #dddddd;
-        }
-        
-        #requirements-results-box {
-            position: relative;
-            left: 200px;
-            top: -10px;
-            height: 240px;
-            width: 200px;
-        }
-        
-        .requirements {
-            margin-left: 10px;
-            margin-top: 10px;
-        }
-        
-        #search-results-box {
-            position: relative;
-            left: 95px;
-            top: -10px;
-            height: 240px;
-            width: 500px;
-        }
-        
-        
-        .interior-div {
-            margin: 10px;
-        }
-        
-        .year-label {
-            vertical-align: middle;
-            width: 150px;
-        }
-        
-        .spacing-row {
-            height: 0px;
-            margin: 0px;
-            padding: 0px;
-        }  
-        
-        .delete-alert {
-           width: 171px;
-           align: center;
-           display: none;
-           z-index: 20;
-           position: absolute;
-        }
-        
-
-        #schedule-modal {
-            width: 900px;
-            margin-left: -450px;
-            margin-top: -300px;
-        }
-        
-        #schedule-modal-calendar {
-            width: 850px;
-            margin-left: auto; 
-            margin-right: auto;
-        }
-        
-        #schedule-modal-body {
-            max-height: 1000px;
-        }
-       
-        .modal-backdrop,
-        .modal-backdrop.fade.in {
-          opacity: 0.65;
-          filter: alpha(opacity=65);
-        }
-        
-        .fc-state-highlight { /* <td> today cell */ /* TODO: add .fc-today to <th> */
-        	background: #fff;
-        }
-            
-    </style>
-    
+    </script>    
     
     
 </head>
@@ -995,9 +765,9 @@
 	        <table>
                 <tr>
                     <td>&nbsp;</td>
-                    <td class="year-label"><center><h4>Autumn Quarter</h4></center></td>
-                    <td class="year-label"><center><h4>Winter Quarter</h4></center></td>
-                    <td class="year-label"><center><h4>Spring Quarter</h4></center></td>
+                    <td class="quarter-label"><center><h4>Autumn Quarter</h4></center></td>
+                    <td class="quarter-label"><center><h4>Winter Quarter</h4></center></td>
+                    <td class="quarter-label"><center><h4>Spring Quarter</h4></center></td>
                 </tr>
 		
 		
@@ -1071,6 +841,22 @@
         				<td>&nbsp;</td>
         			</tr>
         		{% endfor %}
+                    <!-- <tr style="height: 10px">
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        
+                        <td>
+                            <b>Major</b>: Computer Science &nbsp;&nbsp;&nbsp;&nbsp;<br/>
+                            <b>Total Units</b>: <span id="total-units">{{ totalUnits }}</span>
+                        </td>
+                    </tr>     
+                 -->
+        		
+        		
         	</table>
 	
 	
@@ -1078,12 +864,37 @@
         
         <td style="padding-left: 20px; vertical-align: top;">
             
-            <br/><br/>
-            <b>Major</b>: Computer Science
-            <br/>
-            <b>Total Units</b>: <span id="total-units">{{ totalUnits }}</span>
-            <br/>
+            <table>
+                <tr>
+                    <td>
+                        
+                        <div id="requirements-toolbox">
+                            
+                            <div id="search-div">
+                                <form class="form-search" id="course-search-form">
+                                    <input type="text" id="course-search" placeholder="Search for classes" class="input-medium search-query"/>
+                                    <button class="btn">Search</button>
+                                </form>
+                            </div>
+                            
+                        </div>
+  
+                       
+                    </td>
+                </tr>
+                <tr style="height: 30px"><td>&nbsp;</td></tr>
+                <tr>
+                    <td>
+                        <b>Major</b>: Computer Science
+                        <br/>
+                        <b>Total Units</b>: <span id="total-units">{{ totalUnits }}</span>
+                        <br/>
             
+                    </td>
+                </tr>
+                
+            </table>
+                    
             
         </td>
         
@@ -1098,109 +909,7 @@
     <div class="row">
         <div class="span4">
             
-            <div id="bottom-left-helper-box-top">
-                &nbsp;
-            </div>
-            <div class="tabbable tabs-left">
-                <ul class="nav nav-tabs">
-                    <li><a href="#1" data-toggle="tab">Search&nbsp;&nbsp;</a></li>
-                    <li><a href="#2" data-toggle="tab">Major&nbsp;&nbsp;<span class="badge badge-important">5</span></a></li>
-                    <li class="active"><a href="#3" data-toggle="tab">GER&nbsp;&nbsp;<span class="badge badge-important">8</span></a></li>
-                </ul>
-                <div class="tab-content" id="bottom-left-box">
-                    <div class="tab-pane interior-div" id="1" align="center">
-                            <br/>
-                            <form class="form-search">
-                                <input type="text" id="class-search" class="input-long search-query" data-provide="typeahead" placeholder="Search for course"/>
-                                <button class="btn">Search</button>
-                            </form>
-                    </div>
-                    
-                    <div class="tab-pane" id="2">
-                            
-                        <div class="pagination" align="center">
-                            <ul>
-                                <li><a href="#">Prev</a></li>
-                                <li class="active"><a href="#">1</a></li>
-                                <li><a href="#">2</a></li>
-                                <li><a href="#">3</a></li>
-                                <li><a href="#">4</a></li>
-                                <li><a href="#">Next</a></li>
-                             </ul>  
-                        </div>
-                        
-                    </div>
-                    <div class="tab-pane active" id="3">
-                        
-                        <!-- <ul class="nav nav-pills nav-stacked">
-                            <li><a href="#">DB-Humanities</a></li>
-                            <li><a href="#">DB-Math</a></li>
-                            
-                        </ul> -->
-                        
-                        Requirement groups:
-                        
-                        <div class="requirements">
-                            <div class="requirement" onclick="clickedReq(this);" id="db"><p>Disciplinary Breadth&nbsp;<span class="badge badge-important">6</span></p></div>
-                            <div class="requirement" onclick="clickedReq(this);" id="ec"><p>Ethics and Culture&nbsp;<span class="badge badge-important">2</span><p></div>
-                        </div>
-
-                        <!-- <br /><br />
-                                                <div class="pagination" align="center">
-                                                    <ul>
-                                                        <li><a href="#">Prev</a></li>
-                                                        <li class="active"><a href="#">1</a></li>
-                                                        <li><a href="#">2</a></li>
-                                                        <li><a href="#">3</a></li>
-                                                        <li><a href="#">4</a></li>
-                                                        <li><a href="#">Next</a></li>
-                                                     </ul>  
-                                                </div>   -->
-                    </div>
-                </div>
-            </div>
-            <div id="bottom-left-helper-box-bottom">
-                &nbsp;
-            </div>
-                        
             
-        </div>
-        
-        <div class="span4">
-            
-            <div class="results-box" id="requirements-results-box">
-                
-                <div class="interior-div">
-                    <p id="subreqs-message"></p>
-                
-                    <div class="requirements" id="subreqs">
-                        <!-- <div class="requirement requirement-selected"><p>DB-Humanities</p></div>
-                                              <div class="requirement"><p>DB-Math</p></div>
-                                              <div class="requirement requirement-fulfilled"><p>DB-EngrAppSci&nbsp;<i class="icon-ok"></i></p></div> -->
-                    </div>
-                    
-                </div>
-                
-            </div>
-                        
-            
-        </div>
-        
-        <div class="span4">
-            
-            <div class="results-box" id="search-results-box">
-                
-                <div class="interior-div">
-                    
-                    <p id="classes-message"></p>
-                    
-                    <div class="classes-div" id="classes">
-                        
-                    </div>
-                    
-                </div>
-                
-            </div>
         </div>
         
         
