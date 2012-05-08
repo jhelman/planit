@@ -32,8 +32,17 @@ class University(models.Model):
 
 # sort of a dummy class, multiplexed, should 
 # only ever be numberOfTermsPerYear of them
+# TODO better naming logic
 class Term(models.Model):
     num = models.IntegerField()
+    
+    def __unicode__(self):
+        if self.num == 0:
+            return 'Autumn'
+        elif self.num == 1:
+            return 'Winter'
+        else:
+            return 'Spring'
 
 class Tag(models.Model):
     name = models.CharField(max_length=64)
@@ -114,8 +123,10 @@ class Plan(models.Model):
         return self.student_name
 
 class Year(models.Model):
-    num = models.IntegerField()
-    plan = models.ForeignKey(Plan)
+    startNum = models.IntegerField()
+    
+    def __unicode__(self):
+        return str(self.startNum) + "-" + str(self.startNum + 1)
 
 #does it scale
 class Enrollment(models.Model):
@@ -126,6 +137,9 @@ class Enrollment(models.Model):
 
     class Meta:
         unique_together = ('plan','term','year','course')
+        
+    def __unicode__(self):
+        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__() + ' ' + self.plan.__unicode__()
 
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
@@ -137,6 +151,9 @@ class CourseOffering(models.Model):
     #duration = models.IntegerField()
     class Meta:
         unique_together = ('course', 'year', 'term', 'weekdays', 'start_time')
+        
+    def __unicode__(self):
+        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__()
 
 class LogicalRequirement(Requirement):
     for_major = models.ForeignKey(Major)
