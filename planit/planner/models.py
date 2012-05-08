@@ -26,6 +26,9 @@ class University(models.Model):
     name = models.CharField(max_length=256)
     max_units_per_quarter = models.IntegerField(default=20)
     quarter_type = models.IntegerField(default=TRIMESTER)
+    
+    def __unicode__(self):
+        return self.name
 
 # sort of a dummy class, multiplexed, should 
 # only ever be numberOfTermsPerYear of them
@@ -45,8 +48,6 @@ class Course(models.Model):
     class_number = models.IntegerField()
     units = models.IntegerField()
     instructor = models.ForeignKey(Instructor) #on per class atm
-    offered = models.ManyToManyField(Term)
-    weekdays = models.CharField(max_length=5,default="MWF")
     tags = models.ManyToManyField(Tag, through='TagMapping')
     #repeatable_for_credit = models.BooleanField()
 
@@ -108,6 +109,9 @@ class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
     university = models.OneToOneField(University)
     major = models.ForeignKey(Major)
+    
+    def __unicode__(self):
+        return self.student_name
 
 class Year(models.Model):
     num = models.IntegerField()
@@ -128,9 +132,10 @@ class CourseOffering(models.Model):
     term   = models.ForeignKey(Term)
     start_time = models.TimeField(default=datetime.time(9,50))
     end_time = models.TimeField(default=datetime.time(9,50))
+    weekdays = models.CharField(max_length=5,default="MWF")
     #duration = models.IntegerField()
     class Meta:
-        unique_together = ('course', 'term', 'start_time')
+        unique_together = ('course', 'term', 'weekdays', 'start_time')
 
 class LogicalRequirement(Requirement):
     for_major = models.ForeignKey(Major)
