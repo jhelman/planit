@@ -72,10 +72,15 @@ def search(request, prefix):
     responseData = {}
     results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
+    offerings = {}
     for course in results:
         classNames.append(course.identifier)
+        course_offerings = CourseOffering.objects.filter(course=course).order_by('year', 'term', 'start_time')
+        offerings[course.identifier] = serializers.serialize('json', course_offerings)
+        
     data = serializers.serialize('json', results)
     responseData["classes"] = data
     responseData["classNames"] = classNames
+    responseData["offerings"] = offerings
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
