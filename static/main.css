@@ -1,0 +1,240 @@
+table.course {
+    width: 200px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+td.courseName {
+    width: 55%;
+}
+
+td.units {
+    width: 17.5%;
+}
+
+td.info {
+    width: 27.5%;
+}
+
+tr.possible-course {
+    background-color: #FFF4B8;
+}
+
+.icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
+    cursor: pointer;
+}
+
+.icon-move {
+    cursor: move;
+}
+
+#remove-course-alert {
+    margin-top: 20px;
+    width: 200px;
+}
+
+#add-course-alert {
+    margin-top: 10px;
+    width: 230px;
+}
+
+.quarter-div {
+    width: 220px;
+    height: 130px;
+    padding-top: 4px;
+    -moz-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
+    -moz-border-bottom-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-left: 1px solid;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-right: 1px dashed;
+}
+
+.cover {
+    background-color: black;
+    position: absolute;
+    display: none;
+    opacity: 0.75;
+    z-index: 10;
+}
+
+.quarter-info-div {
+    -moz-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
+    -moz-border-bottom-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-right: 1px solid;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    height: 134px;
+    width: 45px;
+    margin: 0px;
+    text-align: center;
+}
+
+
+.quarter-info-span {
+    position: relative; 
+    top: 30px; 
+    font-weight: bold;
+    margin-left: 6px;
+}
+
+
+#requirements-box {
+    width: 320px;
+    height: 150px;
+    position: relative; 
+		
+/*    left: 100px; 
+    top: -170px;*/
+    border-right: 1px solid #DDDDDD;
+    border-left: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
+
+    -moz-border-top-right-radius: 10px;
+    border-top-right-radius: 10px;
+    -moz-border-bottom-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    -moz-border-bottom-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    -moz-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;
+
+}
+
+#bottom-left-helper-box-top {
+    width: 10px;
+    height: 38px;
+    position: relative; 
+    left: 99px; 
+    top: 0px;
+    border-left: 1px solid #DDDDDD;
+   -moz-border-top-left-radius: 10px;
+    border-top-left-radius: 10px;            
+}
+
+
+#bottom-left-helper-box-bottom {
+    width: 10px;
+    height: 90px;
+    position: relative; 
+    left: 99px; 
+    top: -260px;
+    border-left: 1px solid #DDDDDD;
+   -moz-border-bottom-left-radius: 10px;
+    border-bottom-left-radius: 10px;            
+}
+
+.tab-pane {
+    margin: 10px;
+}
+
+
+.requirement {
+    text-align: left;
+    border-radius: 10px;
+    -mox-border-radius: 10px;
+    height: 30px;
+    padding-right: 12px;
+    padding-left: 12px;
+    position: relative;
+    display: table;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+
+.requirement p {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+
+.requirement-fulfilled {
+/*            background-color: #ffffff;
+    color: #dddddd;*/
+}
+
+.results-box {
+    margin: 10px;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    border: 1px solid #dddddd;
+}
+
+#requirements-results-box {
+    position: relative;
+    left: 200px;
+    top: -10px;
+    height: 240px;
+    width: 200px;
+}
+
+.requirements {
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+#search-results-box {
+    position: relative;
+    left: 95px;
+    top: -10px;
+    height: 240px;
+    width: 500px;
+}
+
+
+.interior-div {
+    margin: 10px;
+}
+
+.year-label {
+    vertical-align: middle;
+    width: 150px;
+}
+
+.spacing-row {
+    height: 0px;
+    margin: 0px;
+    padding: 0px;
+}  
+
+.delete-alert {
+   width: 171px;
+   align: center;
+   display: none;
+   z-index: 20;
+   position: absolute;
+}
+
+
+#schedule-modal {
+    width: 900px;
+    margin-left: -450px;
+    margin-top: -300px;
+}
+
+#schedule-modal-calendar {
+    width: 850px;
+    margin-left: auto; 
+    margin-right: auto;
+}
+
+#schedule-modal-body {
+    max-height: 1000px;
+}
+
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  opacity: 0.65;
+  filter: alpha(opacity=65);
+}
+
+.fc-state-highlight { /* <td> today cell */ /* TODO: add .fc-today to <th> */
+	background: #fff;
+}
