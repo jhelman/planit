@@ -647,6 +647,20 @@
             
         }
         
+        
+        function confirmDates(quarterID, course) {
+            
+            var quarterArr = scheduleArray[quarterID];
+            
+            for (var i in quarterArr) {
+                if (quarterArr[i].title == course) {
+                    quarterArr[i].color = '';
+                }
+            }
+            
+        }
+        
+        
         function confirmAddCourse(courseTableID) {
             var quarterID = $('#' + courseTableID).parent().attr('id');
             var units = parseInt($('#' + courseTableID).find('.units').html());
@@ -658,13 +672,20 @@
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).find('.icon-ok').remove();
             
+            // Remember to redraw the dragging and tooltips for this course!
+            
             var infoTD = $('#' + courseTableID).find('.info');
             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
                 '<i class="icon-trash" onclick="removeCourse(\'' + courseTableID + '\');"></i>');
                 
+            infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
+            infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
+                
             updateQuarterUnits(quarterID, units);
                 
             resetAddedUnits(quarterID, units);
+            
+            confirmDates(quarterID, $('#' + courseTableID).find('.courseName').html());
             
         }
         
@@ -686,8 +707,54 @@
             $('#' + quarterID + '-added-units').show();
         }
         
+        var MONDAY = 23;
+        
+        function makeNewEvent(day, startTime, endTime, courseName, isAdded) {
+            
+            var dayNum;
+                        
+            if (day == 'M') {
+                dayNum = MONDAY;
+            } else if (day == 'T') {
+                dayNum = MONDAY + 1;
+            } else if (day == 'W') {
+                dayNum = MONDAY + 2;
+            } else if (day == 'R') {
+                dayNum = MONDAY + 3;
+            } else if (day == 'F') {
+                dayNum = MONDAY + 4;
+            } else {
+                dayNum = MONDAY;
+            }
+                                    
+            return {
+                'start': new Date(2012, 3, dayNum, parseInt(startTime.substring(0, 2), 10), parseInt(startTime.substring(3, 5), 10)), 
+                'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
+                'title': courseName,
+                'allDay': false,
+                'color': '#ffb845'
+            };
+            
+        }
+        
+        
+        function addToCalendar(quarterID, course) {
+                        
+            for (var i = 0; i < course.weekdays.length; i++) {
+             
+                var courseEvent = makeNewEvent(course.weekdays.charAt(i), course.startTime, course.endTime, 
+                    course.identifier, true);
+                
+                scheduleArray[quarterID].push(courseEvent);
+                
+            }
+
+        }
+        
         
         function addCourse(classLink) {
+            
+            $(classLink).popover('hide');
                         
             var courseName = $(classLink).find('.shortName').html();
              
@@ -699,7 +766,7 @@
             
             createRolloversForAddedCourse('Autumn2011-2012', courseObj.fields);
             
-            // addToCalendar(courseObj.fields);
+            addToCalendar('Autumn2011-2012', courseObj.fields);
             
             updateAddedUnits('Autumn2011-2012', courseObj.fields.units);
                          
@@ -728,7 +795,7 @@
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + courseShortName 
                     + '</span>: ' + courseLongName +  '</a></li>');
                     
-                $('#' + courseShortName.replace(" ", "") + '-search-result').popover({
+                $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
                     title: courseShortName,
                     content: courseLongName,
                     placement: 'left'
@@ -741,10 +808,19 @@
         
         function runSearch() {
             
+            var searchValue = $('#course-search').attr('value');
+            
+            if (searchValue.length == 0) {
+                $('#search-results-nav').empty();
+                $('#requirements-toolbox-label').html('');
+                return;
+            }
+            
             $.ajax({
-                url: '/search/' + $('#course-search').attr('value'),
+                url: '/search/' + searchValue,
                 success: function (data, textStatus, jqXHR) {
-                    createSearchResults(eval(data.classes));
+                    searchJSON = eval(data.classes);
+                    createSearchResults(searchJSON);
                 }
             });
         }
@@ -1025,7 +1101,7 @@
                             <div id="search-div">
                                 <div id="course-search-form">
                                     <input type="text" id="course-search" onkeyup="runSearch();" placeholder="Search for classes" class="input-medium search-query"/>
-                                    <button class="btn" onclick="runSearch()">Search</button>
+                                    <!-- <button class="btn" onclick="runSearch()">Search</button> -->
                                 </div>
                             </div>
                             
