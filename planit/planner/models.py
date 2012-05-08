@@ -26,6 +26,9 @@ class University(models.Model):
     name = models.CharField(max_length=256)
     max_units_per_quarter = models.IntegerField(default=20)
     quarter_type = models.IntegerField(default=TRIMESTER)
+    
+    def __unicode__(self):
+        return self.name
 
 # sort of a dummy class, multiplexed, should 
 # only ever be numberOfTermsPerYear of them
@@ -105,6 +108,9 @@ class TagMapping(models.Model):
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
     university = models.OneToOneField(University)
+    
+    def __unicode__(self):
+        return self.student_name
 
 class Year(models.Model):
     num = models.IntegerField()
