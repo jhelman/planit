@@ -114,38 +114,30 @@ class TagMapping(models.Model):
 class Major(models.Model):
     name = models.CharField(max_length=128)
     
+    def __unicode__(self):
+        return self.name
+    
+class Year(models.Model):
+    start_num = models.IntegerField()
+    
+    def __unicode__(self):
+        return str(self.start_num) + "-" + str(self.start_num + 1)
+        
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
     university = models.OneToOneField(University)
     major = models.ForeignKey(Major)
+    start_year = models.ForeignKey(Year)
+    num_years = models.IntegerField(default=4)
     
     def __unicode__(self):
         return self.student_name
-
-class Year(models.Model):
-    startNum = models.IntegerField()
-    
-    def __unicode__(self):
-        return str(self.startNum) + "-" + str(self.startNum + 1)
-
-#does it scale
-class Enrollment(models.Model):
-    term = models.ForeignKey(Term)
-    year = models.ForeignKey(Year)
-    course = models.ForeignKey(Course)
-    plan = models.ForeignKey(Plan)
-
-    class Meta:
-        unique_together = ('plan','term','year','course')
         
-    def __unicode__(self):
-        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__() + ' ' + self.plan.__unicode__()
-
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
     year = models.ForeignKey(Year)
     term   = models.ForeignKey(Term)
-    start_time = models.TimeField(default=datetime.time(9,50))
+    start_time = models.TimeField(default=datetime.time(9,00))
     end_time = models.TimeField(default=datetime.time(9,50))
     weekdays = models.CharField(max_length=5,default="MWF")
     #duration = models.IntegerField()
@@ -154,6 +146,20 @@ class CourseOffering(models.Model):
         
     def __unicode__(self):
         return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__()
+
+
+#does it scale
+class Enrollment(models.Model):
+    term = models.ForeignKey(Term)
+    year = models.ForeignKey(Year)
+    course = models.ForeignKey(CourseOffering)
+    plan = models.ForeignKey(Plan)
+
+    class Meta:
+        unique_together = ('plan','term','year','course')
+        
+    def __unicode__(self):
+        return self.course.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__() + ' ' + self.plan.__unicode__()
 
 class LogicalRequirement(Requirement):
     for_major = models.ForeignKey(Major)
