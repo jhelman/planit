@@ -129,13 +129,14 @@ class Enrollment(models.Model):
 
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
+    year = models.ForeignKey(Year)
     term   = models.ForeignKey(Term)
     start_time = models.TimeField(default=datetime.time(9,50))
     end_time = models.TimeField(default=datetime.time(9,50))
     weekdays = models.CharField(max_length=5,default="MWF")
     #duration = models.IntegerField()
     class Meta:
-        unique_together = ('course', 'term', 'weekdays', 'start_time')
+        unique_together = ('course', 'year', 'term', 'weekdays', 'start_time')
 
 class LogicalRequirement(Requirement):
     for_major = models.ForeignKey(Major)
