@@ -64,7 +64,7 @@
         var scheduleArray = {};
         {% for year in years %}
         {% for term in year.terms %}
-                     scheduleArray['{{ term.condensedName }}'] = [
+                scheduleArray['{{ term.condensedName }}'] = [
 
                  {% for course in term.courses %}
                      {% for day in course.days %}
@@ -77,11 +77,11 @@
                      {% endfor %}
                  {% endfor %}
                             
-                     ];
+                ];
         
         {% endfor %}
         {% endfor %}
-           
+        
                 
         $(document).ready(function () {
             
@@ -202,7 +202,6 @@
             $('#schedule-modal').on('shown', function () {
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
                 $('#schedule-modal-calendar').fullCalendar('addEventSource', scheduleArray[quarterScheduleToShow]);
-
             });
             
             $('#schedule-modal').on('hide', function () {
@@ -674,7 +673,7 @@
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).find('.icon-ok').remove();
             
-            // Remember to redraw the dragging and tooltips for this course!
+            // Remember to redraw the dragging for this course!
             
             var infoTD = $('#' + courseTableID).find('.info');
             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
@@ -704,7 +703,7 @@
             
         }
         
-        function updateAddedUnits(quarterID, units) {
+        function updateAddedUnits(quarterID, units) {            
             $('#' + quarterID + '-added-units').html("+" + (parseInt($('#' + quarterID + '-added-units').html().substring(1)) + units));        
             $('#' + quarterID + '-added-units').show();
         }
@@ -741,6 +740,7 @@
         
         
         function addToCalendar(quarterID, course) {
+            alert(course);
                         
             for (var i = 0; i < course.weekdays.length; i++) {
              
@@ -754,23 +754,24 @@
         }
         
         
-        function addCourse(classLink) {
+        function addCourse(classListItem) {
             
-            $(classLink).popover('hide');
+            $(classListItem).popover('hide');
                         
-            var courseName = $(classLink).find('.shortName').html();
+            var courseName = $(classListItem).find('.shortName').html();
              
             var courseObj = getJSONForCourse(courseName);
             
             // loop through all quarters - for now, just adding fall freshman year
             
-            $('#Autumn2011-2012').prepend(makeAddedCourseHTML('Autumn2011-2012', courseObj.fields));
+            $('#Autumn2012-2013').prepend(makeAddedCourseHTML('Autumn2012-2013', courseObj.fields));
             
-            createRolloversForAddedCourse('Autumn2011-2012', courseObj.fields);
+            createRolloversForAddedCourse('Autumn2012-2013', courseObj.fields);
             
-            addToCalendar('Autumn2011-2012', courseObj.fields);
+            updateAddedUnits('Autumn2012-2013', courseObj.fields.units);
             
-            updateAddedUnits('Autumn2011-2012', courseObj.fields.units);
+            // addToCalendar('Autumn2012-2013', courseObj.fields);
+            
                          
         }
         
@@ -793,9 +794,9 @@
                 var courseShortName = courses[i].fields.identifier;
                 var courseLongName = courses[i].fields.name;
                 
-                $('#search-results-nav').append('<li><a href="#" id="' + makeCondensedName(courseShortName)
-                    + '-search-result" onclick="addCourse(this)"><span class="shortName">' + courseShortName 
-                    + '</span>: ' + courseLongName +  '</a></li>');
+                $('#search-results-nav').append('<li  id="' + makeCondensedName(courseShortName)
+                    + '-search-result"><a href="#" onclick="addCourse(this)"><span class="shortName">' + 
+                    courseShortName  + '</span>: ' + courseLongName +  '</a></li>');
                     
                 $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
                     title: courseShortName,
