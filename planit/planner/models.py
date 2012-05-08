@@ -49,9 +49,6 @@ class Course(models.Model):
     units = models.IntegerField()
     instructor = models.ForeignKey(Instructor) #on per class atm
     offered = models.ManyToManyField(Term)
-    start_time = models.TimeField(default=datetime.time(9,50))
-    end_time = models.TimeField(default=datetime.time(9,50))
-    #duration = models.IntegerField()
     weekdays = models.CharField(max_length=5,default="MWF")
     tags = models.ManyToManyField(Tag, through='TagMapping')
     #repeatable_for_credit = models.BooleanField()
@@ -104,13 +101,22 @@ class BreadthRequirement(CourseRequirement):
 class TagMapping(models.Model):
     tag_name = models.ForeignKey(Tag)
     course = models.ForeignKey(Course)
+
+#could just as well be a string, but we may want
+#to add additional info to the struct
+class Major(models.Model):
+    name = models.CharField(max_length=128)
     
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
     university = models.OneToOneField(University)
+<<<<<<< HEAD
     
     def __unicode__(self):
         return self.student_name
+=======
+    major = models.ForeignKey(Major)
+>>>>>>> 573e67ef741a30e578b5021edef4e5a15fe986ed
 
 class Year(models.Model):
     num = models.IntegerField()
@@ -126,7 +132,17 @@ class Enrollment(models.Model):
     class Meta:
         unique_together = ('plan','term','year','course')
 
+class CourseOffering(models.Model):
+    course = models.ForeignKey(Course)
+    term   = models.ForeignKey(Term)
+    start_time = models.TimeField(default=datetime.time(9,50))
+    end_time = models.TimeField(default=datetime.time(9,50))
+    #duration = models.IntegerField()
+    class Meta:
+        unique_together = ('course', 'term', 'start_time')
+
 class LogicalRequirement(Requirement):
+    for_major = models.ForeignKey(Major)
     class Meta:
         abstract = True
 
