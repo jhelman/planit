@@ -4,6 +4,7 @@ from django.utils import simplejson
 from django.http import HttpResponse
 from django.core import serializers
 from models import *
+import re
 
 def index(request):
     plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
@@ -11,13 +12,9 @@ def index(request):
     
     args = {}
     years = [{}, {}, {}, {}]
-    years[0]['year'] = '2012-2013'
     years[0]['name'] = 'Freshman'
-    years[1]['year'] = '2013-2014'
     years[1]['name'] = 'Sophomore'
-    years[2]['year'] = '2014-2015'
     years[2]['name'] = 'Junior'
-    years[3]['year'] = '2015-2016'
     years[3]['name'] = 'Senior'
     
     totalUnits = 0
@@ -26,6 +23,7 @@ def index(request):
         year_num = i - start
         year = Year.objects.filter(start_num=i)[0]
         years[year_num]['year'] = year.__unicode__()
+        years[year_num]['start_num'] = year.start_num
         year_enrolled = enrolled.filter(year=year)
         terms = [{}, {}, {}]
         for t in range(3):
@@ -41,6 +39,7 @@ def index(request):
                 
             terms[t]['name'] = term.__unicode__() + years[year_num]['year']
             terms[t]['condensedName'] = terms[t]['name'].replace(' ', '')
+            terms[t]['num'] = term.num
             units = 0
             for course in terms[t]['courses']:
                 setattr(course, 'condensedID', course.identifier.replace(' ', ''))
@@ -63,14 +62,28 @@ def index(request):
             totalUnits += units
         years[year_num]['terms'] = terms
             
+    offerings = {}
+    for e in enrolled:
+        course = e.course.course
+        course_offerings = CourseOffering.objects.filter(course=course)
+        offered_terms = []
+        for offering in course_offerings:
+            offered_terms.append((offering.term.num, offering.year.start_num))
+        offerings[str(course.identifier)] = course_offerings
             
     args['years'] = years
     args['totalUnits'] = totalUnits
+    args['offerings'] = offerings
+    print offerings
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
     responseData = {}
     results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+    if len(results) == 0:
+        index = re.search('\d', prefix).start()
+        prefix = prefix[0:index] + ' ' + prefix[index:]
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
     offerings = {}
     for course in results:

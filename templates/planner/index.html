@@ -1,3 +1,5 @@
+{% load planner_extras %}
+
 <!DOCTYPE html>
 <html>
 
@@ -123,32 +125,32 @@
                      
             });
 			
-			
-			// still hard-coding winter as only droppable for now
-			$('#Winter2012-2013').droppable({
+			{% for year in years %}
+			{% for term in year.terms %}
+			$('#{{ term.condensedName }}').droppable({
 				accept: function (elem) {
-					// this would actually be replaced by more complicated logic
-					// right now it's just letting you drag anything to winter except Econ 1A
-					
-					{% for term in years.0.terms %}
-					{% for course in term.courses %}
-					
-					
-					{% if course.identifier != "Econ 1A" %}
-					if (elem.attr('id') == '{{ term.condensedName|add:course.condensedID }}') return true;
+					{% for y in years %}
+					{% for t in y.terms %}
+					{% if y != year or t != term %}
+					{% for course in t.courses %}
+					{% for offering in offerings|get_item:course.identifier %}
+					{% if offering.year.start_num == year.start_num and offering.term.num == term.num %}
+					if (elem.attr('id') == '{{ t.condensedName|add:course.condensedID }}') return true;
+					{% endif %}
+					{% endfor %}
+					{% endfor %}
 					{% endif %}
 					{% endfor %}
 					{% endfor %}
 					return false;
-
 				},
 				
-                drop: function (event, ui) {
-                                        
-                    ui.draggable.appendTo('#Winter2012-2013');
-                    
-                }
-            });
+				drop: function (event, ui) {
+					ui.draggable.appendTo('#{{ term.condensedName }}');
+				}
+			});
+			{% endfor %}
+			{% endfor %}
 			
 			// example turning red
             $('#Spring2012-2013').droppable({
