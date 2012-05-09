@@ -22,8 +22,9 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap-typeahead-extension/bootstrap-typeahead.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}clickoutside/clickoutside.js"></script>
+    
     
     <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
     
@@ -371,148 +372,6 @@
         }
         
         
-        var selectedReq = null;
-        
-        function clickedReq(req) {
-            if (selectedReq != null) {
-                selectedReq.css('background-color', '#ffffff');
-            }
-            selectedReq = $(req);
-            
-            loadSubrequirements(req.id);
-            $(req).css('background-color', '#d9edf7');            
-        }
-        
-        var dbSubreqs = ['DB-Humanities', 'DB-Math', 'DB-EngrAppSci', 'DB-NatSci', 'DB-SocSci'];
-        var dbSubreqsNum = 5;
-        var ecSubreqs = ['EC-Gender', 'EC-GlobalCom', 'EC-AmerCul', 'EC-EthicReas'];
-        var ecSubreqsNum = 2;
-        
-        
-        function makeSubreqsHTML(reqArray) {
-            
-            var html = ""; 
-            for (var i in reqArray) {
-                html += "<div class='requirement' id='" + reqArray[i] + "' onclick='clickedSubreq(this)'><p>" 
-                + reqArray[i] + "</p></div>";
-            }
-            return html;
-        }
-        
-        
-        function generateSubreqsMessage(subreqs, subreqsCount) {
-                        
-            if (subreqs.length == subreqsCount)
-                return "Select all of the following:";
-            
-            return "Select " + subreqsCount + " out of " + subreqs.length + " the following:";
-            
-        }
-        
-        function loadSubrequirements(reqID) {
-                        
-            var html;
-            var subreqsMessage;
-            if (reqID == 'db') {
-                html = makeSubreqsHTML(dbSubreqs);
-                subreqsMessage = generateSubreqsMessage(dbSubreqs, dbSubreqsNum);
-            } else if (reqID == 'ec') {
-                html = makeSubreqsHTML(ecSubreqs);
-                subreqsMessage = generateSubreqsMessage(ecSubreqs, ecSubreqsNum);
-            }
-                    
-            $('#subreqs').html(html);
-            $('#subreqs-message').html(subreqsMessage); 
-        }
-        
-        
-        var selectedSubreq = null;
-        
-        function clickedSubreq(subreq) {
-            var subreqName = $(subreq).find('p').html();
-            
-            // Fix this kludge!!!
-            var pos = subreqName.indexOf('<i class="icon-ok"');
-            if (pos != -1) {
-                subreqName = subreqName.substring(0, pos);
-            } 
-            
-            if (selectedSubreq != null) {
-                selectedSubreq.css('background-color', '#ffffff');
-            }
-            selectedSubreq = $(subreq);
-            
-            loadClasses(subreq.id, subreqName);
-            $(subreq).css('background-color', '#d9edf7');            
-        }
-        
-        var dbhumClasses = ['Music 18A', 'Music 18B'];
-        var dbmathClasses = ['Math 51', 'Math 52', 'Math 53'];
-        var ecglobalcomClasses = ['Econ 114'];
-        var ecamerculClasses = ['Music 18A'];
-        
-        
-        function loadClasses(subreqID, subreqName) {
-                        
-            var html = ""; 
-            var classesMessage = "";
-            if (subreqID == 'DB-Humanities') {
-                html = makeClassesHTML(dbhumClasses);
-                classesMessage = generateClassesMessage(dbhumClasses, subreqName);
-            } else if (subreqID == 'DB-Math') {
-                html = makeClassesHTML(dbmathClasses);
-                classesMessage = generateClassesMessage(dbmathClasses, subreqName);
-            } else if (subreqID == 'EC-GlobalCom') {
-                html = makeClassesHTML(ecglobalcomClasses);
-                classesMessage = generateClassesMessage(ecglobalcomClasses, subreqName);
-            } else if (subreqID == 'EC-AmerCul') {
-                html = makeClassesHTML(ecamerculClasses);
-                classesMessage = generateClassesMessage(ecamerculClasses, subreqName);
-            }
-                    
-            $('#classes').html(html);
-            $('#classes-message').html(classesMessage); 
-        }
-        
-        function generateClassesMessage(classes, subreqName) {    
-            return "Select from the " + classes.length + " classes satisfying the " + subreqName + " requirement:";
-        }        
-        
-        function makeClassesHTML(classes) {
-            
-            var html = "";
-            for (var i in classes) {
-                html += "<div class='requirement' id='" + classes[i] + "' onclick='clickedClass(this)'><p>" 
-                + classes[i] + "</p></div>";
-    
-            }
-    
-            return html;
-        }
-        
-        function clickedClass(classObject) {
-            
-            // alert(classID.id);
-            
-            satisfyRequirements(classObject);
-            
-        }
-        
-        
-        function satisfyRequirements(classObject) {
-            
-            $('#DB-Humanities').addClass('requirement-fulfilled');
-            
-            // $('#DB-Humanities').append('<i class="icon-ok"></i>');
-            
-            $('<i class="icon-ok" style="margin-left: 5px;"></i>').appendTo($('#DB-Humanities').find('p'));
-            // $('\xA0').appendTo($('#DB-Humanities').find('p'));
-            
-            
-        }
-        
-        
-        
         function openNewPlanModal() {
             
             $('#new-plan-modal').modal('show');
@@ -629,13 +488,12 @@
         function makeAddedCourseHTML(quarterID, courseObj) {
             
             // if conflict, change the class from possible-course to something else
-            
+                        
             return '<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
                 'class="table table-bordered table-condensed course possible-course">' + 
                 '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
-                courseObj.units + '</td><td class="info"><i class="icon-ok" onclick="confirmAddCourse(\'' + 
-                quarterID + makeCondensedName(courseObj.identifier) + 
-                '\');"></i></td></tr></table>';
+                courseObj.units + '</td><td class="info"><i class="icon-ok confirm-add-class">' + 
+                '</i></td></tr></table>';
                             
         }
         
@@ -664,6 +522,26 @@
             
         }
         
+        function deleteAddedCourse(courseObj, offerings, quarterID) {
+        
+             for (var i in offerings) {
+
+                    var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                        years[parseInt(offerings[i].fields.year) - 1];
+                        
+                    if (offeringStr == quarterID) {
+                        continue;
+                    }
+
+                    $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
+
+                    resetAddedUnits(offeringStr, courseObj.fields.units);
+
+                    removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
+                }
+        }
+        
+        
         
         function confirmAddCourse(courseTableID) {
             var quarterID = $('#' + courseTableID).parent().attr('id');
@@ -689,7 +567,18 @@
                 
             resetAddedUnits(quarterID, units);
             
-            confirmDates(quarterID, $('#' + courseTableID).find('.courseName').html());
+            var courseName = $('#' + courseTableID).find('.courseName').html();
+            
+            confirmDates(quarterID, courseName);
+            
+            deleteAddedCourse(getJSONForCourse(courseName), jQuery.parseJSON(offeringsJSON[courseName]), 
+                quarterID);
+                        
+            var liElem = $('#' + makeCondensedName(courseName) + '-search-result');
+                        
+            liElem.parent().removeClass('active');
+            
+            liElem.unbind('mouseupoutside');
             
         }
         
@@ -755,11 +644,19 @@
 
         }
         
+        
+        
         var years = ['2012-2013', '2013-2014', '2014-2015', '2015-2016'];        
         
         function addCourse(classLinkItem) {
             
-            $(classLinkItem).popover('hide');
+            // $(classLinkItem).popover('hide');
+            
+            if ($(classLinkItem).parent().hasClass('active')) {
+                return;
+            }
+            
+            $(classLinkItem).parent().addClass('active');
                         
             var courseName = $(classLinkItem).find('.shortName').html();
                           
@@ -768,6 +665,34 @@
             // loop through all quarters - for now, just adding fall freshman year
                         
             var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
+            
+            $(classLinkItem).bind('mouseupoutside', function (event) {
+                
+                if ($(event.target).hasClass('confirm-add-class')) {
+                    
+                    var quarterID = $(event.target).closest('.quarter-div').attr('id');
+                    
+                    confirmAddCourse(quarterID + makeCondensedName(courseName));
+                    
+                    $(classLinkItem).parent().removeClass('active');
+
+                    $(this).unbind('mouseupoutside');
+                    
+                } else if ($(event.target).prop('tagName') == "BODY" ||
+                    $(event.target).prop('tagName') == "HTML" ||
+                    $(event.target).attr('id').indexOf("-search-result") != -1 ||
+                    $(event.target).attr('id') == "course-search") {
+                        
+                        cancelAddCourse(courseObj, offerings);
+                    
+                        $(classLinkItem).parent().removeClass('active');
+
+                        $(this).unbind('mouseupoutside');
+                }
+                
+                
+                
+            });
                                                             
             for (var i in offerings) {
                                                                                                    
@@ -786,13 +711,26 @@
                 addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier);
                                 
             }
-            
-            
-            
-                         
+           
         }
         
         
+        function cancelAddCourse(courseObj, offerings) {
+           
+            for (var i in offerings) {
+             
+                var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                    years[parseInt(offerings[i].fields.year) - 1];
+                                        
+                $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
+                
+                resetAddedUnits(offeringStr, courseObj.fields.units);
+                
+                removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
+                                
+            }
+            
+        }
         
         
         function createSearchResults(courses) {
@@ -815,11 +753,11 @@
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + 
                     courseShortName  + '</span>: ' + courseLongName +  '</a></li>');
                     
-                $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
-                    title: courseShortName,
-                    content: courseLongName,
-                    placement: 'left'
-                });
+                // $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
+                //              title: courseShortName,
+                //              content: courseLongName,
+                //              placement: 'left'
+                //          });
                 
             }
             

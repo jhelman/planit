@@ -16,10 +16,11 @@ td.units {
 
 td.info {
     width: 27.5%;
+		text-align: center;
 }
 
-tr.possible-course {
-    background-color: #FFF4B8;
+table.possible-course {
+		background-color: #ffb845;
 }
 
 .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
@@ -79,7 +80,7 @@ tr.possible-course {
 
 .quarter-info-span {
     position: relative; 
-    top: 30px; 
+    top: 25px; 
     font-weight: bold;
     margin-left: 6px;
 }
@@ -194,6 +195,12 @@ tr.possible-course {
 }
 
 .year-label {
+	vertical-align: middle;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.quarter-label {
     vertical-align: middle;
     width: 150px;
 }
@@ -238,3 +245,44 @@ tr.possible-course {
 .fc-state-highlight { /* <td> today cell */ /* TODO: add .fc-today to <th> */
 	background: #fff;
 }
+
+
+#requirements-toolbox {
+	border-radius: 5px;
+	-mox-border-radius: 5px;
+	border: 1px solid #dddddd;
+	width: 300px;
+	height: 450px;
+	padding-bottom: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-top: 20px;
+	overflow: scroll;
+}
+
+#search-div {
+	border-top-left-radius: 5px;
+	-mox-border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	-mox-border-top-right-radius: 5px;
+	background-color: #eeeeee;
+	width: 320px;
+	height: 40px;
+	margin-left: -10px;
+	display: table;
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+#course-search-form {
+
+	display: table-cell;
+	vertical-align: middle;
+	
+}
+
+.added-units {
+	color: #fc9c00;
+	display: none;
+}
+
