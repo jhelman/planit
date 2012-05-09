@@ -650,6 +650,10 @@
             
             // $(classLinkItem).popover('hide');
             
+            if ($(classLinkItem).parent().hasClass('active')) {
+                return;
+            }
+            
             $(classLinkItem).parent().addClass('active');
                         
             var courseName = $(classLinkItem).find('.shortName').html();
