@@ -4,6 +4,7 @@ from django.utils import simplejson
 from django.http import HttpResponse
 from django.core import serializers
 from models import *
+import re
 
 def index(request):
     plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
@@ -71,6 +72,10 @@ def index(request):
 def search(request, prefix):
     responseData = {}
     results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+    if len(results) == 0:
+        index = re.search('\d', prefix).start()
+        prefix = prefix[0:index] + ' ' + prefix[index:]
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
     offerings = {}
     for course in results:
