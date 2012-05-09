@@ -133,15 +133,8 @@
 					{% if y != year or t != term %}
 					{% for course in t.courses %}
 					{% for offering in offerings|get_item:course.identifier %}
-					// hello
 					{% if offering.year.start_num == year.start_num and offering.term.num == term.num %}
 					if (elem.attr('id') == '{{ t.condensedName|add:course.condensedID }}') return true;
-					{% else %}
-					// {{ course.identifier }}
-					// {{ year.start_num }}
-					// {{ offering.year.start_num}}
-					// {{ term.num }}
-					// {{offering.term.num}}
 					{% endif %}
 					{% endfor %}
 					{% endfor %}
