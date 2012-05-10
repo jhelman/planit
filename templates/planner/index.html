@@ -626,7 +626,7 @@
         
         var MONDAY = 23;
         
-        function makeNewEvent(day, startTime, endTime, courseName, isAdded) {
+        function makeNewEvent(day, startTime, endTime, courseName, isAdded, isWarningAll) {
             
             var dayNum;
                         
@@ -649,18 +649,18 @@
                 'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
                 'title': courseName,
                 'allDay': false,
-                'color': '#54cc33'
+                'color': (isWarningAll ? '#ffc40d' : '#54cc33')
             };
             
         }
         
         
-        function addToCalendar(quarterID, offering, courseIdentifier) {                        
+        function addToCalendar(quarterID, offering, courseIdentifier, isWarningAll) {                        
                                                                         
             for (var i = 0; i < offering.weekdays.length; i++) {
              
                 var courseEvent = makeNewEvent(offering.weekdays.charAt(i), offering.start_time, 
-                    offering.end_time, courseIdentifier, true);
+                    offering.end_time, courseIdentifier, true, isWarningAll);
                                 
                 scheduleArray[quarterID].push(courseEvent);
                 
@@ -784,7 +784,7 @@
                 // evaluate quarter in which you are going to place the class to validate                
                                             
                                             
-                addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier);
+                addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier, isWarningAll);
                                                        
                 var warningArrayOffering = evalForWarningOffering(offeringStr, courseName, offerings[i].fields);
                  
