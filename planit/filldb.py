@@ -65,6 +65,17 @@ def parse_section(section, course, year):
                     end_time=end_t, weekdays=daystr, instructor=ins)
             catch_save(co)
 
+def make_tags(tag_strs, course):
+    for tag in tag_strs:
+        indb = Tag.objects.filter(name=tag)
+        if not indb:
+            indb = Tag(name=tag)
+            catch_save(indb)
+        else:
+            indb = indb[0]
+
+        tm = TagMapping(tag=indb, course=course)
+        tm.save()
 
 def parse_course(course_elem):
     idstr = course_elem.find('subject').text + course_elem.find('code').text
@@ -76,7 +87,6 @@ def parse_course(course_elem):
         desc = ""
     max_u = int(course_elem.find('unitsMax').text)
     min_u = int(course_elem.find('unitsMin').text)
-
     c = Course.objects.filter(identifier=idstr, title=title, description=desc, class_number=idnum,
         max_units=max_u, min_units=min_u)
     if not c:
@@ -85,6 +95,11 @@ def parse_course(course_elem):
         catch_save(c)
     else:
         c = c[0]
+
+    tags = course_elem.find('gers').text
+    if tags:
+        tagl = tags.split(', ')
+        make_tags(tagl, c)
     
     s = course_elem.find('sections')
     for section in s.getiterator(tag='section'):
