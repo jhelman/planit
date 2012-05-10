@@ -504,15 +504,16 @@
             
             var className = "possible-course";
             
-            if (isWarning == true) {
+            if (isWarning) {
                 className = "possible-course-warning";
             }
-                        
+                    
             return '<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
                 'class="table table-bordered table-condensed course ' + className + '">' + 
                 '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
-                courseObj.units + '</td><td class="info"><i class="icon-ok confirm-add-class">' + 
-                '</i></td></tr></table>';
+                courseObj.units + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
+                (isWarning ? '&nbsp;&nbsp;<i class="icon-warning-sign"></i>' : '')
+                + '</td></tr></table>';
                             
         }
         
