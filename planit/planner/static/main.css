@@ -20,7 +20,11 @@ td.info {
 }
 
 table.possible-course {
-		background-color: #ffb845;
+		background-color: #54cc33;
+}
+
+table.possible-course-warning {
+		background-color: #ffc40d;
 }
 
 .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
@@ -282,7 +286,7 @@ table.possible-course {
 }
 
 .added-units {
-	color: #fc9c00;
+	color: #54cc33;
 	display: none;
 }
 

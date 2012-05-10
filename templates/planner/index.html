@@ -494,12 +494,16 @@
         }
         
         
-        function makeAddedCourseHTML(quarterID, courseObj) {
+        function makeAddedCourseHTML(quarterID, courseObj, isWarning) {
             
-            // if conflict, change the class from possible-course to something else
+            var className = "possible-course";
+            
+            if (isWarning == true) {
+                className = "possible-course-warning";
+            }
                         
             return '<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
-                'class="table table-bordered table-condensed course possible-course">' + 
+                'class="table table-bordered table-condensed course ' + className + '">' + 
                 '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
                 courseObj.units + '</td><td class="info"><i class="icon-ok confirm-add-class">' + 
                 '</i></td></tr></table>';
@@ -604,7 +608,13 @@
             
         }
         
-        function updateAddedUnits(quarterID, units) {            
+        function updateAddedUnits(quarterID, units, isWarning) {
+            if (isWarning == true) {
+                $('#' + quarterID + '-added-units').css('color', '#fc9c00');
+            } else {
+                $('#' + quarterID + '-added-units').css('color', '#54cc33');
+            }         
+
             $('#' + quarterID + '-added-units').html("+" + (parseInt($('#' + quarterID + '-added-units').html().substring(1)) + units));        
             $('#' + quarterID + '-added-units').show();
         }
@@ -634,7 +644,7 @@
                 'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
                 'title': courseName,
                 'allDay': false,
-                'color': '#ffb845'
+                'color': '#54cc33'
             };
             
         }
@@ -653,6 +663,49 @@
 
         }
         
+        var WARNING_OFFERING_TIME_CONFLICT = 0;
+        var WARNING_ALL_DOUBLE_COURSE = 0;
+        
+        
+        function evalForWarningOffering(quarterID, courseName, offering) {
+            
+            var warningArray = new Array(1);
+            
+            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(quarterID, courseName, offering)
+            
+            return warningArray;
+            
+            
+        }
+        
+        function evalForWarningAll(quarterID, courseName) {
+            
+            var warningArray = new Array(1);
+            
+            warningArray[WARNING_ALL_DOUBLE_COURSE] = checkIfDoubleCourse(courseName);
+            
+            return warningArray;
+            
+        }
+        
+        
+        function checkIfDoubleCourse(courseName) {
+            for (var i in years) {
+                
+                for (var j in termNames) {
+                    
+                    var quarterID = termNames[j] + years[i];
+                                        
+                    if ($('#' + quarterID + makeCondensedName(courseName)).length) {
+                        return true;
+                    }
+                    
+                }
+                
+            }
+            
+            return false;
+        }
         
         
         var years = ['2012-2013', '2013-2014', '2014-2015', '2015-2016'];        
@@ -670,12 +723,10 @@
             var courseName = $(classLinkItem).find('.shortName').html();
                           
             var courseObj = getJSONForCourse(courseName);
-                        
-            // loop through all quarters - for now, just adding fall freshman year
-                        
+                                                
             var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
             
-            $(classLinkItem).bind('mouseupoutside', function (event) {
+            $(classLinkItem).bind('mousedownoutside', function (event) {
                 
                 if ($(event.target).hasClass('confirm-add-class')) {
                     
@@ -685,7 +736,7 @@
                     
                     $(classLinkItem).parent().removeClass('active');
 
-                    $(this).unbind('mouseupoutside');
+                    $(this).unbind('mousedownoutside');
                     
                 } else if ($(event.target).prop('tagName') == "BODY" ||
                     $(event.target).prop('tagName') == "HTML" ||
@@ -702,25 +753,93 @@
                 
                 
             });
+            
+            var warningArrayAll = evalForWarningAll(offeringStr, courseName);
+            
+            var isWarningAll = false;
+            for (var i in warningArrayAll) {
+                if (warningArrayAll[i] == true) {
+                    isWarningAll = true;
+                    break;
+                }
+            }
                                                             
             for (var i in offerings) {
                                                                                                    
                 var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
+                                        
+                // double adding class in 1 quarter
+                if ($('#' + offeringStr + makeCondensedName(courseName)).length) {
+                    continue;
+                }
                                 
-                // evaluate quarter in which you are going to place the class to validate
-                                
-                                                
-                $('#' + offeringStr).prepend(makeAddedCourseHTML(offeringStr, courseObj.fields));
-
-                createRolloversForAddedCourse(offeringStr, courseObj.fields);
-
-                updateAddedUnits(offeringStr, courseObj.fields.units);
-
+                // evaluate quarter in which you are going to place the class to validate                
+                                            
+                                            
                 addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier);
+                                                       
+                var warningArrayOffering = evalForWarningOffering(offeringStr, courseName, offerings[i].fields);
+                 
+                var isWarningOffering = false;
+                for (var i in warningArrayOffering) {
+                    if (warningArrayOffering[i] == true) {
+                        isWarningOffering = true;
+                        break;
+                    }
+                }
+                
+                var isWarning = isWarningAll;
+                if (isWarningAll == false && isWarningOffering == true) {
+                    isWarning = true;
+                }
+                                       
+                updateAddedUnits(offeringStr, courseObj.fields.units, isWarning);
                                 
+                $('#' + offeringStr).prepend(makeAddedCourseHTML(offeringStr, courseObj.fields, isWarning));
+                
+                createRolloversForAddedCourse(offeringStr, courseObj.fields);
+                        
             }
            
+        }
+        
+        
+        function checkIfTimeConflict(quarterID, courseName, offering) {
+            
+            var flag = false;
+            
+            var numOfferings = offering.weekdays.length;
+            
+            var events = scheduleArray[quarterID];
+            
+            for (var i = 0; i < events.length - numOfferings; i++) {
+                
+                var startTime = events[i].start.getTime();
+                var endTime = events[i].end.getTime();
+                
+                for (var j = events.length - numOfferings; j < events.length; j++) { 
+                
+                    var offeringST = events[j].start.getTime();
+                    var offeringET = events[j].end.getTime();
+                    
+                    // Time conflict exists
+                    if ((offeringST >= startTime && offeringST < endTime) ||
+                        (offeringET > startTime && offeringET <= endTime)) {
+                        
+                        events[j].color = '#ffc40d';
+                        flag = true;
+                        
+                    }
+                    
+                }
+                
+                
+                
+            }
+            
+            return flag;
+            
         }
         
         
@@ -730,6 +849,12 @@
              
                 var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
+                    
+                // Don't delete if course is already in the plan
+                if (!$('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).hasClass('possible-course') &&
+                    !$('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).hasClass('possible-course-warning')) {
+                        continue;
+                }
                                         
                 $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
                 
