@@ -154,6 +154,8 @@
 				
 				drop: function (event, ui) {
 					ui.draggable.appendTo('#{{ term.condensedName }}');
+					ui.draggable.attr('id', '{{ term.condensedName }}' + ui.draggable.find('.courseName').html());
+					alert(ui.draggable.attr('id'));
 				}
 			});
 			{% endfor %}
