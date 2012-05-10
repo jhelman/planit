@@ -155,7 +155,6 @@
 				drop: function (event, ui) {
 					ui.draggable.appendTo('#{{ term.condensedName }}');
 					ui.draggable.attr('id', '{{ term.condensedName }}' + ui.draggable.find('.courseName').html());
-					alert(ui.draggable.attr('id'));
 				}
 			});
 			{% endfor %}
@@ -273,6 +272,9 @@
             cover.css('top', qDiv.position().top);
                         
             qDiv.find('.cover').fadeIn();
+            
+            updateAddedUnits(qDiv.attr('id'), courseElem.find('.units').html(), false, true);
+            
             alertBox.fadeIn();
         }
         
@@ -282,6 +284,8 @@
             
             qDiv.find('.delete-alert').hide();
             qDiv.find('.cover').hide();
+            
+            resetAddedUnits(quarterID);
         }
         
         function updateQuarterUnits(quarterID, unitChange) {
@@ -334,6 +338,8 @@
             
             var course = qDiv.find('.alert-delete-course-name').html();
             removeClassFromSchedule(course, quarterID);
+            
+            resetAddedUnits(quarterID);
             
             cancelDeleteCourse(quarterID);
         }
@@ -548,7 +554,7 @@
 
                     $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
 
-                    resetAddedUnits(offeringStr, courseObj.fields.units);
+                    resetAddedUnits(offeringStr);
 
                     removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
                 }
@@ -578,7 +584,7 @@
                 
             updateQuarterUnits(quarterID, units);
                 
-            resetAddedUnits(quarterID, units);
+            resetAddedUnits(quarterID);
             
             var courseName = $('#' + courseTableID).find('.courseName').html();
             
@@ -596,26 +602,25 @@
         }
         
         
-        function resetAddedUnits(quarterID, units) {
-            var addedUnits = parseInt($('#' + quarterID + '-added-units').html().substring(1));
+        function resetAddedUnits(quarterID) {
             
-            if (addedUnits == units) {
-                $('#' + quarterID + '-added-units').html("+0");        
-                $('#' + quarterID + '-added-units').hide();
-            } else {
-                $('#' + quarterID + '-added-units').html("+" + (addedUnits - units));  
-            }
+            $('#' + quarterID + '-added-units').hide();
             
         }
         
-        function updateAddedUnits(quarterID, units, isWarning) {
-            if (isWarning == true) {
+        function updateAddedUnits(quarterID, units, isWarning, isDelete) {
+            
+            var sign = "+";
+            
+            if (isDelete) {
+                $('#' + quarterID + '-added-units').css('color', '#bd362f');
+                sign = "-";
+            } else if (isWarning) {
                 $('#' + quarterID + '-added-units').css('color', '#fc9c00');
             } else {
                 $('#' + quarterID + '-added-units').css('color', '#54cc33');
             }         
-
-            $('#' + quarterID + '-added-units').html("+" + (parseInt($('#' + quarterID + '-added-units').html().substring(1)) + units));        
+            $('#' + quarterID + '-added-units').html(sign + units);        
             $('#' + quarterID + '-added-units').show();
         }
         
@@ -727,7 +732,7 @@
             var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
             
             $(classLinkItem).bind('mousedownoutside', function (event) {
-                
+                                                
                 if ($(event.target).hasClass('confirm-add-class')) {
                     
                     var quarterID = $(event.target).closest('.quarter-div').attr('id');
@@ -737,11 +742,15 @@
                     $(classLinkItem).parent().removeClass('active');
 
                     $(this).unbind('mousedownoutside');
-                    
-                } else if ($(event.target).prop('tagName') == "BODY" ||
+                                        
+                } else if ($(event.target).hasClass('icon-move') ||
+                    $(event.target).hasClass('icon-trash') || 
+                    $(event.target).prop('tagName') == "BODY" ||
                     $(event.target).prop('tagName') == "HTML" ||
-                    $(event.target).attr('id').indexOf("-search-result") != -1 ||
-                    $(event.target).attr('id') == "course-search") {
+                    ($(event.target).attr('id') != null && 
+                        ($(event.target).attr('id').indexOf("-search-result") != -1) ||
+                        ($(event.target).attr('id') == "course-search"))
+                    ) {
                         
                         cancelAddCourse(courseObj, offerings);
                     
@@ -749,9 +758,7 @@
 
                         $(this).unbind('mouseupoutside');
                 }
-                
-                
-                
+                                
             });
             
             var warningArrayAll = evalForWarningAll(offeringStr, courseName);
@@ -794,7 +801,7 @@
                     isWarning = true;
                 }
                                        
-                updateAddedUnits(offeringStr, courseObj.fields.units, isWarning);
+                updateAddedUnits(offeringStr, courseObj.fields.units, isWarning, false);
                                 
                 $('#' + offeringStr).prepend(makeAddedCourseHTML(offeringStr, courseObj.fields, isWarning));
                 
@@ -858,7 +865,7 @@
                                         
                 $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
                 
-                resetAddedUnits(offeringStr, courseObj.fields.units);
+                resetAddedUnits(offeringStr);
                 
                 removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
                                 
