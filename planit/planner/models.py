@@ -83,7 +83,7 @@ class CourseRequirement(Requirement):
         abstract = True
 
     def fulfilled_by(self):
-        return [o.course for o in TagMapping.objects.filter(tag=self.fulfillers)]
+        return [o.course for o in TagMapping.objects.filter(tag_name=self.fulfillers)]
 
     def req(self):
         return Requirement.objects.get(depthrequirement=self)
@@ -114,7 +114,7 @@ class BreadthRequirement(CourseRequirement):
 
 #through class for many to many, will change
 class TagMapping(models.Model):
-    tag = models.ForeignKey(Tag)
+    tag_name = models.ForeignKey(Tag)
     course = models.ForeignKey(Course)
 
 #could just as well be a string, but we may want
