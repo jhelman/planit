@@ -538,7 +538,6 @@
                         
                 $('.icon-warning-sign').tooltip({'title': warningStr, 'placement': 'left'});
                 
-                
             }
             
             $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover({
@@ -734,7 +733,7 @@
                     var quarterID = termNames[j] + years[i];
                                         
                     if ($('#' + quarterID + makeCondensedName(courseName)).length) {
-                        return termNames[i] + " " + years[i];
+                        return termNames[j] + " " + years[i];
                     }
                     
                 }
