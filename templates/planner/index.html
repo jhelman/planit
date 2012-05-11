@@ -88,8 +88,9 @@
         $(document).ready(function () {
             
             draw();
-                        
             
+            var dragTerm = null;
+                            
             // Reference: http://blog.petersendidit.com/post/drag-table-row-to-a-div-with-jquery/
             $('.course').draggable({handle: '.icon-move', revert: 'invalid',
                                     
@@ -105,6 +106,8 @@
                     
                     var term = $(this).closest('.quarter-div').attr('id');
                     
+                    dragTerm = term;
+                                        
                     var courseName = ui.helper.find('.courseName').html();
                     
                     for (var i in termNames) {
@@ -178,6 +181,12 @@
                     ui.draggable.appendTo('#{{ term.condensedName }}');
 					ui.draggable.attr('id', '{{ term.condensedName }}' + 
 					    makeCondensedName(ui.draggable.find('.courseName').html()));
+					updateQuarterUnits('{{ term.condensedName }}', 
+					    parseInt(ui.draggable.find('.units').html()), false);
+					updateQuarterUnits(dragTerm, 
+				        parseInt("-" + ui.draggable.find('.units').html()), false);
+				    moveClassOnSchedule(ui.draggable.find('.courseName').html(), dragTerm, 
+				        '{{ term.condensedName }}');
 				}
 			});
 			{% endfor %}
@@ -259,6 +268,31 @@
         });
         
         
+        function moveClassOnSchedule(course, fromTerm, toTerm) {
+        
+            var fromSchedule = scheduleArray[fromTerm];
+            var toSchedule = scheduleArray[toTerm];
+            
+            var numToMove = 0;
+            var posToMove = -1;
+            
+            for (var i in fromSchedule) {
+                if (fromSchedule[i].title == course) {
+                    if (posToMove == -1) {
+                        posToMove = i;
+                    }
+                    numToMove++;
+                }
+            }
+            
+            if (posToMove != -1) {
+                $.merge(toSchedule, fromSchedule.slice(posToMove, posToMove + numToMove));
+                fromSchedule.splice(posToMove, numToMove);
+            }
+            
+        }
+        
+        
         function removeCourse(infoElem) {
             
             var courseElem = $(infoElem).closest('.course');
@@ -298,14 +332,18 @@
             resetAddedUnits(quarterID);
         }
         
-        function updateQuarterUnits(quarterID, unitChange) {
+        function updateQuarterUnits(quarterID, unitChange, updateTotal) {
             
             $('#' + quarterID + '-units').html(parseInt($('#' + quarterID + '-units').html()) + unitChange);        
-            $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
+            if (updateTotal) {
+                $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
+            }
         }
+        
 
         
-        function removeClassFromSchedule(course, quarterID) {            
+        function removeClassFromSchedule(course, quarterID) {  
+            
             var curSchedule = scheduleArray[quarterID];
             var numToRemove = 0;
             var posToRemove = -1;
@@ -332,7 +370,7 @@
             
             courseElem.remove();
             
-            updateQuarterUnits(quarterID, parseInt("-" + numUnits));
+            updateQuarterUnits(quarterID, parseInt("-" + numUnits), true);
             
             var course = qDiv.find('.alert-delete-course-name').html();
             removeClassFromSchedule(course, quarterID);
@@ -576,7 +614,7 @@
             //    placement: 'right'
             // });
                 
-            updateQuarterUnits(quarterID, units);
+            updateQuarterUnits(quarterID, units, true);
                 
             resetAddedUnits(quarterID);
                         
