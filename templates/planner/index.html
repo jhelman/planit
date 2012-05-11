@@ -206,7 +206,6 @@
                 slotMinutes: 30,
                 allDaySlot: false,
                 columnFormat: {week: 'dddd'},
-                // eventSources: [scheduleArray['Autumn2011-2012'], scheduleArray['Winter2011-2012']] 
             });
             
             $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
@@ -249,7 +248,6 @@
         });
         
         
-        // Functions to make the remove course message (need to actually remove!!)
         function removeCourse(courseID) {
             var courseElem = $('#' + courseID);
             var courseName = courseElem.find('.courseName').html();
@@ -517,10 +515,32 @@
                             
         }
         
-        function createRolloversForAddedCourse(quarterID, courseObj) {
+        function createRolloversForAddedCourse(quarterID, courseObj, isWarning, 
+                warningArrayAll, warningArrayOffering) {
             
             $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
+            
+            if (isWarning) {
+            
+                var warningStr = "";
+                
+                for (var i in warningArrayAll) {
+                    if (i == WARNING_ALL_DOUBLE_COURSE && warningArrayAll[i] != false) {
+                           warningStr += "Course already in " + warningArrayAll[i] + "<br/>";
+                    }
+                }
+                
+                for (var j in warningArrayOffering) {
+                    if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
+                           warningStr += "Course conflicts with " + warningArrayOffering[j] + "<br/>";
+                    } 
+                }
                         
+                $('.icon-warning-sign').tooltip({'title': warningStr, 'placement': 'left'});
+                
+                
+            }
+            
             $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover({
                title: courseObj.identifier,
                content: courseObj.name,
@@ -548,8 +568,12 @@
 
                     var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
                         years[parseInt(offerings[i].fields.year) - 1];
+                    
+                    var tableElem = $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier));
                         
-                    if (offeringStr == quarterID) {
+                    if (offeringStr == quarterID || 
+                        (!tableElem.hasClass('possible-course') &&
+                        !tableElem.hasClass('possible-course-warning'))) {
                         continue;
                     }
 
@@ -566,13 +590,11 @@
         function confirmAddCourse(courseTableID) {
             var quarterID = $('#' + courseTableID).parent().attr('id');
             var units = parseInt($('#' + courseTableID).find('.units').html());
+            var courseName = $('#' + courseTableID).find('.courseName').html();
             
-            $('#' + courseTableID).removeClass('possible-course');
-            $('#' + courseTableID).css('background-color', 'none');
-            $('#' + courseTableID).popover('hide');
             
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
-            $('#' + courseTableID).find('.icon-ok').remove();
+            $('#' + courseTableID).find('.info').empty();
             
             // Remember to redraw the dragging for this course!
             
@@ -583,16 +605,25 @@
             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
                 
+            var courseObj = getJSONForCourse(courseName);
+                            
+            // $('#' + courseTableID).popover({
+            //    title: courseObj.fields.identifier,
+            //    content: courseObj.fields.name,
+            //    placement: 'right'
+            // });
+                
             updateQuarterUnits(quarterID, units);
                 
             resetAddedUnits(quarterID);
-            
-            var courseName = $('#' + courseTableID).find('.courseName').html();
-            
+                        
             confirmDates(quarterID, courseName);
             
-            deleteAddedCourse(getJSONForCourse(courseName), jQuery.parseJSON(offeringsJSON[courseName]), 
-                quarterID);
+            deleteAddedCourse(courseObj, jQuery.parseJSON(offeringsJSON[courseName]), quarterID);
+            
+            $('#' + courseTableID).removeClass('possible-course');
+            $('#' + courseTableID).removeClass('possible-course-warning');
+            $('#' + courseTableID).css('background-color', 'none');
                         
             var liElem = $('#' + makeCondensedName(courseName) + '-search-result');
                         
@@ -677,8 +708,8 @@
             
             var warningArray = new Array(1);
             
-            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(quarterID, courseName, offering)
-            
+            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(quarterID, courseName, offering);
+                        
             return warningArray;
             
             
@@ -703,7 +734,7 @@
                     var quarterID = termNames[j] + years[i];
                                         
                     if ($('#' + quarterID + makeCondensedName(courseName)).length) {
-                        return true;
+                        return termNames[i] + " " + years[i];
                     }
                     
                 }
@@ -766,7 +797,7 @@
             
             var isWarningAll = false;
             for (var i in warningArrayAll) {
-                if (warningArrayAll[i] == true) {
+                if (warningArrayAll[i] != false) {
                     isWarningAll = true;
                     break;
                 }
@@ -791,7 +822,7 @@
                  
                 var isWarningOffering = false;
                 for (var i in warningArrayOffering) {
-                    if (warningArrayOffering[i] == true) {
+                    if (warningArrayOffering[i] != false) {
                         isWarningOffering = true;
                         break;
                     }
@@ -806,7 +837,8 @@
                                 
                 $('#' + offeringStr).prepend(makeAddedCourseHTML(offeringStr, courseObj.fields, isWarning));
                 
-                createRolloversForAddedCourse(offeringStr, courseObj.fields);
+                createRolloversForAddedCourse(offeringStr, courseObj.fields, isWarning, 
+                    warningArrayAll, warningArrayOffering);
                         
             }
            
@@ -815,7 +847,7 @@
         
         function checkIfTimeConflict(quarterID, courseName, offering) {
             
-            var flag = false;
+            var flag = null;
             
             var numOfferings = offering.weekdays.length;
             
@@ -836,7 +868,7 @@
                         (offeringET > startTime && offeringET <= endTime)) {
                         
                         events[j].color = '#ffc40d';
-                        flag = true;
+                        flag = events[i].title;
                         
                     }
                     
@@ -846,7 +878,7 @@
                 
             }
             
-            return flag;
+            return (flag == null ? false : flag);
             
         }
         
@@ -896,10 +928,10 @@
                     courseShortName  + '</span>: ' + courseLongName +  '</a></li>');
                     
                 // $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
-                //              title: courseShortName,
-                //              content: courseLongName,
-                //              placement: 'left'
-                //          });
+                //     title: courseShortName,
+                //     content: courseLongName,
+                //     placement: 'left'
+                // });
                 
             }
             
