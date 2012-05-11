@@ -66,6 +66,7 @@ class Course(models.Model):
     min_units = models.IntegerField()
 #    instructor = models.ForeignKey(Instructor) #on per class atm
     tags = models.ManyToManyField(Tag, through='TagMapping')
+    prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
     #repeatable_for_credit = models.BooleanField()
 
     def __unicode__(self):
@@ -117,6 +118,10 @@ class TagMapping(models.Model):
     tag = models.ForeignKey(Tag)
     course = models.ForeignKey(Course)
 
+class Prereq(models.Model):
+    prereq = models.ForeignKey(Course, related_name='prereq')
+    for_course = models.ForeignKey(Course, related_name='for')
+    mandatory = models.BooleanField()
 #could just as well be a string, but we may want
 #to add additional info to the struct
 class Major(models.Model):
@@ -125,17 +130,11 @@ class Major(models.Model):
     def __unicode__(self):
         return self.name
     
-class Year(models.Model):
-    start_num = models.IntegerField()
-    
-    def __unicode__(self):
-        return str(self.start_num) + "-" + str(self.start_num + 1)
-        
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
     university = models.OneToOneField(University)
     major = models.ForeignKey(Major)
-    start_year = models.ForeignKey(Year)
+    start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
     
     def __unicode__(self):
@@ -161,7 +160,7 @@ class CourseOffering(models.Model):
 #does it scale
 class Enrollment(models.Model):
     term = models.ForeignKey(Term)
-    year = models.ForeignKey(Year)
+    year = models.IntegerField()
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
 

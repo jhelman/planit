@@ -21,11 +21,11 @@ def index(request):
     years[3]['name'] = 'Senior'
     
     totalUnits = 0
-    start = plan.start_year.start_num
+    start = plan.start_year
     for i in range(start,start + 4):
         year_num = i - start
-        year = Year.objects.filter(start_num=i)[0]
-        years[year_num]['year'] = year.__unicode__()
+        year = 2012#Year.objects.filter(start_num=i)[0]
+        years[year_num]['year'] = str(year)#year.__unicode__()
         year_enrolled = enrolled.filter(year=year)
         terms = [{}, {}, {}]
         for t in range(3):
