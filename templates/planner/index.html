@@ -61,9 +61,7 @@
             $('.dropdown-toggle').dropdown();
             
         }
-        
-        // {'id': {{ forloop.parentloop.counter }}, 'start': Math.ceil(.getTime())/1000, 'end': Math.ceil(new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}).getTime()/1000), 'title': '{{ course.identifier }}' },
-        
+                
            
         var scheduleArray = {};
         {% for year in years %}
@@ -90,38 +88,62 @@
         $(document).ready(function () {
             
             draw();
-            
-            // $('a[data-toggle="tab"]').on('shown', function (e) {
-            //     var target = String(e.target).substring(String(e.target).length - 1);
-            //                     
-            // });
-            
-            $('#class-search').typeahead({'items': 4,
-                'source': ['CS106A', 'CS106B', 'CS107', 'CS108', 'CS109', 'Econ1A', 'Econ1B', 'Chem31A', 
-                           'Chem31B', 'Physics41'],
-                });
-            
-            
-            
-            $('#add-course-alert').hide();
-            
-            $('#remove-course-alert').hide();
+                        
             
             // Reference: http://blog.petersendidit.com/post/drag-table-row-to-a-div-with-jquery/
             $('.course').draggable({handle: '.icon-move', revert: 'invalid',
                                     
                 helper: function (event) {
-                    // var courseName = event.currentTarget.firstElementChild.firstElementChild.children[0].innerHTML;
-                    //                     var numUnits = event.currentTarget.firstElementChild.firstElementChild.children[1].innerHTML;
-                    //                     return $('<table class="table table-bordered" style="width: 400px;"><tr><td class="course">' + 
-                    //                         courseName + '</td><td style="units">' + numUnits + 
-                    //                         '</td><td class="info"><center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash"></i></center></td></tr></table>').appendTo('body');
-                
                     var copy = $(event.currentTarget).clone();
                     copy.find('.icon-trash').unbind('onclick');
+                    copy.css('z-index', '1000');
+                    copy.css('background-color', '#eeeeee');
                     return copy.appendTo('body');
-                
                 },
+                
+                start: function (event, ui) {
+                    
+                    var term = $(this).closest('.quarter-div').attr('id');
+                    
+                    var courseName = ui.helper.find('.courseName').html();
+                    
+                    for (var i in termNames) {
+                     
+                       for (var j in years) {
+                           
+                           var termStr = termNames[i] + years[j];
+                           
+                           if (term == termStr) {
+                               continue;
+                           }
+                            
+                           if ($.inArray(term + makeCondensedName(courseName), acceptedDragsForTerms[termStr]) == -1) {
+                               
+                               $('#' + termStr + '-drag-cover').show();
+                               
+                           }
+                           
+                       }
+                        
+                    }
+                },
+                
+                
+                stop: function (event, ui) {
+                    
+                    for (var i in termNames) {
+                     
+                       for (var j in years) {
+                           
+                           var termStr = termNames[i] + years[j];
+                                                      
+                           $('#' + termStr + '-drag-cover').hide();
+                                                          
+                       }
+                        
+                    }
+                    
+                }
                      
             });
 			
@@ -153,47 +175,36 @@
 				
 				
 				drop: function (event, ui) {
-					ui.draggable.appendTo('#{{ term.condensedName }}');
-					ui.draggable.attr('id', '{{ term.condensedName }}' + ui.draggable.find('.courseName').html());
+                    ui.draggable.appendTo('#{{ term.condensedName }}');
+					ui.draggable.attr('id', '{{ term.condensedName }}' + 
+					    makeCondensedName(ui.draggable.find('.courseName').html()));
 				}
 			});
 			{% endfor %}
 			{% endfor %}
 			
-			// example turning red
-            $('#Spring2012-2013').droppable({
-                
-                over: function (event, ui) {
-                    $(this).css('backgroundColor', 'red');
-                },
-                
-                out: function (event, ui) {
-                    $(this).css('backgroundColor', '#eeeeee');   
-                },
-                
-                deactivate: function (event, ui) {
-                    $(this).css('backgroundColor', '#eeeeee');   
-                }
-                
-            }); 
+            // // example turning red
+            //             $('#Spring2012-2013').droppable({
+            //                 
+            //                 over: function (event, ui) {
+            //                     $(this).css('backgroundColor', 'red');
+            //                 },
+            //                 
+            //                 out: function (event, ui) {
+            //                     $(this).css('backgroundColor', '#eeeeee');   
+            //                 },
+            //                 
+            //                 deactivate: function (event, ui) {
+            //                     $(this).css('backgroundColor', '#eeeeee');   
+            //                 }
+            //                 
+            //             }); 
 
             // $('#new-plan-modal').modal({'show': false});
             
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
-            
-            
-                    //             var classes = {
-                    //                 events: [
-                    // {% for course in years.0.terms.0.courses %}
-                    //  {% for day in course.days %}
-                    //      {'id': {{ forloop.parentloop.counter }}, 'start': new Date(2011, 4, {{ day }}, {{ course.start_time.hour }}, {{ course.start_time.minute }}), 'end': new Date(2011, 4, {{ day }}, {{ course.endTime.hour }}, {{ course.endTime.minute }}), 'title': '{{ course.identifier }}' },
-                    //  {% endfor %}
-                    // {% endfor %}
-                    //                     
-                    //                 ]
-                    //             };
 			
             
             $('#schedule-modal-calendar').fullCalendar({ 
@@ -205,7 +216,7 @@
                 maxTime: '18:00',
                 slotMinutes: 30,
                 allDaySlot: false,
-                columnFormat: {week: 'dddd'},
+                columnFormat: {week: 'dddd'}
             });
             
             $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
@@ -248,8 +259,9 @@
         });
         
         
-        function removeCourse(courseID) {
-            var courseElem = $('#' + courseID);
+        function removeCourse(infoElem) {
+            
+            var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
             
             courseElem.find('.icon-trash').tooltip('hide');
@@ -313,18 +325,6 @@
                         
         }
         
-        // function getCourseName(longName) {
-        //     
-        //     for (var i in termNames) {
-        //         if (longName.indexOf(termNames[i]) != -1) {
-        //             return longName.substring(termNames[i].length + 9);
-        //         }
-        //     }
-        //     return false;
-        //     
-        // }
-        
-        
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
             var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
@@ -342,43 +342,7 @@
             cancelDeleteCourse(quarterID);
         }
         
-        
-        // Functions to add a course
-        // function addCourse(courseName, courseId) {
-        //             $('#add-course-alert').alert();
-        //             $('#add-course-alert-head').html('Added ' + courseName);
-        //             $('#add-course-alert').fadeIn(function () {
-        //                 fading_alert_timeout = setTimeout("closeAddCourse()", FADING_ALERT_TIME);
-        //             });
-        //                         
-        //             $('.icon-ok').tooltip('hide');
-        //             
-        //             $('#' + courseId).find('tr').removeClass('possible-course');
-        //                         
-        //             $($('#' + courseId).find('tr').children()[2]).html('<center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash" onclick="removeCourse(\'Chem 31A\');"></i></center>');
-        //         
-        //             $('#' + courseId).draggable({handle: '.icon-move', revert: 'invalid',
-        //                                     
-        //                 helper: function (event) {
-        //                     // var courseName = event.currentTarget.firstElementChild.firstElementChild.children[0].innerHTML;
-        //                     //                     var numUnits = event.currentTarget.firstElementChild.firstElementChild.children[1].innerHTML;
-        //                     //                     return $('<table class="table table-bordered" style="width: 400px;"><tr><td class="course">' + 
-        //                     //                         courseName + '</td><td style="units">' + numUnits + 
-        //                     //                         '</td><td class="info"><center><i class="icon-move"></i>&nbsp;&nbsp;<i class="icon-trash"></i></center></td></tr></table>').appendTo('body');
-        //                 
-        //                     var copy = $(event.currentTarget).clone();
-        //                     copy.find('i').unbind('onclick');
-        //                     return copy.appendTo('body');
-        //                 
-        //                 },
-        //                      
-        //             });
-        //             
-        //         
-        //             draw();
-        //         
-        //         }
-        //         
+  
         function closeAddCourse() {
             clearTimeout(fading_alert_timeout);
             $('#add-course-alert').fadeOut();
@@ -599,7 +563,7 @@
             
             var infoTD = $('#' + courseTableID).find('.info');
             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
-                '<i class="icon-trash" onclick="removeCourse(\'' + courseTableID + '\');"></i>');
+                '<i class="icon-trash" onclick="removeCourse(this);"></i>');
                 
             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
@@ -1138,19 +1102,13 @@
 			
         				{% for term in year.terms %}
         					<td>	
-        			            <!-- <center><table><tr>
-        			                <td><h4>{{ term.name }}</h4></td><td>&nbsp;</td>
-        			                <td><i class="icon-info-sign"></i></td><td>&nbsp;</td>
-        			                <td><i class="icon-calendar"></i></td>
-        			            </tr></table></center> -->
-				
-				
+
         				        <table>
         				            <tr>
         				                <td style="padding: 0px">
-				
+				                		    
         						            <div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
-						    	
+						    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
                     						    <div class="quarter-div cover"></div>
 
                         				        <div class="alert alert-error delete-alert">
@@ -1171,7 +1129,7 @@
                     				                        <td class="courseName">{{ course.identifier }}</td>
                     				                        <td class="units">{{ course.units }}</td>
                     				                        <td class="info"><i class="icon-move"></i>&nbsp;
-                    				                            <i class="icon-trash" onclick="removeCourse('{{ term.condensedName|add:course.condensedID }}');"></i></td>
+                    				                            <i class="icon-trash" onclick="removeCourse(this);"></i></td>
                     				                    </tr>
                     				                </table>
                     							{% endfor %}
