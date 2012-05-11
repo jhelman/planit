@@ -19,6 +19,9 @@ class Instructor(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
 
+    class Meta:
+        unique_together=('first_name', 'last_name')
+
     def __unicode__(self):
         return "%s, %s" % (self.last_name, self.first_name)
 
@@ -41,8 +44,12 @@ class Term(models.Model):
             return 'Autumn'
         elif self.num == 1:
             return 'Winter'
-        else:
+        elif self.num == 2:
             return 'Spring'
+        elif self.num == 3:
+            return 'Summer'
+        else:
+            return 'Unknown'
 
 class Tag(models.Model):
     name = models.CharField(max_length=64)
@@ -52,11 +59,12 @@ class Tag(models.Model):
 #underscore case for vars, as per python style guide
 class Course(models.Model):
     identifier = models.CharField(max_length=100)
-    name = models.CharField(max_length=64)
+    title = models.CharField(max_length=64)
     description = models.CharField(max_length=1000)
     class_number = models.IntegerField()
-    units = models.IntegerField()
-    instructor = models.ForeignKey(Instructor) #on per class atm
+    max_units = models.IntegerField()
+    min_units = models.IntegerField()
+#    instructor = models.ForeignKey(Instructor) #on per class atm
     tags = models.ManyToManyField(Tag, through='TagMapping')
     #repeatable_for_credit = models.BooleanField()
 
@@ -75,7 +83,7 @@ class CourseRequirement(Requirement):
         abstract = True
 
     def fulfilled_by(self):
-        return [o.course for o in TagMapping.objects.filter(tag_name=self.fulfillers)]
+        return [o.course for o in TagMapping.objects.filter(tag=self.fulfillers)]
 
     def req(self):
         return Requirement.objects.get(depthrequirement=self)
@@ -106,7 +114,7 @@ class BreadthRequirement(CourseRequirement):
 
 #through class for many to many, will change
 class TagMapping(models.Model):
-    tag_name = models.ForeignKey(Tag)
+    tag = models.ForeignKey(Tag)
     course = models.ForeignKey(Course)
 
 #could just as well be a string, but we may want
@@ -135,17 +143,19 @@ class Plan(models.Model):
         
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
-    year = models.ForeignKey(Year)
+    year = models.IntegerField()
     term   = models.ForeignKey(Term)
     start_time = models.TimeField(default=datetime.time(9,00))
     end_time = models.TimeField(default=datetime.time(9,50))
     weekdays = models.CharField(max_length=5,default="MWF")
+    instructor = models.ForeignKey(Instructor, null=True)
+    #ctype = models.IntegerField() #section or lecture
     #duration = models.IntegerField()
     class Meta:
         unique_together = ('course', 'year', 'term', 'weekdays', 'start_time')
         
     def __unicode__(self):
-        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__()
+        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year)
 
 
 #does it scale
