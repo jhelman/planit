@@ -19,9 +19,6 @@ class Instructor(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
 
-    class Meta:
-        unique_together=('first_name', 'last_name')
-
     def __unicode__(self):
         return "%s, %s" % (self.last_name, self.first_name)
 
@@ -44,12 +41,8 @@ class Term(models.Model):
             return 'Autumn'
         elif self.num == 1:
             return 'Winter'
-        elif self.num == 2:
-            return 'Spring'
-        elif self.num == 3:
-            return 'Summer'
         else:
-            return 'Unknown'
+            return 'Spring'
 
 class Tag(models.Model):
     name = models.CharField(max_length=64)
@@ -59,12 +52,11 @@ class Tag(models.Model):
 #underscore case for vars, as per python style guide
 class Course(models.Model):
     identifier = models.CharField(max_length=100)
-    title = models.CharField(max_length=64)
+    name = models.CharField(max_length=64)
     description = models.CharField(max_length=1000)
     class_number = models.IntegerField()
-    max_units = models.IntegerField()
-    min_units = models.IntegerField()
-#    instructor = models.ForeignKey(Instructor) #on per class atm
+    units = models.IntegerField()
+    instructor = models.ForeignKey(Instructor) #on per class atm
     tags = models.ManyToManyField(Tag, through='TagMapping')
     #repeatable_for_credit = models.BooleanField()
 
@@ -143,19 +135,17 @@ class Plan(models.Model):
         
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
-    year = models.IntegerField()
+    year = models.ForeignKey(Year)
     term   = models.ForeignKey(Term)
     start_time = models.TimeField(default=datetime.time(9,00))
     end_time = models.TimeField(default=datetime.time(9,50))
     weekdays = models.CharField(max_length=5,default="MWF")
-    instructor = models.ForeignKey(Instructor, null=True)
-    #ctype = models.IntegerField() #section or lecture
     #duration = models.IntegerField()
     class Meta:
         unique_together = ('course', 'year', 'term', 'weekdays', 'start_time')
         
     def __unicode__(self):
-        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year)
+        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__()
 
 
 #does it scale
