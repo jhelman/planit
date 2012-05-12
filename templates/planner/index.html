@@ -161,7 +161,7 @@
 						{% for course in t.courses %}
 						{% for offering in offerings|get_item:course.identifier %}
 							{% if offering.year.start_num == year.start_num and offering.term.num == term.num %}
-								acceptedDragsForTerms['{{ term.condensedName }}'].push('{{ t.condensedName|add:course.condensedID }}');
+								acceptedDragsForTerms['{{ term.condensedName }}'].push('{{ t.condensedName|add:course.condensedID }}');            				    
 							{% endif %}
 						{% endfor %}
 						{% endfor %}
@@ -187,6 +187,8 @@
 				        parseInt("-" + ui.draggable.find('.units').html()), false);
 				    moveClassOnSchedule(ui.draggable.find('.courseName').html(), dragTerm, 
 				        '{{ term.condensedName }}');
+				    changeDraggable(ui.draggable.find('.courseName').html(), dragTerm, 
+    				    '{{ term.condensedName }}');
 				}
 			});
 			{% endfor %}
@@ -267,6 +269,34 @@
         
         });
         
+        
+        function changeDraggable(course, fromTerm, toTerm) {
+            
+            var identifier = makeCondensedName(course);
+            
+            acceptedDragsForTerms[fromTerm].push(toTerm + identifier);
+            
+            var posToRemove =  $.inArray(fromTerm + identifier, dragArray);
+            if (posToRemove > -1) {
+                acceptedDragsForTerms[toTerm].splice(posToRemove, 1);
+            }
+            
+            for (var i in termNames) {
+                
+                for (var j in years) {
+                    
+                    var dragArray = acceptedDragsForTerms[termNames[i] + years[j]];
+                    var pos = $.inArray(fromTerm + identifier, dragArray);
+                    
+                    if (pos > -1) {
+                        dragArray.splice(pos, 1, toTerm + identifier);
+                    }
+
+                }
+                
+            }
+            
+        }
         
         function moveClassOnSchedule(course, fromTerm, toTerm) {
         
