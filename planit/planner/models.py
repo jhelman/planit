@@ -75,7 +75,7 @@ class Course(models.Model):
 #add type field to avoid try catch when
 #working with "upcasted" pointers
 class Requirement(models.Model):
-    pass
+    force = models.BooleanField()
 
 class CourseRequirement(Requirement):
     name = models.CharField(max_length=64)
@@ -89,9 +89,20 @@ class CourseRequirement(Requirement):
     def req(self):
         return Requirement.objects.get(depthrequirement=self)
 
+    def set_force(self, val):
+        superreq = self.req()
+        superreq.force = val
+
+    def get_force(self):
+        return self.req.force
+
+
 class DepthRequirement(CourseRequirement):
     min_units = models.IntegerField(default=15)
     def is_fulfilled(self, plan):
+        if(self.get_force()):
+            return True
+
         taken = set(plan.courses_taken.all())
         req_opts = set(self.fulfilled_by())
         return sum(c.units for c in set(taken & req_opts)) >= self.min_units
@@ -103,6 +114,9 @@ class BreadthRequirement(CourseRequirement):
     min_courses = models.IntegerField(default=4)
 
     def is_fulfilled(self, plan):
+        if(self.get_force()):
+            return True
+
         taken = set(plan.courses_taken.all())
         req_opts = set(self.fulfilled_by())
         return len(taken & req_opts) >= self.min_courses
@@ -182,7 +196,6 @@ class LogicalRequirement(Requirement):
             courses.extend(req.fulfilled_by())
         return courses
 
-    #should be recursive
     def subrequirements(self):
         subreqs = []
         try:
@@ -198,8 +211,19 @@ class LogicalRequirement(Requirement):
 
         return subreqs
 
+    def set_force(self, val):
+        superreq = self.req()
+        superreq.force = val
+
+    def get_force(self):
+        return self.req().force
+
+
 class ConjunctionRequirement(Requirement):
     def is_fulfilled(self, plan):
+        if(self.get_force()):
+            return True
+
         for req in self.reqs.all():
             if(not req.is_fulfilled(plan)):
                 return False
@@ -213,6 +237,9 @@ class ConjunctionRequirement(Requirement):
 
 class DisjunctionRequirement(Requirement):
     def is_fulfilled(self, plan):
+        if(self.get_force()):
+            return True
+
         for req in self.reqs.all():
             if(req.is_fulfilled(plan)):
                 return True
