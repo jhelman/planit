@@ -144,16 +144,6 @@ class Major(models.Model):
     def __unicode__(self):
         return self.name
     
-class Plan(models.Model):
-    student_name = models.CharField(max_length=100) #eventually user
-    university = models.OneToOneField(University)
-    major = models.ForeignKey(Major)
-    start_year = models.IntegerField()
-    num_years = models.IntegerField(default=4)
-    
-    def __unicode__(self):
-        return self.student_name
-        
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
     year = models.IntegerField()
@@ -170,16 +160,25 @@ class CourseOffering(models.Model):
     def __unicode__(self):
         return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year)
 
+class Plan(models.Model):
+    student_name = models.CharField(max_length=100) #eventually user
+    university = models.OneToOneField(University)
+    major = models.ForeignKey(Major)
+    start_year = models.IntegerField()
+    num_years = models.IntegerField(default=4)
+    courses_taken = models.ManyToManyField(CourseOffering, through='Enrollment')
+    
+    def __unicode__(self):
+        return self.student_name
+        
 
 #does it scale
 class Enrollment(models.Model):
-    term = models.ForeignKey(Term)
-    year = models.IntegerField()
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
 
     class Meta:
-        unique_together = ('plan','term','year','course')
+        unique_together = ('plan', 'course')
         
     def __unicode__(self):
         return self.course.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__() + ' ' + self.plan.__unicode__()
