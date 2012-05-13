@@ -312,11 +312,11 @@
             
             var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
-            
+                        
             courseElem.find('.icon-trash').tooltip('hide');
             courseElem.popover('hide');
             
-            var qDiv = courseElem.parent();
+            var qDiv = courseElem.closest('.quarter-div');
             var cover = qDiv.find('.cover');
             var alertBox = qDiv.find('.delete-alert');
             
