@@ -69,19 +69,22 @@ table.possible-course-warning {
 }
 
 .quarter-div-cover-drag {
-		width: 266px;
-		height: 134px;
+		width: 166px;
+		height: 34px;
 		border-radius: 10px;
 		-moz-border-radius: 10px;
 		border: none;
-		background-color: red;
-		opacity: 0.85;
-		filter: alpha(opacity=85);
+		background-color: #bd362f;
+		opacity: 0.95;
+		filter: alpha(opacity=95);
 		z-index: 20;
 		margin-top: -4px;
 		position: absolute;
 		display: none;
+		padding: 50px;
+		text-align: center;
 }
+
 
 .quarter-info-div {
     -moz-border-top-right-radius: 10px;

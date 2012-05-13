@@ -103,51 +103,36 @@
                 },
                 
                 start: function (event, ui) {
-                    
-                    var term = $(this).closest('.quarter-div').attr('id');
-                    
-                    dragTerm = term;
-                                        
+                    dragTerm = $(this).closest('.quarter-div').attr('id');
                     var courseName = ui.helper.find('.courseName').html();
-                    
                     for (var i in termNames) {
-                     
                        for (var j in years) {
-                           
                            var termStr = termNames[i] + years[j];
-                           
-                           if (term == termStr) {
+                           if (dragTerm == termStr) {
                                continue;
                            }
-                            
-                           if ($.inArray(term + makeCondensedName(courseName), acceptedDragsForTerms[termStr]) == -1) {
-                               
+                           if ($('#' + termStr).find('#' + termStr + makeCondensedName(courseName)).length) {
+                               $('#' + termStr + '-drag-cover').html("<h4>Already taking " + courseName + 
+                                   " during this quarter.</h4>");
                                $('#' + termStr + '-drag-cover').show();
-                               
+                           } else if ($.inArray(dragTerm + makeCondensedName(courseName), 
+                                acceptedDragsForTerms[termStr]) == -1) {
+                                $('#' + termStr + '-drag-cover').html("<h4>" + courseName + 
+                                    " not offered this quarter.</h4>");
+                                $('#' + termStr + '-drag-cover').show();
                            }
-                           
                        }
-                        
                     }
                 },
                 
-                
                 stop: function (event, ui) {
-                    
                     for (var i in termNames) {
-                     
                        for (var j in years) {
-                           
                            var termStr = termNames[i] + years[j];
-                                                      
                            $('#' + termStr + '-drag-cover').hide();
-                                                          
                        }
-                        
                     }
-                    
                 }
-                     
             });
 			
 			acceptedDragsForTerms = new Array();
@@ -178,7 +163,7 @@
 				
 				
 				drop: function (event, ui) {
-                    ui.draggable.appendTo('#{{ term.condensedName }}');
+                    $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + 
 					    makeCondensedName(ui.draggable.find('.courseName').html()));
 					updateQuarterUnits('{{ term.condensedName }}', 
@@ -601,7 +586,7 @@
                         years[parseInt(offerings[i].fields.year) - 1];
                     
                     var tableElem = $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier));
-                        
+                                                          
                     if (offeringStr == quarterID || 
                         (!tableElem.hasClass('possible-course') &&
                         !tableElem.hasClass('possible-course-warning'))) {
@@ -619,7 +604,7 @@
         
         
         function confirmAddCourse(courseTableID) {
-            var quarterID = $('#' + courseTableID).parent().attr('id');
+            var quarterID = $('#' + courseTableID).closest('.quarter-div').attr('id');
             var units = parseInt($('#' + courseTableID).find('.units').html());
             var courseName = $('#' + courseTableID).find('.courseName').html();
             
@@ -651,6 +636,19 @@
             confirmDates(quarterID, courseName);
             
             deleteAddedCourse(courseObj, jQuery.parseJSON(offeringsJSON[courseName]), quarterID);
+            
+            for (var i in termNames) {
+                for (var j in years) {
+
+                    var pos = $.inArray(termNames[i] + years[j] + makeCondensedName(courseName), 
+                        acceptedDragsForTerms[quarterID]);
+                    if (pos > -1) {
+                        acceptedDragsForTerms[quarterID].splice(pos, 1);
+                    }
+                    
+                }
+            }
+            
             
             $('#' + courseTableID).removeClass('possible-course');
             $('#' + courseTableID).removeClass('possible-course-warning');
@@ -865,9 +863,9 @@
                 }
                                        
                 updateAddedUnits(offeringStr, courseObj.fields.units, isWarning, false);
+                                                           
+                $('#' + offeringStr + '-courses').prepend(makeAddedCourseHTML(offeringStr, courseObj.fields, isWarning));
                                 
-                $('#' + offeringStr).prepend(makeAddedCourseHTML(offeringStr, courseObj.fields, isWarning));
-                
                 createRolloversForAddedCourse(offeringStr, courseObj.fields, isWarning, 
                     warningArrayAll, warningArrayOffering);
                         
@@ -1191,16 +1189,18 @@
                                             	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                                                 </div>
 						    	
-                    							{% for course in term.courses %}
-                    				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
-                    				                    <tr>
-                    				                        <td class="courseName">{{ course.identifier }}</td>
-                    				                        <td class="units">{{ course.units }}</td>
-                    				                        <td class="info"><i class="icon-move"></i>&nbsp;
-                    				                            <i class="icon-trash" onclick="removeCourse(this);"></i></td>
-                    				                    </tr>
-                    				                </table>
-                    							{% endfor %}
+						    	                <div id="{{ term.condensedName }}-courses">
+                    							    {% for course in term.courses %}
+                        				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
+                        				                    <tr>
+                        				                        <td class="courseName">{{ course.identifier }}</td>
+                        				                        <td class="units">{{ course.units }}</td>
+                        				                        <td class="info"><i class="icon-move"></i>&nbsp;
+                        				                            <i class="icon-trash" onclick="removeCourse(this);"></i></td>
+                        				                    </tr>
+                        				                </table>
+                        							{% endfor %}
+                        						</div>
                     						</div>
 						
         					            </td>
