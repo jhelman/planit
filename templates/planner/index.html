@@ -1050,12 +1050,13 @@
             }
         }
         
-        function Course(name, offering, units, isAdded) {
+        function Course(name, offering, units, isAdded, courseObj) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offering = offering;
            this.units = units;
            this.isAdded = true;
+           this.courseObj = courseObj;  // This will be the JSON
         }
         
         Course.prototype.changeToPermanent = function() {
