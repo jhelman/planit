@@ -1001,6 +1001,43 @@
             });
         }
         
+        /* Javascript Object representing the model */
+        
+        function FourYearPlan(planName) {
+            this.planName = planName;
+            this.quarters = new Array();
+            for (var i in termNames) {
+                for (var j in years) {
+                    var quarterID = termNames[i] + years[j];
+                    this.quarters[quarterID] = new Quarter(quarterID);
+                }
+            }
+        }
+        
+        
+        function Quarter(quarterID) {
+            this.quarterID = quarterID;
+            this.units = 0;
+            this.courses = new Array();        
+        }
+        
+        Quarter.prototype.addClass(name, offering, units, isAdded) {
+            this.courses[this.quarterID + makeCondensedName(name)] = 
+                new Course(name, offering, units, isAdded);
+        }
+        
+        function Course(name, offering, units, isAdded) {
+           this.name = name;
+           this.offering = offering;
+           this.units = units;
+           this.isAdded = true;
+        }
+        
+        Course.prototype.changeToPermanent() {
+            this.isAdded = false;
+        }
+        
+        
     
     </script>    
     
