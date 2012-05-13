@@ -983,6 +983,9 @@
         
         function runSearch() {
             
+            // var jon = new Array();
+            // alert(jon["jo"]);
+            
             var searchValue = $('#course-search').attr('value');
             
             if (searchValue.length == 0) {
@@ -1001,6 +1004,7 @@
             });
         }
         
+        
         /* Javascript Object representing the model */
         
         function FourYearPlan(planName) {
@@ -1014,26 +1018,47 @@
             }
         }
         
-        
         function Quarter(quarterID) {
             this.quarterID = quarterID;
             this.units = 0;
+            this.acceptedDragsForTerm = new Array();
             this.courses = new Array();        
         }
         
-        Quarter.prototype.addClass(name, offering, units, isAdded) {
-            this.courses[this.quarterID + makeCondensedName(name)] = 
-                new Course(name, offering, units, isAdded);
+        Quarter.prototype.addClass = function(course) {
+            if (this.courses[course.cName] == undefined) { 
+                this.courses[course.cName] = course;
+            }
+        }
+        
+        Quarter.prototype.removeClass = function(course) {
+            if (this.courses[course.cName] != undefined) { 
+                this.courses[course.cName] = undefined;
+            }
+        }
+        
+        Quarter.prototype.addToDraggableArray = function(course) {
+            if ($.inArray(course, this.acceptedDragsForTerm) == -1) {
+                this.acceptedDragsForTerm.push(course);
+            }
+        }
+        
+        Quarter.prototype.removeFromDraggableArray = function(course) {
+            var pos = $.inArray(course, this.acceptedDragsForTerm);
+            if (pos > -1) {
+                this.acceptedDragsForTerm.splice(pos, 1);
+            }
         }
         
         function Course(name, offering, units, isAdded) {
            this.name = name;
+           this.cName = name.replace(" ", "");
            this.offering = offering;
            this.units = units;
            this.isAdded = true;
         }
         
-        Course.prototype.changeToPermanent() {
+        Course.prototype.changeToPermanent = function() {
             this.isAdded = false;
         }
         
