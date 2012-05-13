@@ -775,7 +775,7 @@
         
         
         var years = ['2012-2013', '2013-2014', '2014-2015', '2015-2016'];        
-        
+                
         function addCourse(classLinkItem) {
             
             // $(classLinkItem).popover('hide');
@@ -803,6 +803,8 @@
                     $(classLinkItem).parent().removeClass('active');
 
                     $(this).unbind('mousedownoutside');
+                    
+                    linkErrorTitle = "";                       
                                         
                 } else if ($(event.target).hasClass('icon-move') ||
                     $(event.target).hasClass('icon-trash') || 
@@ -818,6 +820,8 @@
                         $(classLinkItem).parent().removeClass('active');
 
                         $(this).unbind('mouseupoutside');
+                                                
+                        linkErrorTitle = "";                       
                 }
                                 
             });
@@ -831,6 +835,8 @@
                     break;
                 }
             }
+                
+            var addClassDisplayCount = 0;
                                                             
             for (var i in offerings) {
                                                                                                    
@@ -841,7 +847,9 @@
                 if ($('#' + offeringStr + makeCondensedName(courseName)).length) {
                     continue;
                 }
-                                
+                
+                addClassDisplayCount++;
+                            
                 // evaluate quarter in which you are going to place the class to validate                
                                             
                                             
@@ -869,6 +877,12 @@
                 createRolloversForAddedCourse(offeringStr, courseObj.fields, isWarning, 
                     warningArrayAll, warningArrayOffering);
                         
+            }
+            
+            if (addClassDisplayCount == 0) {
+                $(classLinkItem).tooltip({'title': function () {return linkErrorTitle;} });
+                linkErrorTitle = "Class in schedule in all quarters offered.";
+                $(classLinkItem).tooltip('show'); 
             }
            
         }
