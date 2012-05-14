@@ -1007,8 +1007,9 @@
         
         /* Javascript Object representing the model */
         
-        function FourYearPlan(planName) {
+        function FourYearPlan(planName, major) {
             this.planName = planName;
+            this.major = major;
             this.quarters = new Array();
             for (var i in termNames) {
                 for (var j in years) {
