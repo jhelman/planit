@@ -474,6 +474,7 @@
             $('#account-settings-modal').modal('hide');
         }
         
+        // Templatize (DAN)
         var termNames = ['Autumn', 'Winter', 'Spring', 'Summer'];
         
         function convertFromCondensedName(condensedName) {
@@ -773,7 +774,7 @@
             return false;
         }
         
-        
+        // Templatize (Dan)
         var years = ['2012-2013', '2013-2014', '2014-2015', '2015-2016'];        
                 
         function addCourse(classLinkItem) {
@@ -1010,51 +1011,56 @@
         function FourYearPlan(planName, major) {
             this.planName = planName;
             this.major = major;
-            this.quarters = new Array();
+            this.units = 0;
+            this.terms = new Array();
             for (var i in termNames) {
                 for (var j in years) {
-                    var quarterID = termNames[i] + years[j];
-                    this.quarters[quarterID] = new Quarter(quarterID);
+                    var termID = termNames[i] + years[j];
+                    this.terms[termID] = new Term(termID, this);
                 }
             }
         }
         
-        function Quarter(quarterID) {
-            this.quarterID = quarterID;
+        FourYearPlan.prototype.getTerm = function (termNumber, yearNumber) {
+            return this.terms[termNames[termNumber] + years[yearNumber]];
+        }
+        
+        function Term(termID, plan) {
+            this.termID = termID;
             this.units = 0;
+            this.plan = plan;
             this.acceptedDragsForTerm = new Array();
             this.courses = new Array();        
         }
         
-        Quarter.prototype.addClass = function(course) {
+        Term.prototype.addCourse = function(course) {
             if (this.courses[course.cName] == undefined) { 
                 this.courses[course.cName] = course;
             }
-        }
-        
-        Quarter.prototype.removeClass = function(course) {
-            if (this.courses[course.cName] != undefined) { 
-                this.courses[course.cName] = undefined;
-            }
-        }
-        
-        Quarter.prototype.addToDraggableArray = function(course) {
             if ($.inArray(course, this.acceptedDragsForTerm) == -1) {
                 this.acceptedDragsForTerm.push(course);
             }
+            this.units += course.units;
+            this.plan.units += course.units;
         }
         
-        Quarter.prototype.removeFromDraggableArray = function(course) {
+        Term.prototype.removeCourse = function(course) {
+            if (this.courses[course.cName] != undefined) { 
+                this.courses[course.cName] = undefined;
+            }
             var pos = $.inArray(course, this.acceptedDragsForTerm);
             if (pos > -1) {
                 this.acceptedDragsForTerm.splice(pos, 1);
             }
+            this.units -= course.units;
+            this.plan.units -= course.units;
         }
+        
         
         function Course(name, offering, units, isAdded, courseObj) {
            this.name = name;
            this.cName = name.replace(" ", "");
-           this.offering = offering;
+           this.offering = offering;  // Offering JSON
            this.units = units;
            this.isAdded = true;
            this.courseObj = courseObj;  // This will be the JSON
