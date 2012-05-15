@@ -144,6 +144,16 @@ class Major(models.Model):
     def __unicode__(self):
         return self.name
     
+class Plan(models.Model):
+    student_name = models.CharField(max_length=100) #eventually user
+    university = models.OneToOneField(University)
+    major = models.ForeignKey(Major)
+    start_year = models.IntegerField()
+    num_years = models.IntegerField(default=4)
+    
+    def __unicode__(self):
+        return self.student_name
+        
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
     year = models.IntegerField()
@@ -158,22 +168,13 @@ class CourseOffering(models.Model):
         unique_together = ('course', 'year', 'term', 'weekdays', 'start_time')
         
     def __unicode__(self):
-        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year)
+        return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year) + '-' + str(self.year + 1)
 
-class Plan(models.Model):
-    student_name = models.CharField(max_length=100) #eventually user
-    university = models.OneToOneField(University)
-    major = models.ForeignKey(Major)
-    start_year = models.IntegerField()
-    num_years = models.IntegerField(default=4)
-    courses_taken = models.ManyToManyField(CourseOffering, through='Enrollment')
-    
-    def __unicode__(self):
-        return self.student_name
-        
 
 #does it scale
 class Enrollment(models.Model):
+    year = models.IntegerField()
+    term = models.ForeignKey(Term)
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
 
@@ -181,7 +182,7 @@ class Enrollment(models.Model):
         unique_together = ('plan', 'course')
         
     def __unicode__(self):
-        return self.course.course.identifier + ' ' + self.term.__unicode__() + ' ' + self.year.__unicode__() + ' ' + self.plan.__unicode__()
+        return self.course.__unicode__() + ' ' + self.plan.__unicode__()
 
 class LogicalRequirement(Requirement):
     for_major = models.ForeignKey(Major)

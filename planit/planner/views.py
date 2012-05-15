@@ -76,7 +76,7 @@ def index(request):
         course_offerings = CourseOffering.objects.filter(course=course)
         offered_terms = []
         for offering in course_offerings:
-            offered_terms.append((offering.term.num, offering.year.start_num))
+            offered_terms.append((offering.term.num, offering.year))
         offerings[str(course.identifier)] = course_offerings
             
     args['years'] = years
