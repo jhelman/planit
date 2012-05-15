@@ -20,14 +20,13 @@ def index(request):
     term_names = []
     
     totalUnits = 0
-    start = plan.start_year.start_num
+    start = plan.start_year
     for i in range(start,start + 4):
         year_num = i - start
-        year = Year.objects.filter(start_num=i)[0]
-        years[year_num]['year'] = year.__unicode__()
-        years[year_num]['start_num'] = year.start_num
-        years[year_num]['year_index'] = year_num
-        year_enrolled = enrolled.filter(year=year)
+        years[year_num]['year'] = str(i) + '-' + str(i + 1)
+        years[year_num]['start_num'] = i
+        years[year_num]['year_index'] = i - start
+        year_enrolled = enrolled.filter(year=i)
         terms = [{}, {}, {}]
         for t in range(3):
             term = Term.objects.filter(num=t)[0]
