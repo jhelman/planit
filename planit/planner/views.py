@@ -106,4 +106,24 @@ def search(request, prefix):
     responseData["classNames"] = classNames
     responseData["offerings"] = offerings
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
+
+def add_course(request):
+    params = request.POST.dict()
+    course_name = params['course']
+    year_num = params['year']
+    term_num = params['term']
+    plan_name = params['plan']
+    start_time = params['start']
+    weekdays = params['weekdays']
+    # TODO find the offering and add an enrollment for it
+    return HttpResponse()
+    
+def delete_course(request):
+    params = request.POST.dict()
+    course_name = params['course']
+    year_num = params['year']
+    term_num = params['term']
+    plan_name = params['plan']
+    # TODO find the enrollment and delete it
+    return HttpResponse()
     

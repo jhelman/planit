@@ -33,6 +33,32 @@
         
     
     <script type="text/javascript">
+	
+		// found this on StackOverflow...needed to do ajax POST requests with proper csrf protection
+		$.ajaxSetup({ 
+		     beforeSend: function(xhr, settings) {
+		         function getCookie(name) {
+		             var cookieValue = null;
+		             if (document.cookie && document.cookie != '') {
+		                 var cookies = document.cookie.split(';');
+		                 for (var i = 0; i < cookies.length; i++) {
+		                     var cookie = jQuery.trim(cookies[i]);
+		                     // Does this cookie string begin with the name we want?
+		                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+		                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+		                     break;
+		                 }
+		             }
+		         }
+		         return cookieValue;
+		         }
+		         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+		             // Only send the token to relative URLs i.e. locally.
+		             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		         }
+		     } 
+		});
+	
             
         var FADING_ALERT_TIME = 2000;
         var fading_alert_timeout;
@@ -377,7 +403,8 @@
             }
                         
         }
-        
+		
+		
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
             var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
@@ -394,7 +421,22 @@
             
             cancelDeleteCourse(quarterID);
 			
-			// put AJAX call here
+			// TODO dan put AJAX call here
+			var termYear = convertFromCondensedName(quarterID).split(" ");
+			var termName = termYear[0];
+			var term = termNames.indexOf(termName);
+			var year = parseInt(termYear[1].split("-"))
+			var data = new Object();
+			data['term'] = term;
+			data['year'] = year;
+			data['course'] = course;
+			data['plan'] = plan.planName;
+			$.ajax({
+				type: 'POST',
+				url: '/deleteCourse/',
+				data: data
+			});
+			
         }
         
   
@@ -665,7 +707,7 @@
             
             liElem.unbind('mouseupoutside');
             
-			// put AJAX call here
+			// TODO dan put AJAX call here
         }
         
         
@@ -1004,7 +1046,7 @@
             }
             
             $.ajax({
-                url: '/search/' + searchValue,
+				url: '/search/' + searchValue,
                 success: function (data, textStatus, jqXHR) {
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
