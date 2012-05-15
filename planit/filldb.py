@@ -1,4 +1,3 @@
-from mako.template import Template
 from xml.etree.ElementTree import ElementTree
 from collections import deque
 from string import whitespace
