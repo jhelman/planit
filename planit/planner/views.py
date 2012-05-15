@@ -11,6 +11,7 @@ def index(request):
     enrolled = Enrollment.objects.filter(plan=plan)
     
     args = {}
+    args['plan'] = plan
     years = [{}, {}, {}, {}]
     years[0]['name'] = 'Freshman'
     years[1]['name'] = 'Sophomore'
@@ -24,6 +25,7 @@ def index(request):
         year = Year.objects.filter(start_num=i)[0]
         years[year_num]['year'] = year.__unicode__()
         years[year_num]['start_num'] = year.start_num
+        years[year_num]['year_index'] = year_num
         year_enrolled = enrolled.filter(year=year)
         terms = [{}, {}, {}]
         for t in range(3):
@@ -58,6 +60,9 @@ def index(request):
                     if weekday == 'F':
                         days.append(start_day + 4)
                 setattr(course, 'days', days)
+                course_offerings = CourseOffering.objects.filter(course=course)
+                setattr(course, 'offering_json', simplejson.dumps(serializers.serialize('json', course_offerings)))
+                setattr(course, 'course_json', simplejson.dumps(serializers.serialize('json', [course])))
             terms[t]['units'] = units
             totalUnits += units
         years[year_num]['terms'] = terms

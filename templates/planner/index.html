@@ -1057,7 +1057,7 @@
         }
         
         
-        function Course(name, offering, units, isAdded, courseObj) {
+        function Course(name, offering, units, courseObj) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offering = offering;  // Offering JSON
@@ -1070,7 +1070,17 @@
             this.isAdded = false;
         }
         
-        
+        plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}')
+		
+		{% for year in years %}
+		{% for term in year.terms %}
+		var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
+		{% for course in term.courses %}
+		var c = new Course('{{ course.identifier }}', '{{ course.offering_json }}', {{ course.units }}, '{{ course.course_json }}');
+		t.addCourse(c);
+		{% endfor %}
+		{% endfor %}
+		{% endfor %}
     
     </script>    
     
