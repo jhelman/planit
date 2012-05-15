@@ -1081,7 +1081,9 @@
 		{% for term in year.terms %}
 		var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
 		{% for course in term.courses %}
-		var c = new Course('{{ course.identifier }}', '{{ course.offering_json }}', {{ course.units }}, '{{ course.course_json }}');
+		{% autoescape off %}
+		var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
+		{% endautoescape %}
 		t.addCourse(c);
 		{% endfor %}
 		{% endfor %}
