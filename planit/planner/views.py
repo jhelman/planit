@@ -26,11 +26,11 @@ def index(request):
         years[year_num]['year'] = str(i) + '-' + str(i + 1)
         years[year_num]['start_num'] = i
         years[year_num]['year_index'] = i - start
-        year_enrolled = enrolled.filter(year=i)
+        year_enrolled = enrolled.filter(course__year=i)
         terms = [{}, {}, {}]
         for t in range(3):
             term = Term.objects.filter(num=t)[0]
-            term_enrolled = year_enrolled.filter(term=term)
+            term_enrolled = year_enrolled.filter(course__term=term)
             terms[t]['courses'] = []
             for e in term_enrolled:
                 course = e.course.course
