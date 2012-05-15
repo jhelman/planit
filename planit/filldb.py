@@ -1,9 +1,9 @@
-from mako.template import Template
 from xml.etree.ElementTree import ElementTree
 from collections import deque
 from string import whitespace
 from time import strptime
 import os
+import random
 from datetime import datetime
 try:
     from planner.models import *
@@ -81,7 +81,7 @@ def parse_course(course_elem):
     idstr = course_elem.find('subject').text + course_elem.find('code').text
     idnum = int(course_elem.find('administrativeInformation').find('courseId').text)
     title = course_elem.find('title').text
-    year = int(course_elem.find('year').text.split('-')[1])
+    year = 2008 + random.randint(0, 4)  #int(course_elem.find('year').text.split('-')[1])
     desc = course_elem.find('description').text
     if(desc is None):
         desc = ""
