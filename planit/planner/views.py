@@ -48,7 +48,7 @@ def index(request):
             units = 0
             for course in terms[t]['courses']:
                 setattr(course, 'condensedID', course.identifier.replace(' ', ''))
-                units += course.units
+                units += course.max_units
                 days = []
                 start_day = 23
                 for weekday in course.weekdays:

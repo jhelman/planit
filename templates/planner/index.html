@@ -1085,7 +1085,7 @@
 		var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
 		{% for course in term.courses %}
 		{% autoescape off %}
-		var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
+		var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.max_units }}, jQuery.parseJSON({{ course.course_json }}));
 		{% endautoescape %}
 		t.addCourse(c);
 		{% endfor %}
@@ -1298,7 +1298,7 @@
                         				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
                         				                    <tr>
                         				                        <td class="courseName">{{ course.identifier }}</td>
-                        				                        <td class="units">{{ course.units }}</td>
+                        				                        <td class="units">{{ course.max_units }}</td>
                         				                        <td class="info"><i class="icon-move"></i>&nbsp;
                         				                            <i class="icon-trash" onclick="removeCourse(this);"></i></td>
                         				                    </tr>
@@ -1313,7 +1313,7 @@
                 				            <div class="quarter-info-div">
                 				                <span class="quarter-info-span">
                 				                    Units<br/>
-                    				                <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
+                    				                <span id="{{ term.condensedName }}-units">{{ term.max_units }}</span><br/>
                     				                <span id="{{ term.condensedName }}-added-units" class="added-units">+0</span><br/>
                     				                <br/>
 				            
