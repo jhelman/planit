@@ -27,11 +27,11 @@ def index(request):
         years[year_num]['year'] = year.__unicode__()
         years[year_num]['start_num'] = year.start_num
         years[year_num]['year_index'] = year_num
-        year_enrolled = enrolled.filter(year=year)
+        year_enrolled = enrolled.filter(course__year=year)
         terms = [{}, {}, {}]
         for t in range(3):
             term = Term.objects.filter(num=t)[0]
-            term_enrolled = year_enrolled.filter(term=term)
+            term_enrolled = year_enrolled.filter(course__term=term)
             terms[t]['courses'] = []
             for e in term_enrolled:
                 course = e.course.course
