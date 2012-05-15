@@ -17,6 +17,7 @@ def index(request):
     years[1]['name'] = 'Sophomore'
     years[2]['name'] = 'Junior'
     years[3]['name'] = 'Senior'
+    term_names = []
     
     totalUnits = 0
     start = plan.start_year.start_num
@@ -42,6 +43,9 @@ def index(request):
             terms[t]['name'] = term.__unicode__() + years[year_num]['year']
             terms[t]['condensedName'] = terms[t]['name'].replace(' ', '')
             terms[t]['num'] = term.num
+            term_name = term.__unicode__()
+            if term_name not in term_names:
+                term_names.append(term_name)
             units = 0
             for course in terms[t]['courses']:
                 setattr(course, 'condensedID', course.identifier.replace(' ', ''))
@@ -79,6 +83,7 @@ def index(request):
     args['years'] = years
     args['totalUnits'] = totalUnits
     args['offerings'] = offerings
+    args['term_names'] = term_names
     print offerings
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
