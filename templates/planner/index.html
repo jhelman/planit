@@ -331,25 +331,7 @@
                     }
                 }
             });
-			
-            // acceptedDragsForTerms = new Array();
-            // 
-            // {% for year in years %}
-            // {% for term in year.terms %}
-            //  acceptedDragsForTerms['{{ term.condensedName }}'] = new Array();
-            //  {% for y in years %}
-            //  {% for t in y.terms %}
-            //      {% if y != year or t != term %}
-            //          {% for course in t.courses %}
-            //          {% for offering in offerings|get_item:course.identifier %}
-            //              {% if offering.year.start_num == year.start_num and offering.term.num == term.num %}
-            //                  acceptedDragsForTerms['{{ term.condensedName }}'].push('{{ t.condensedName|add:course.condensedID }}');                             
-            //              {% endif %}
-            //          {% endfor %}
-            //          {% endfor %}
-            //      {% endif %}
-            //  {% endfor %}
-            //  {% endfor %}
+
 			
 			$('#{{ term.condensedName }}').droppable({
 				
@@ -374,34 +356,12 @@
 					    parseInt(ui.draggable.find('.units').html()), false);
 					updateQuarterUnitsUI(dragTerm, 
 				        parseInt("-" + ui.draggable.find('.units').html()), false);
-                    // moveClassOnSchedule(ui.draggable.find('.courseName').html(), dragTerm, 
-                    //     '{{ term.condensedName }}');
-
-                    // changeDraggable(ui.draggable.find('.courseName').html(), dragTerm, 
-                    //     '{{ term.condensedName }}');
 				}
 			});
 			{% endfor %}
 			{% endfor %}
 			
-            // // example turning red
-            //             $('#Spring2012-2013').droppable({
-            //                 
-            //                 over: function (event, ui) {
-            //                     $(this).css('backgroundColor', 'red');
-            //                 },
-            //                 
-            //                 out: function (event, ui) {
-            //                     $(this).css('backgroundColor', '#eeeeee');   
-            //                 },
-            //                 
-            //                 deactivate: function (event, ui) {
-            //                     $(this).css('backgroundColor', '#eeeeee');   
-            //                 }
-            //                 
-            //             }); 
 
-            // $('#new-plan-modal').modal({'show': false});
             
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
