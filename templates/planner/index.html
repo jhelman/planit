@@ -33,7 +33,7 @@
         
     
     <script type="text/javascript">
-	
+		
 		// found this on StackOverflow...needed to do ajax POST requests with proper csrf protection
 		$.ajaxSetup({ 
 		     beforeSend: function(xhr, settings) {
@@ -59,9 +59,115 @@
 		     } 
 		});
 	
-            
-        var FADING_ALERT_TIME = 2000;
-        var fading_alert_timeout;
+        var termNames = new Array();
+		{% for name in term_names %}
+		termNames.push('{{ name }}');
+		{% endfor %}
+		
+		var years = new Array();
+		{% for year in years %}
+		var start_num = {{ year.start_num }}
+		years.push(start_num + '-' + (start_num + 1));
+		{% endfor %}
+
+
+        /* Begin Javascript Object representing the model */
+    
+        function FourYearPlan(planName, major) {
+            this.planName = planName;
+            this.major = major;
+            this.units = 0;
+            this.terms = new Array();
+            for (var i in termNames) {
+                for (var j in years) {
+                    var termID = termNames[i] + years[j];
+                    this.terms[termID] = new Term(termID, this);
+                }
+            }
+        }
+    
+        FourYearPlan.prototype.getTerm = function (termNumber, yearNumber) {
+            return this.terms[termNames[termNumber] + years[yearNumber]];
+        }
+    
+        function Term(termID, plan) {
+            this.termID = termID;
+            this.units = 0;
+            this.plan = plan;
+            this.acceptedDragsForTerm = new Array();
+            this.courses = new Array();        
+        }
+    
+        Term.prototype.addCourse = function(course) {
+            if (this.courses[course.cName] == undefined) { 
+                this.courses[course.cName] = course;
+            }
+
+            this.units += course.units;
+            this.plan.units += course.units;
+        }
+    
+        Term.prototype.addDraggable = function(course) {
+            if ($.inArray(course, this.acceptedDragsForTerm) == -1) {
+                this.acceptedDragsForTerm.push(course);
+            }
+        }
+        
+    
+        Term.prototype.removeCourse = function(course) {
+            if (this.courses[course.cName] != undefined) { 
+                this.courses[course.cName] = undefined;
+            }
+
+            this.units -= course.units;
+            this.plan.units -= course.units;
+        }
+        
+        Term.prototype.removeDraggable = function(course) {
+            var pos = $.inArray(course, this.acceptedDragsForTerm);
+            if (pos > -1) {
+                this.acceptedDragsForTerm.splice(pos, 1);
+            }
+        }
+    
+        Term.prototype.containsCourse = function(courseName) {
+            if (this.courses[makeCondensedName(courseName)] != undefined) {
+                return true;
+            }
+            return false;
+        }
+    
+        // At this point we will need to loop
+        Term.prototype.hasDraggable = function(courseName) {            
+            return false;
+        }
+    
+        function Course(name, offering, units, courseObj) {
+           this.name = name;
+           this.cName = name.replace(" ", "");
+           this.offering = offering;  // Offering JSON
+           this.units = units;
+           this.courseObj = courseObj;  // This will be the JSON
+        }
+    
+    
+        plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}')
+	
+    	{% for year in years %}
+    	{% for term in year.terms %}
+    	var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
+    	{% for course in term.courses %}
+    	{% autoescape off %}
+    	var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
+    	{% endautoescape %}
+    	t.addCourse(c);
+    	{% endfor %}
+    	{% endfor %}
+    	{% endfor %}
+	
+        /* End Javascript Object representing the model */
+
+
         
         var classesJSON = null;
         var offeringsJSON = null;
@@ -88,27 +194,6 @@
             
         }
                 
-           
-        var scheduleArray = {};
-        {% for year in years %}
-        {% for term in year.terms %}
-                scheduleArray['{{ term.condensedName }}'] = [
-
-                 {% for course in term.courses %}
-                     {% for day in course.days %}
-                        {
-                            'start': new Date(2012, 3, {{ day }}, {{ course.start_time.hour }}, {{ course.start_time.minute }}), 
-                            'end': new Date(2012, 3, {{ day }}, {{ course.end_time.hour }}, {{ course.end_time.minute }}), 
-                            'title': '{{ course.identifier }}',
-                            'allDay': false 
-                        },
-                     {% endfor %}
-                 {% endfor %}
-                            
-                ];
-        
-        {% endfor %}
-        {% endfor %}
         
                 
         $(document).ready(function () {
@@ -137,12 +222,11 @@
                            if (dragTerm == termStr) {
                                continue;
                            }
-                           if ($('#' + termStr).find('#' + termStr + makeCondensedName(courseName)).length) {
+                           if (plan.getTerm(i, j).containsCourse(courseName)) {
                                $('#' + termStr + '-drag-cover').html("<h4>Already taking " + courseName + 
                                    " during this quarter.</h4>");
                                $('#' + termStr + '-drag-cover').show();
-                           } else if ($.inArray(dragTerm + makeCondensedName(courseName), 
-                                acceptedDragsForTerms[termStr]) == -1) {
+                           } else if (plan.getTerm(i, j).hasDraggable(courseName)) {
                                 $('#' + termStr + '-drag-cover').html("<h4>" + courseName + 
                                     " not offered this quarter.</h4>");
                                 $('#' + termStr + '-drag-cover').show();
@@ -518,10 +602,7 @@
             $('#account-settings-modal').modal('hide');
         }
         
-		var termNames = new Array();
-		{% for name in term_names %}
-		termNames.push('{{ name }}');
-		{% endfor %}
+
         
         function convertFromCondensedName(condensedName) {
             
@@ -821,11 +902,7 @@
             return false;
         }
         
-		var years = new Array();
-		{% for year in years %}
-		var start_num = {{ year.start_num }}
-		years.push(start_num + '-' + (start_num + 1));
-		{% endfor %}      
+     
                 
         function addCourse(classLinkItem) {
             
@@ -1056,84 +1133,8 @@
         }
         
         
-        /* Javascript Object representing the model */
-        
-        function FourYearPlan(planName, major) {
-            this.planName = planName;
-            this.major = major;
-            this.units = 0;
-            this.terms = new Array();
-            for (var i in termNames) {
-                for (var j in years) {
-                    var termID = termNames[i] + years[j];
-                    this.terms[termID] = new Term(termID, this);
-                }
-            }
-        }
-        
-        FourYearPlan.prototype.getTerm = function (termNumber, yearNumber) {
-            return this.terms[termNames[termNumber] + years[yearNumber]];
-        }
-        
-        function Term(termID, plan) {
-            this.termID = termID;
-            this.units = 0;
-            this.plan = plan;
-            this.acceptedDragsForTerm = new Array();
-            this.courses = new Array();        
-        }
-        
-        Term.prototype.addCourse = function(course) {
-            if (this.courses[course.cName] == undefined) { 
-                this.courses[course.cName] = course;
-            }
-            if ($.inArray(course, this.acceptedDragsForTerm) == -1) {
-                this.acceptedDragsForTerm.push(course);
-            }
-            this.units += course.units;
-            this.plan.units += course.units;
-        }
-        
-        Term.prototype.removeCourse = function(course) {
-            if (this.courses[course.cName] != undefined) { 
-                this.courses[course.cName] = undefined;
-            }
-            var pos = $.inArray(course, this.acceptedDragsForTerm);
-            if (pos > -1) {
-                this.acceptedDragsForTerm.splice(pos, 1);
-            }
-            this.units -= course.units;
-            this.plan.units -= course.units;
-        }
-        
-        
-        function Course(name, offering, units, courseObj) {
-           this.name = name;
-           this.cName = name.replace(" ", "");
-           this.offering = offering;  // Offering JSON
-           this.units = units;
-           this.isAdded = true;
-           this.courseObj = courseObj;  // This will be the JSON
-        }
-        
-        Course.prototype.changeToPermanent = function() {
-            this.isAdded = false;
-        }
-        
-        plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}')
-		
-		{% for year in years %}
-		{% for term in year.terms %}
-		var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
-		{% for course in term.courses %}
-		{% autoescape off %}
-		var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
-		{% endautoescape %}
-		t.addCourse(c);
-		{% endfor %}
-		{% endfor %}
-		{% endfor %}
-    
+
+		    
     </script>    
     
     
