@@ -432,106 +432,11 @@
             });
             
             
-            // $('#course-search').typeahead({
-            //                 source: function (typeahead, query) {
-            //                     $.ajax({
-            //                         url: '/search/' + query,
-            //                         success: function (data, textStatus, jqXHR) {
-            //                             searchJSON = eval(data.classes);
-            //                             typeahead.process(data.classNames);
-            //                         }
-            //                     });   
-            //                  },
-            //                  
-            //                  property: '',
-            //                  
-            //                  onselect: function (obj) {
-            //                      for (var i in searchJSON) {
-            //                          if (searchJSON[i].fields.identifier == obj) {
-            //                              createSearchResults([ searchJSON[i] ]);
-            //                              return;
-            //                          }
-            //                      }
-            //                  }
-            //             
-            //             
-            //             });
         
         });
         
         
-        function changeDraggable(courseName, fromTerm, toTerm) {
-            
-            // var identifier = makeCondensedName(course);
-            // 
-            // acceptedDragsForTerms[fromTerm].push(toTerm + identifier);
-            // 
-            // var posToRemove =  $.inArray(fromTerm + identifier, dragArray);
-            // if (posToRemove > -1) {
-            //     acceptedDragsForTerms[toTerm].splice(posToRemove, 1);
-            // }
-            // 
-            // for (var i in termNames) {
-            //     
-            //     for (var j in years) {
-            //         
-            //         var dragArray = acceptedDragsForTerms[termNames[i] + years[j]];
-            //         var pos = $.inArray(fromTerm + identifier, dragArray);
-            //         
-            //         if (pos > -1) {
-            //             dragArray.splice(pos, 1, toTerm + identifier);
-            //         }
-            // 
-            //     }
-            //     
-            // }
-            
-            
-            // for (var i in termNames) {
-            //     
-            //     for (var j in years) {
-            //         
-            //         var t = plan.getTerm(i, j);
-            //         if (t.hasDraggable(courseName)
-            //         
-            //     }
-            //     
-            // }
-            
-            // var course = plan.getTermById(toTerm).getCourse(courseName);
 
-            
-            
-            
-        }
-        
-        function moveClassOnSchedule(courseName, fromTerm, toTerm) {
-        
-            // var fromSchedule = scheduleArray[fromTerm];
-            //             var toSchedule = scheduleArray[toTerm];
-            //             
-            //             var numToMove = 0;
-            //             var posToMove = -1;
-            //             
-            //             for (var i in fromSchedule) {
-            //                 if (fromSchedule[i].title == course) {
-            //                     if (posToMove == -1) {
-            //                         posToMove = i;
-            //                     }
-            //                     numToMove++;
-            //                 }
-            //             }
-            //             
-            //             if (posToMove != -1) {
-            //                 $.merge(toSchedule, fromSchedule.slice(posToMove, posToMove + numToMove));
-            //                 fromSchedule.splice(posToMove, numToMove);
-            //             }
-            
-            
-            
-            
-            
-        }
         
         
         function removeCourse(infoElem) {
