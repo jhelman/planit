@@ -209,10 +209,11 @@
             return false;
         }
     
-        function Course(name, offering, units, courseObj) {
+        function Course(name, offerings, offering, units, courseObj) {
            this.name = name;
            this.cName = name.replace(" ", "");
-           this.offering = offering;  // Offering JSON
+           this.offerings = offerings; // All possible offerings in JSON
+           this.offering = offering;  // The offering JSON the person is taking
            this.eventObjects = createEventObjects(this.name, this.offering.fields);
            this.units = units;
            this.courseObj = courseObj;  // This will be the JSON
@@ -237,7 +238,7 @@
     	{% for course in term.courses %}
     	{% autoescape off %}
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
-    	var c = new Course('{{ course.identifier }}', getOffering(offerings, {{ term.num }}, {{ year.year_index }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
+    	var c = new Course('{{ course.identifier }}', offerings, getOffering(offerings, {{ term.num }}, {{ year.year_index }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
     	{% endautoescape %}
 		
 		// add draggable information
@@ -445,30 +446,7 @@
                 $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
             }
         }
-        
-
-        
-        // function removeClassFromSchedule(course, quarterID) {  
-        //     
-        //     var curSchedule = scheduleArray[quarterID];
-        //     var numToRemove = 0;
-        //     var posToRemove = -1;
-        //     
-        //     for (var i in curSchedule) {
-        //         if (curSchedule[i].title == course) {
-        //             if (posToRemove == -1) {
-        //                 posToRemove = i;
-        //             }
-        //             numToRemove++;
-        //         }
-        //     }
-        //     
-        //     if (posToRemove != -1) {
-        //         curSchedule.splice(posToRemove, numToRemove);
-        //     }
-        //                 
-        // }
-        //      
+         
 		
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
@@ -482,9 +460,7 @@
             var courseName = qDiv.find('.alert-delete-course-name').html();
             var course = plan.getTermById(quarterID).getCourse(courseName);
             plan.getTermById(quarterID).removeCourse(course);
-            
-            // removeClassFromSchedule(course, quarterID);
-            
+                        
             resetAddedUnits(quarterID);
             
             cancelDeleteCourse(quarterID);
@@ -515,9 +491,7 @@
         
         
         function openNewPlanModal() {
-            
-            $('#new-plan-modal').modal('show');
-            
+            $('#new-plan-modal').modal('show');            
         }
         
         
