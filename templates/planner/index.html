@@ -34,6 +34,65 @@
     
     <script type="text/javascript">
 		
+		/* Date object creation utility function */
+		
+		var MONDAY = 23;
+        
+        function makeNewEvent(day, startTime, endTime, courseName, isWarningAll, isAdded) {
+            
+            var dayNum;
+                        
+            if (day == 'M') {
+                dayNum = MONDAY;
+            } else if (day == 'T') {
+                dayNum = MONDAY + 1;
+            } else if (day == 'W') {
+                dayNum = MONDAY + 2;
+            } else if (day == 'R') {
+                dayNum = MONDAY + 3;
+            } else if (day == 'F') {
+                dayNum = MONDAY + 4;
+            } else {
+                dayNum = MONDAY;
+            }
+                                    
+            return {
+                'start': new Date(2012, 3, dayNum, parseInt(startTime.substring(0, 2), 10), parseInt(startTime.substring(3, 5), 10)), 
+                'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
+                'title': courseName,
+                'allDay': false,
+                'color': (isAdded ? (isWarningAll ? '#ffc40d' : '#54cc33') : 'none')
+            };
+            
+        }
+        
+        
+        function createEventObjects(courseName, offering) {
+            var eventObjects = [];
+            
+            for (var i = 0; i < offering.weekdays.length; i++) {
+                eventObjects.push(makeNewEvent(offering.weekdays.charAt(i), offering.start_time,
+                    offering.end_time, courseName, false, false));
+            }
+            
+            return eventObjects;
+        }
+        
+        function collectDatesForTerm(termID) {
+            
+            var term = plan.getTermById(termID);
+            
+            var eventArray = [];
+            for (var i in term.courses) {
+                $.merge(eventArray, (term.courses)[i].eventObjects);
+            }
+            
+            return eventArray;
+            
+        }
+		
+		
+		
 		// found this on StackOverflow...needed to do ajax POST requests with proper csrf protection
 		$.ajaxSetup({ 
 		     beforeSend: function(xhr, settings) {
@@ -89,6 +148,10 @@
         FourYearPlan.prototype.getTerm = function (termNumber, yearNumber) {
             return this.terms[termNames[termNumber] + years[yearNumber]];
         }
+        
+        FourYearPlan.prototype.getTermById = function (termID) {
+            return this.terms[termID];
+        }
     
         function Term(termID, plan) {
             this.termID = termID;
@@ -99,10 +162,7 @@
         }
     
         Term.prototype.addCourse = function(course) {
-            if (this.courses[course.cName] == undefined) { 
-                this.courses[course.cName] = course;
-            }
-
+            this.courses[course.cName] = course;
             this.units += course.units;
             this.plan.units += course.units;
         }
@@ -115,10 +175,7 @@
         
     
         Term.prototype.removeCourse = function(course) {
-            if (this.courses[course.cName] != undefined) { 
-                this.courses[course.cName] = undefined;
-            }
-
+            this.courses[course.cName] = undefined;
             this.units -= course.units;
             this.plan.units -= course.units;
         }
@@ -128,6 +185,10 @@
             if (pos > -1) {
                 this.acceptedDragsForTerm.splice(pos, 1);
             }
+        }
+        
+        Term.prototype.getCourse = function(courseName) {
+            return this.courses[makeCondensedName(courseName)];
         }
     
         Term.prototype.containsCourse = function(courseName) {
@@ -139,9 +200,12 @@
     
         // TODO maybe make this more efficient with associative array?
         Term.prototype.hasDraggable = function(courseName) {
-			for (var course in this.acceptedDragsForTerm) {
-				if (course.cName == courseName) return true;
-			}           
+            var dragArray = this.acceptedDragsForTerm;
+            for (var i in dragArray) {
+                if (dragArray[i].name == courseName) {
+                    return true;
+                }
+            }
             return false;
         }
     
@@ -149,10 +213,21 @@
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offering = offering;  // Offering JSON
+           this.eventObjects = createEventObjects(this.name, this.offering.fields);
            this.units = units;
            this.courseObj = courseObj;  // This will be the JSON
         }
     
+    
+        function getOffering(offerings, termNum, yearNum) {
+            for (var i in offerings) {
+                if (parseInt(offerings[i].fields.term) == termNum + 1 && 
+                    parseInt(offerings[i].fields.year) == yearNum + 1) {
+                   return offerings[i];
+                }
+            }
+            return false;
+        }
     
         plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}')
 	
@@ -161,7 +236,8 @@
     	var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
     	{% for course in term.courses %}
     	{% autoescape off %}
-    	var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
+    	var offerings = jQuery.parseJSON({{ course.offering_json }});
+    	var c = new Course('{{ course.identifier }}', getOffering(offerings, {{ term.num }}, {{ year.year_index }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
     	{% endautoescape %}
 		
 		// add draggable information
@@ -237,7 +313,7 @@
                                $('#' + termStr + '-drag-cover').html("<h4>Already taking " + courseName + 
                                    " during this quarter.</h4>");
                                $('#' + termStr + '-drag-cover').show();
-                           } else if (plan.getTerm(i, j).hasDraggable(courseName)) {
+                           } else if (!plan.getTerm(i, j).hasDraggable(courseName)) {
                                 $('#' + termStr + '-drag-cover').html("<h4>" + courseName + 
                                     " not offered this quarter.</h4>");
                                 $('#' + termStr + '-drag-cover').show();
@@ -256,45 +332,53 @@
                 }
             });
 			
-			acceptedDragsForTerms = new Array();
-			
-			{% for year in years %}
-			{% for term in year.terms %}
-				acceptedDragsForTerms['{{ term.condensedName }}'] = new Array();
-				{% for y in years %}
-				{% for t in y.terms %}
-					{% if y != year or t != term %}
-						{% for course in t.courses %}
-						{% for offering in offerings|get_item:course.identifier %}
-							{% if offering.year.start_num == year.start_num and offering.term.num == term.num %}
-								acceptedDragsForTerms['{{ term.condensedName }}'].push('{{ t.condensedName|add:course.condensedID }}');            				    
-							{% endif %}
-						{% endfor %}
-						{% endfor %}
-					{% endif %}
-				{% endfor %}
-				{% endfor %}
+            // acceptedDragsForTerms = new Array();
+            // 
+            // {% for year in years %}
+            // {% for term in year.terms %}
+            //  acceptedDragsForTerms['{{ term.condensedName }}'] = new Array();
+            //  {% for y in years %}
+            //  {% for t in y.terms %}
+            //      {% if y != year or t != term %}
+            //          {% for course in t.courses %}
+            //          {% for offering in offerings|get_item:course.identifier %}
+            //              {% if offering.year.start_num == year.start_num and offering.term.num == term.num %}
+            //                  acceptedDragsForTerms['{{ term.condensedName }}'].push('{{ t.condensedName|add:course.condensedID }}');                             
+            //              {% endif %}
+            //          {% endfor %}
+            //          {% endfor %}
+            //      {% endif %}
+            //  {% endfor %}
+            //  {% endfor %}
 			
 			$('#{{ term.condensedName }}').droppable({
 				
 				accept: function (elem) {
-					if ($.inArray(elem.attr('id'), acceptedDragsForTerms['{{ term.condensedName }}']) != -1) return true;
-					return false;
+				    if (plan.getTermById('{{ term.condensedName }}').hasDraggable(elem.find('.courseName').html())) {
+				        return true;
+			        }
+			        return false;
 				},
 				
 				
 				drop: function (event, ui) {
+				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
-					ui.draggable.attr('id', '{{ term.condensedName }}' + 
-					    makeCondensedName(ui.draggable.find('.courseName').html()));
-					updateQuarterUnits('{{ term.condensedName }}', 
+                    var course = plan.getTermById(dragTerm).getCourse(courseName);
+                    plan.getTermById('{{ term.condensedName }}').addCourse(course);
+                    plan.getTermById(dragTerm).addDraggable(course);
+                    plan.getTermById(dragTerm).removeCourse(course);
+                    plan.getTermById('{{ term.condensedName }}').removeDraggable(course);
+					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
+					updateQuarterUnitsUI('{{ term.condensedName }}', 
 					    parseInt(ui.draggable.find('.units').html()), false);
-					updateQuarterUnits(dragTerm, 
+					updateQuarterUnitsUI(dragTerm, 
 				        parseInt("-" + ui.draggable.find('.units').html()), false);
-				    moveClassOnSchedule(ui.draggable.find('.courseName').html(), dragTerm, 
-				        '{{ term.condensedName }}');
-				    changeDraggable(ui.draggable.find('.courseName').html(), dragTerm, 
-    				    '{{ term.condensedName }}');
+                    // moveClassOnSchedule(ui.draggable.find('.courseName').html(), dragTerm, 
+                    //     '{{ term.condensedName }}');
+
+                    // changeDraggable(ui.draggable.find('.courseName').html(), dragTerm, 
+                    //     '{{ term.condensedName }}');
 				}
 			});
 			{% endfor %}
@@ -340,7 +424,7 @@
             
             $('#schedule-modal').on('shown', function () {
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
-                $('#schedule-modal-calendar').fullCalendar('addEventSource', scheduleArray[quarterScheduleToShow]);
+                $('#schedule-modal-calendar').fullCalendar('addEventSource', collectDatesForTerm(quarterScheduleToShow));
             });
             
             $('#schedule-modal').on('hide', function () {
@@ -376,55 +460,76 @@
         });
         
         
-        function changeDraggable(course, fromTerm, toTerm) {
+        function changeDraggable(courseName, fromTerm, toTerm) {
             
-            var identifier = makeCondensedName(course);
+            // var identifier = makeCondensedName(course);
+            // 
+            // acceptedDragsForTerms[fromTerm].push(toTerm + identifier);
+            // 
+            // var posToRemove =  $.inArray(fromTerm + identifier, dragArray);
+            // if (posToRemove > -1) {
+            //     acceptedDragsForTerms[toTerm].splice(posToRemove, 1);
+            // }
+            // 
+            // for (var i in termNames) {
+            //     
+            //     for (var j in years) {
+            //         
+            //         var dragArray = acceptedDragsForTerms[termNames[i] + years[j]];
+            //         var pos = $.inArray(fromTerm + identifier, dragArray);
+            //         
+            //         if (pos > -1) {
+            //             dragArray.splice(pos, 1, toTerm + identifier);
+            //         }
+            // 
+            //     }
+            //     
+            // }
             
-            acceptedDragsForTerms[fromTerm].push(toTerm + identifier);
             
-            var posToRemove =  $.inArray(fromTerm + identifier, dragArray);
-            if (posToRemove > -1) {
-                acceptedDragsForTerms[toTerm].splice(posToRemove, 1);
-            }
+            // for (var i in termNames) {
+            //     
+            //     for (var j in years) {
+            //         
+            //         var t = plan.getTerm(i, j);
+            //         if (t.hasDraggable(courseName)
+            //         
+            //     }
+            //     
+            // }
             
-            for (var i in termNames) {
-                
-                for (var j in years) {
-                    
-                    var dragArray = acceptedDragsForTerms[termNames[i] + years[j]];
-                    var pos = $.inArray(fromTerm + identifier, dragArray);
-                    
-                    if (pos > -1) {
-                        dragArray.splice(pos, 1, toTerm + identifier);
-                    }
+            // var course = plan.getTermById(toTerm).getCourse(courseName);
 
-                }
-                
-            }
+            
+            
             
         }
         
-        function moveClassOnSchedule(course, fromTerm, toTerm) {
+        function moveClassOnSchedule(courseName, fromTerm, toTerm) {
         
-            var fromSchedule = scheduleArray[fromTerm];
-            var toSchedule = scheduleArray[toTerm];
+            // var fromSchedule = scheduleArray[fromTerm];
+            //             var toSchedule = scheduleArray[toTerm];
+            //             
+            //             var numToMove = 0;
+            //             var posToMove = -1;
+            //             
+            //             for (var i in fromSchedule) {
+            //                 if (fromSchedule[i].title == course) {
+            //                     if (posToMove == -1) {
+            //                         posToMove = i;
+            //                     }
+            //                     numToMove++;
+            //                 }
+            //             }
+            //             
+            //             if (posToMove != -1) {
+            //                 $.merge(toSchedule, fromSchedule.slice(posToMove, posToMove + numToMove));
+            //                 fromSchedule.splice(posToMove, numToMove);
+            //             }
             
-            var numToMove = 0;
-            var posToMove = -1;
             
-            for (var i in fromSchedule) {
-                if (fromSchedule[i].title == course) {
-                    if (posToMove == -1) {
-                        posToMove = i;
-                    }
-                    numToMove++;
-                }
-            }
             
-            if (posToMove != -1) {
-                $.merge(toSchedule, fromSchedule.slice(posToMove, posToMove + numToMove));
-                fromSchedule.splice(posToMove, numToMove);
-            }
+            
             
         }
         
@@ -464,11 +569,11 @@
             
             qDiv.find('.delete-alert').hide();
             qDiv.find('.cover').hide();
-            
+                        
             resetAddedUnits(quarterID);
         }
         
-        function updateQuarterUnits(quarterID, unitChange, updateTotal) {
+        function updateQuarterUnitsUI(quarterID, unitChange, updateTotal) {
             
             $('#' + quarterID + '-units').html(parseInt($('#' + quarterID + '-units').html()) + unitChange);        
             if (updateTotal) {
@@ -478,27 +583,27 @@
         
 
         
-        function removeClassFromSchedule(course, quarterID) {  
-            
-            var curSchedule = scheduleArray[quarterID];
-            var numToRemove = 0;
-            var posToRemove = -1;
-            
-            for (var i in curSchedule) {
-                if (curSchedule[i].title == course) {
-                    if (posToRemove == -1) {
-                        posToRemove = i;
-                    }
-                    numToRemove++;
-                }
-            }
-            
-            if (posToRemove != -1) {
-                curSchedule.splice(posToRemove, numToRemove);
-            }
-                        
-        }
-		
+        // function removeClassFromSchedule(course, quarterID) {  
+        //     
+        //     var curSchedule = scheduleArray[quarterID];
+        //     var numToRemove = 0;
+        //     var posToRemove = -1;
+        //     
+        //     for (var i in curSchedule) {
+        //         if (curSchedule[i].title == course) {
+        //             if (posToRemove == -1) {
+        //                 posToRemove = i;
+        //             }
+        //             numToRemove++;
+        //         }
+        //     }
+        //     
+        //     if (posToRemove != -1) {
+        //         curSchedule.splice(posToRemove, numToRemove);
+        //     }
+        //                 
+        // }
+        //      
 		
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
@@ -507,10 +612,13 @@
             
             courseElem.remove();
             
-            updateQuarterUnits(quarterID, parseInt("-" + numUnits), true);
+            updateQuarterUnitsUI(quarterID, parseInt("-" + numUnits), true);
             
-            var course = qDiv.find('.alert-delete-course-name').html();
-            removeClassFromSchedule(course, quarterID);
+            var courseName = qDiv.find('.alert-delete-course-name').html();
+            var course = plan.getTermById(quarterID).getCourse(courseName);
+            plan.getTermById(quarterID).removeCourse(course);
+            
+            // removeClassFromSchedule(course, quarterID);
             
             resetAddedUnits(quarterID);
             
@@ -556,22 +664,22 @@
             var flag = 0;
             
             if (planName.length == 0) {
-                $('#plan-name').parent().parent().addClass('error');
+                $('#plan-name').closest('.control-group').addClass('error');
                 $('#plan-name-help-block').show();
                 flag = 1;
             } else {
-                $('#plan-name').parent().parent().removeClass('error');
+                $('#plan-name').closest('.control-group').removeClass('error');
                 $('#plan-name-help-block').hide();
                 
             }
              
              
             if (major.length == 0) {
-                $('#major').parent().parent().addClass('error');
+                $('#major').closest('.control-group').addClass('error');
                 $('#major-help-block').show();
                 flag = 1;
             } else {
-                $('#major').parent().parent().removeClass('error');
+                $('#major').closest('.control-group').removeClass('error');
                 $('#major-help-block').hide();
                 
             }   
@@ -640,13 +748,11 @@
         
         
         function getJSONForCourse(courseName) {
-         
             for (var i in classesJSON) {
                  if (classesJSON[i].fields.identifier == courseName) {
                      return classesJSON[i];
                  }
              }
-            
         }
         
         function makeCondensedName(longName) {
@@ -825,35 +931,7 @@
             $('#' + quarterID + '-added-units').show();
         }
         
-        var MONDAY = 23;
-        
-        function makeNewEvent(day, startTime, endTime, courseName, isAdded, isWarningAll) {
-            
-            var dayNum;
-                        
-            if (day == 'M') {
-                dayNum = MONDAY;
-            } else if (day == 'T') {
-                dayNum = MONDAY + 1;
-            } else if (day == 'W') {
-                dayNum = MONDAY + 2;
-            } else if (day == 'R') {
-                dayNum = MONDAY + 3;
-            } else if (day == 'F') {
-                dayNum = MONDAY + 4;
-            } else {
-                dayNum = MONDAY;
-            }
-                                    
-            return {
-                'start': new Date(2012, 3, dayNum, parseInt(startTime.substring(0, 2), 10), parseInt(startTime.substring(3, 5), 10)), 
-                'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
-                'title': courseName,
-                'allDay': false,
-                'color': (isWarningAll ? '#ffc40d' : '#54cc33')
-            };
-            
-        }
+
         
         
         function addToCalendar(quarterID, offering, courseIdentifier, isWarningAll) {                        
