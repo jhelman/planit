@@ -137,8 +137,11 @@
             return false;
         }
     
-        // At this point we will need to loop
-        Term.prototype.hasDraggable = function(courseName) {            
+        // TODO maybe make this more efficient with associative array?
+        Term.prototype.hasDraggable = function(courseName) {
+			for (var course in this.acceptedDragsForTerm) {
+				if (course.cName == courseName) return true;
+			}           
             return false;
         }
     
@@ -160,6 +163,14 @@
     	{% autoescape off %}
     	var c = new Course('{{ course.identifier }}', jQuery.parseJSON({{ course.offering_json }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
     	{% endautoescape %}
+		
+		// add draggable information
+		{% for offering in offerings|get_item:course.identifier %}
+		{% if offering.year.start_num != year.start_num or offering.term.num != term.num %}
+		var possibleTargetTerm = plan.getTerm({{ offering.term.num }}, {{ offering.year.start_num }} - {{ plan.start_year.start_num }});
+		possibleTargetTerm.addDraggable(c);
+		{% endif %}
+		{% endfor %}
     	t.addCourse(c);
     	{% endfor %}
     	{% endfor %}
