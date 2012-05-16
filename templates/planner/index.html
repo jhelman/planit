@@ -333,7 +333,8 @@
                 }
             });
 
-			
+			{% for year in years %}
+			{% for term in year.terms %}
 			$('#{{ term.condensedName }}').droppable({
 				
 				accept: function (elem) {
@@ -1060,7 +1061,7 @@
             });
         }
         
-        
+     
 
 		    
     </script>    
