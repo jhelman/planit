@@ -38,7 +38,7 @@
 		
 		var MONDAY = 23;
         
-        function makeNewEvent(day, startTime, endTime, courseName, isWarningAll, isAdded) {
+        function makeNewEvent(day, startTime, endTime, courseName, isAdded, isWarning) {
             
             var dayNum;
                         
@@ -61,18 +61,18 @@
                 'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
                 'title': courseName,
                 'allDay': false,
-                'color': (isAdded ? (isWarningAll ? '#ffc40d' : '#54cc33') : 'none')
+                'color': (isWarning ? '#ffc40d' : (isAdded ? '#54cc33' : 'none'))
             };
             
         }
         
         
-        function createEventObjects(courseName, offering) {
+        function createEventObjects(courseName, offering, isAdded, isWarning) {
             var eventObjects = [];
             
             for (var i = 0; i < offering.weekdays.length; i++) {
                 eventObjects.push(makeNewEvent(offering.weekdays.charAt(i), offering.start_time,
-                    offering.end_time, courseName, false, false));
+                    offering.end_time, courseName, isAdded, isWarning));
             }
             
             return eventObjects;
@@ -158,7 +158,7 @@
             this.units = 0;
             this.plan = plan;
             this.acceptedDragsForTerm = new Array();
-            this.courses = new Array();        
+            this.courses = new Array();   
         }
     
         Term.prototype.addCourse = function(course) {
@@ -197,6 +197,19 @@
             }
             return false;
         }
+        
+
+        Term.prototype.makeCoursePermanent = function(courseName) {
+            this.courses[courseName].isAdded = false;
+        }
+        
+        Term.prototype.clearAddedCourses = function() {
+            for (var i in this.courses) {
+                if (this.courses[i].isAdded == true) {
+                    this.courses[i] = undefined;
+                }
+            }
+        }
     
         // TODO maybe make this more efficient with associative array?
         Term.prototype.hasDraggable = function(courseName) {
@@ -209,14 +222,15 @@
             return false;
         }
     
-        function Course(name, offerings, offering, units, courseObj) {
+        function Course(name, offerings, offering, units, courseObj, isAdded, isWarning) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offerings = offerings; // All possible offerings in JSON
            this.offering = offering;  // The offering JSON the person is taking
-           this.eventObjects = createEventObjects(this.name, this.offering.fields);
+           this.eventObjects = createEventObjects(this.name, this.offering.fields, isAdded, isWarning);
            this.units = units;
            this.courseObj = courseObj;  // This will be the JSON
+           this.isAdded = isAdded;  
         }
     
     
@@ -238,7 +252,10 @@
     	{% for course in term.courses %}
     	{% autoescape off %}
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
-    	var c = new Course('{{ course.identifier }}', offerings, getOffering(offerings, {{ term.num }}, {{ year.year_index }}), {{ course.units }}, jQuery.parseJSON({{ course.course_json }}));
+    	var c = new Course('{{ course.identifier }}', offerings, 
+    	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
+    	    {{ course.units }}, jQuery.parseJSON({{ course.course_json }}, 
+    	    false, false));
     	{% endautoescape %}
 		
 		// add draggable information
@@ -334,6 +351,8 @@
             });
 
 			
+			{% for year in years %}
+			{% for term in year.terms %}
 			$('#{{ term.condensedName }}').droppable({
 				
 				accept: function (elem) {
@@ -773,60 +792,44 @@
 
         
         
-        function addToCalendar(quarterID, offering, courseIdentifier, isWarningAll) {                        
-                                                                        
-            for (var i = 0; i < offering.weekdays.length; i++) {
-             
-                var courseEvent = makeNewEvent(offering.weekdays.charAt(i), offering.start_time, 
-                    offering.end_time, courseIdentifier, true, isWarningAll);
-                                
-                scheduleArray[quarterID].push(courseEvent);
-                
-            }
-
-        }
+        // function addToCalendar(quarterID, offering, courseIdentifier, isWarningAll) {                        
+        //                                                                 
+        //     for (var i = 0; i < offering.weekdays.length; i++) {
+        //      
+        //         var courseEvent = makeNewEvent(offering.weekdays.charAt(i), offering.start_time, 
+        //             offering.end_time, courseIdentifier, true, isWarningAll);
+        //                         
+        //         scheduleArray[quarterID].push(courseEvent);
+        //         
+        //     }
+        // 
+        // }
         
         var WARNING_OFFERING_TIME_CONFLICT = 0;
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
-        function evalForWarningOffering(quarterID, courseName, offering) {
-            
+        function evalForWarningOffering(termID, courseName) {
             var warningArray = new Array(1);
-            
-            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(quarterID, courseName, offering);
-                        
+            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, courseName);
             return warningArray;
-            
-            
         }
         
-        function evalForWarningAll(quarterID, courseName) {
-            
-            var warningArray = new Array(1);
-            
+        function evalForWarningAll(courseName) {
+            var warningArray = new Array(1);            
             warningArray[WARNING_ALL_DOUBLE_COURSE] = checkIfDoubleCourse(courseName);
-            
             return warningArray;
-            
         }
         
         
         function checkIfDoubleCourse(courseName) {
             for (var i in years) {
-                
                 for (var j in termNames) {
-                    
-                    var quarterID = termNames[j] + years[i];
-                                        
-                    if ($('#' + quarterID + makeCondensedName(courseName)).length) {
+                    if (plan.getTerm(j, i).containsCourse(courseName)) {
                         return termNames[j] + " " + years[i];
                     }
-                    
                 }
-                
             }
-            
             return false;
         }
         
@@ -882,7 +885,7 @@
                                 
             });
             
-            var warningArrayAll = evalForWarningAll(offeringStr, courseName);
+            var warningArrayAll = evalForWarningAll(courseName);
             
             var isWarningAll = false;
             for (var i in warningArrayAll) {
@@ -891,27 +894,30 @@
                     break;
                 }
             }
+            
                 
             var addClassDisplayCount = 0;
                                                             
             for (var i in offerings) {
                                                                                                    
-                var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
                                         
                 // double adding class in 1 quarter
-                if ($('#' + offeringStr + makeCondensedName(courseName)).length) {
+                if (plan.getTermById(termId).containsCourse(courseName)) {
                     continue;
                 }
                 
                 addClassDisplayCount++;
+                var addedCourse = new Course(courseName, offerings, offerings[i], 
+                        courseObj.fields.units, courseObj, true, isWarningAll);
+                plan.getTermById(termId).addCourse(addedCourse);
                             
                 // evaluate quarter in which you are going to place the class to validate                
-                                            
-                                            
-                addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier, isWarningAll);
+                                             
+                // addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier, isWarningAll);
                                                        
-                var warningArrayOffering = evalForWarningOffering(offeringStr, courseName, offerings[i].fields);
+                var warningArrayOffering = evalForWarningOffering(termId, courseName);
                  
                 var isWarningOffering = false;
                 for (var i in warningArrayOffering) {
@@ -926,11 +932,11 @@
                     isWarning = true;
                 }
                                        
-                updateAddedUnits(offeringStr, courseObj.fields.units, isWarning, false);
+                updateAddedUnits(termId, courseObj.fields.units, isWarning, false);
                                                            
-                $('#' + offeringStr + '-courses').prepend(makeAddedCourseHTML(offeringStr, courseObj.fields, isWarning));
+                $('#' + termId + '-courses').prepend(makeAddedCourseHTML(termId, courseObj.fields, isWarning));
                                 
-                createRolloversForAddedCourse(offeringStr, courseObj.fields, isWarning, 
+                createRolloversForAddedCourse(termId, courseObj.fields, isWarning, 
                     warningArrayAll, warningArrayOffering);
                         
             }
@@ -944,42 +950,96 @@
         }
         
         
-        function checkIfTimeConflict(quarterID, courseName, offering) {
+        function checkIfTimeConflict(termId, courseName) {
             
             var flag = null;
+            var course = plan.getTermById(termId).getCourse(courseName);
+            var courses = plan.getTermById(termId).courses;
             
-            var numOfferings = offering.weekdays.length;
-            
-            var events = scheduleArray[quarterID];
-            
-            for (var i = 0; i < events.length - numOfferings; i++) {
+            for (var i in courses) {
                 
-                var startTime = events[i].start.getTime();
-                var endTime = events[i].end.getTime();
-                
-                for (var j = events.length - numOfferings; j < events.length; j++) { 
-                
-                    var offeringST = events[j].start.getTime();
-                    var offeringET = events[j].end.getTime();
-                    
-                    // Time conflict exists
-                    if ((offeringST >= startTime && offeringST < endTime) ||
-                        (offeringET > startTime && offeringET <= endTime)) {
-                        
-                        events[j].color = '#ffc40d';
-                        flag = events[i].title;
-                        
-                    }
-                    
+                if (courses[i].name == courseName) {
+                    // alert(courseName);
+                    continue;
                 }
                 
-                
+                var events = courses[i].eventObjects;
+                for (var j in events) {
+                   
+                    var startTime = events[j].start.getTime();
+                    var endTime = events[j].end.getTime();
+                   
+                    for (var k in course.eventObjects) {
+                        
+                        var offeringST = course.eventObjects[k].start.getTime();
+                        var offeringET = course.eventObjects[k].end.getTime();
+                        
+                        if ((offeringST >= startTime && offeringST < endTime) ||
+                            (offeringET > startTime && offeringET <= endTime)) {
+    
+                            course.eventObjects[k].color = '#ffc40d';
+                            // flag = couses[i].name;
+                            flag = courses[i].name;
+    
+                        }
+                        
+                        
+                    }
+                   
+                }
                 
             }
             
             return (flag == null ? false : flag);
             
         }
+        
+        
+              //   
+              // function checkIfTimeConflict(termID, courseName, offering) {
+              //     
+              //     var flag = null;
+              //     
+              //     var numOfferings = offering.weekdays.length;
+              //     
+              //     var courses = plan.getTermById(termID).courses;
+              //     
+              //     for (var i in courses) {
+              //     
+              //         var events = courses[i].eventObjects;
+              //        
+              //         for (var j in events) {
+              //         
+              //             var startTime = events[j].start.getTime();
+              //             var endTime = events[j].end.getTime();
+              //             
+              //             for (var k in offerings) {
+              //                 
+              //                 var offeringST = offerings[k].start.getTime();
+              //                 var offeringET = offerings[k].end.getTime();
+              //                 
+              //                 // Time conflict exists
+              //                 if ((offeringST >= startTime && offeringST < endTime) ||
+              //                     (offeringET > startTime && offeringET <= endTime)) {
+              // 
+              //                     // events[j].color = '#ffc40d';
+              //                     flag = couses[i].name;
+              //                     return flag;
+              // 
+              //                 }
+              //                 
+              //             }
+              //             
+              //             
+              //        
+              //        }
+              //         
+              //     }
+              //     
+              //     
+              //     return false;
+              //     
+              // }
         
         
         function cancelAddCourse(courseObj, offerings) {
