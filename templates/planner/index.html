@@ -84,6 +84,9 @@
             
             var eventArray = [];
             for (var i in term.courses) {
+                if ((term.courses)[i] == undefined) {
+                    continue;
+                }
                 $.merge(eventArray, (term.courses)[i].eventObjects);
             }
             
@@ -198,17 +201,9 @@
             return false;
         }
         
-
-        Term.prototype.makeCoursePermanent = function(courseName) {
-            this.courses[courseName].isAdded = false;
-        }
         
-        Term.prototype.clearAddedCourses = function() {
-            for (var i in this.courses) {
-                if (this.courses[i].isAdded == true) {
-                    this.courses[i] = undefined;
-                }
-            }
+        Term.prototype.removeAddedCourse = function(courseName) {
+            this.courses[makeCondensedName(courseName)] = undefined;
         }
     
         // TODO maybe make this more efficient with associative array?
@@ -232,7 +227,13 @@
            this.courseObj = courseObj;  // This will be the JSON
            this.isAdded = isAdded;  
         }
-    
+
+        Course.prototype.confirmCourse = function() {
+            this.isAdded = false;
+            for (var i in this.eventObjects) {
+                (this.eventObjects)[i].color = 'none';
+            }
+        }
     
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
@@ -502,12 +503,6 @@
 			
         }
         
-  
-        function closeAddCourse() {
-            clearTimeout(fading_alert_timeout);
-            $('#add-course-alert').fadeOut();
-        }
-        
         
         function openNewPlanModal() {
             $('#new-plan-modal').modal('show');            
@@ -681,36 +676,50 @@
             
         }
         
-        function deleteAddedCourse(courseObj, offerings, quarterID) {
+        // function deleteAddedCourse(courseObj, offerings, quarterID) {
+        //        
+        //             for (var i in offerings) {
+        // 
+        //                    var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
+        //                        years[parseInt(offerings[i].fields.year) - 1];
+        //                    
+        //                    var tableElem = $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier));
+        //                                                          
+        //                    if (offeringStr == quarterID || 
+        //                        (!tableElem.hasClass('possible-course') &&
+        //                        !tableElem.hasClass('possible-course-warning'))) {
+        //                        continue;
+        //                    }
+        // 
+        //                    $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
+        // 
+        //                    resetAddedUnits(offeringStr);
+        // 
+        //                    removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
+        //                }
+        //        }
         
-             for (var i in offerings) {
-
-                    var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
-                        years[parseInt(offerings[i].fields.year) - 1];
-                    
-                    var tableElem = $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier));
-                                                          
-                    if (offeringStr == quarterID || 
-                        (!tableElem.hasClass('possible-course') &&
-                        !tableElem.hasClass('possible-course-warning'))) {
-                        continue;
-                    }
-
-                    $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
-
-                    resetAddedUnits(offeringStr);
-
-                    removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
+        function addCourseToDraggables(course, courseTermId) {
+            var offerings = course.offerings;
+            for (var i in offerings) {
+                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                    years[parseInt(offerings[i].fields.year) - 1];
+                
+                if (termId == courseTermId) {
+                    continue;
                 }
+                
+                plan.getTermById(termId).addDraggable(course);
+            }
+            
         }
         
-        
-        
         function confirmAddCourse(courseTableID) {
-            var quarterID = $('#' + courseTableID).closest('.quarter-div').attr('id');
-            var units = parseInt($('#' + courseTableID).find('.units').html());
-            var courseName = $('#' + courseTableID).find('.courseName').html();
             
+            var courseName = $('#' + courseTableID).find('.courseName').html();
+            var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
+            
+            var course = plan.getTermById(termId).getCourse(courseName);            
             
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).find('.info').empty();
@@ -724,33 +733,32 @@
             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
                 
-            var courseObj = getJSONForCourse(courseName);
-                            
-            // $('#' + courseTableID).popover({
-            //    title: courseObj.fields.identifier,
-            //    content: courseObj.fields.name,
-            //    placement: 'right'
-            // });
                 
-            updateQuarterUnits(quarterID, units, true);
+            updateQuarterUnitsUI(termId, course.units, true);
                 
-            resetAddedUnits(quarterID);
+            resetAddedUnits(termId);
+            
+            course.confirmCourse();
                         
-            confirmDates(quarterID, courseName);
+            // confirmDates(quarterID, courseName);
             
-            deleteAddedCourse(courseObj, jQuery.parseJSON(offeringsJSON[courseName]), quarterID);
+            // deleteAddedCourse(courseObj, jQuery.parseJSON(offeringsJSON[courseName]), quarterID);
             
-            for (var i in termNames) {
-                for (var j in years) {
-
-                    var pos = $.inArray(termNames[i] + years[j] + makeCondensedName(courseName), 
-                        acceptedDragsForTerms[quarterID]);
-                    if (pos > -1) {
-                        acceptedDragsForTerms[quarterID].splice(pos, 1);
-                    }
-                    
-                }
-            }
+            cancelAddCourse(course.courseObj, course.offerings, termId);
+            
+            addCourseToDraggables(course, termId);
+            
+            // for (var i in termNames) {
+            //                 for (var j in years) {
+            // 
+            //                     var pos = $.inArray(termNames[i] + years[j] + makeCondensedName(courseName), 
+            //                         acceptedDragsForTerms[quarterID]);
+            //                     if (pos > -1) {
+            //                         acceptedDragsForTerms[quarterID].splice(pos, 1);
+            //                     }
+            //                     
+            //                 }
+            //             }
             
             
             $('#' + courseTableID).removeClass('possible-course');
@@ -790,20 +798,6 @@
         }
         
 
-        
-        
-        // function addToCalendar(quarterID, offering, courseIdentifier, isWarningAll) {                        
-        //                                                                 
-        //     for (var i = 0; i < offering.weekdays.length; i++) {
-        //      
-        //         var courseEvent = makeNewEvent(offering.weekdays.charAt(i), offering.start_time, 
-        //             offering.end_time, courseIdentifier, true, isWarningAll);
-        //                         
-        //         scheduleArray[quarterID].push(courseEvent);
-        //         
-        //     }
-        // 
-        // }
         
         var WARNING_OFFERING_TIME_CONFLICT = 0;
         var WARNING_ALL_DOUBLE_COURSE = 0;
@@ -855,14 +849,10 @@
                                                 
                 if ($(event.target).hasClass('confirm-add-class')) {
                     
-                    var quarterID = $(event.target).closest('.quarter-div').attr('id');
-                    
-                    confirmAddCourse(quarterID + makeCondensedName(courseName));
-                    
+                    var termId = $(event.target).closest('.quarter-div').attr('id');
+                    confirmAddCourse(termId + makeCondensedName(courseName));
                     $(classLinkItem).parent().removeClass('active');
-
                     $(this).unbind('mousedownoutside');
-                    
                     linkErrorTitle = "";                       
                                         
                 } else if ($(event.target).hasClass('icon-move') ||
@@ -874,12 +864,9 @@
                         ($(event.target).attr('id') == "course-search"))
                     ) {
                         
-                        cancelAddCourse(courseObj, offerings);
-                    
+                        cancelAddCourse(courseObj, offerings, false);
                         $(classLinkItem).parent().removeClass('active');
-
                         $(this).unbind('mouseupoutside');
-                                                
                         linkErrorTitle = "";                       
                 }
                                 
@@ -914,9 +901,7 @@
                 plan.getTermById(termId).addCourse(addedCourse);
                             
                 // evaluate quarter in which you are going to place the class to validate                
-                                             
-                // addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier, isWarningAll);
-                                                       
+                                                                                                    
                 var warningArrayOffering = evalForWarningOffering(termId, courseName);
                  
                 var isWarningOffering = false;
@@ -994,73 +979,30 @@
             
         }
         
+                
         
-              //   
-              // function checkIfTimeConflict(termID, courseName, offering) {
-              //     
-              //     var flag = null;
-              //     
-              //     var numOfferings = offering.weekdays.length;
-              //     
-              //     var courses = plan.getTermById(termID).courses;
-              //     
-              //     for (var i in courses) {
-              //     
-              //         var events = courses[i].eventObjects;
-              //        
-              //         for (var j in events) {
-              //         
-              //             var startTime = events[j].start.getTime();
-              //             var endTime = events[j].end.getTime();
-              //             
-              //             for (var k in offerings) {
-              //                 
-              //                 var offeringST = offerings[k].start.getTime();
-              //                 var offeringET = offerings[k].end.getTime();
-              //                 
-              //                 // Time conflict exists
-              //                 if ((offeringST >= startTime && offeringST < endTime) ||
-              //                     (offeringET > startTime && offeringET <= endTime)) {
-              // 
-              //                     // events[j].color = '#ffc40d';
-              //                     flag = couses[i].name;
-              //                     return flag;
-              // 
-              //                 }
-              //                 
-              //             }
-              //             
-              //             
-              //        
-              //        }
-              //         
-              //     }
-              //     
-              //     
-              //     return false;
-              //     
-              // }
-        
-        
-        function cancelAddCourse(courseObj, offerings) {
+        function cancelAddCourse(courseObj, offerings, termIdNotToDelete) {
            
             for (var i in offerings) {
              
-                var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
                     
+                if (termIdNotToDelete != false && termIdNotToDelete == termId) {
+                    continue;
+                }
+
+                var course = plan.getTermById(termId).getCourse(courseObj.fields.identifier)
+                    
                 // Don't delete if course is already in the plan
-                if (!$('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).hasClass('possible-course') &&
-                    !$('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).hasClass('possible-course-warning')) {
+                if (course.isAdded == false) {
                         continue;
                 }
-                                        
-                $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
+                $('#' + termId + course.cName).remove();
+                plan.getTermById(termId).removeAddedCourse(course.name);
                 
-                resetAddedUnits(offeringStr);
-                
-                removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
-                                
+                resetAddedUnits(termId);
+                                                
             }
             
         }
