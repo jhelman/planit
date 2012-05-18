@@ -84,6 +84,9 @@
             
             var eventArray = [];
             for (var i in term.courses) {
+                if ((term.courses)[i] == undefined) {
+                    continue;
+                }
                 $.merge(eventArray, (term.courses)[i].eventObjects);
             }
             
@@ -180,15 +183,26 @@
             this.plan.units -= course.units;
         }
         
-        Term.prototype.removeDraggable = function(course) {
-            var pos = $.inArray(course, this.acceptedDragsForTerm);
+        Term.prototype.removeDraggable = function(courseName) {
+            var pos = -1;
+            for (var i in this.acceptedDragsForTerm) {
+                if ((this.acceptedDragsForTerm)[i].cName == makeCondensedName(courseName)) {
+                    pos = i;
+                    break;
+                }
+            }
+            
             if (pos > -1) {
                 this.acceptedDragsForTerm.splice(pos, 1);
             }
         }
         
         Term.prototype.getCourse = function(courseName) {
-            return this.courses[makeCondensedName(courseName)];
+            var course = this.courses[makeCondensedName(courseName)];
+            if (course != undefined && course != null) {
+                return course;
+            }
+            return false;
         }
     
         Term.prototype.containsCourse = function(courseName) {
@@ -198,17 +212,9 @@
             return false;
         }
         
-
-        Term.prototype.makeCoursePermanent = function(courseName) {
-            this.courses[courseName].isAdded = false;
-        }
         
-        Term.prototype.clearAddedCourses = function() {
-            for (var i in this.courses) {
-                if (this.courses[i].isAdded == true) {
-                    this.courses[i] = undefined;
-                }
-            }
+        Term.prototype.removeAddedCourse = function(courseName) {
+            this.courses[makeCondensedName(courseName)] = undefined;
         }
     
         // TODO maybe make this more efficient with associative array?
@@ -230,9 +236,15 @@
            this.eventObjects = createEventObjects(this.name, this.offering.fields, isAdded, isWarning);
            this.units = units;
            this.courseObj = courseObj;  // This will be the JSON
-           this.isAdded = isAdded;  
+           this.isAdded = isAdded; 
         }
-    
+
+        Course.prototype.confirmCourse = function() {
+            this.isAdded = false;
+            for (var i in this.eventObjects) {
+                (this.eventObjects)[i].color = 'none';
+            }
+        }
     
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
@@ -254,8 +266,8 @@
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
-    	    {{ course.units }}, jQuery.parseJSON({{ course.course_json }}, 
-    	    false, false));
+    	    {{ course.units }}, jQuery.parseJSON({{ course.course_json }}), 
+    	    false, false);
     	{% endautoescape %}
 		
 		// add draggable information
@@ -276,40 +288,20 @@
         
         var classesJSON = null;
         var offeringsJSON = null;
-            
-        function draw() {
-            
-			{% for year in years %}
-			{% for term in year.terms %}
-			{% for course in term.courses%}
-			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 'placement': 'right'});
-			{% endfor %}
-			{% endfor %}
-			{% endfor %}
-			
-
-            // Static
-            $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
-            $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
-            
-            
-            $('.dropdown-toggle').dropdown();
-            
-        }
-                
+        var dragTerm = null;
         
-                
-        $(document).ready(function () {
-            
-            draw();
-            
-            var dragTerm = null;
-                            
+        function makeDrag(draggableElemStr) {
             // Reference: http://blog.petersendidit.com/post/drag-table-row-to-a-div-with-jquery/
-            $('.course').draggable({handle: '.icon-move', revert: 'invalid',
-                                    
+            
+            var elemStr;
+            if (draggableElemStr == false) {
+                elemStr = '.course';
+            } else {
+                elemStr = draggableElemStr;
+            }
+            
+            $(elemStr).draggable({handle: '.icon-move', revert: 'invalid',
+
                 helper: function (event) {
                     var copy = $(event.currentTarget).clone();
                     copy.find('.icon-trash').unbind('onclick');
@@ -317,7 +309,7 @@
                     copy.css('background-color', '#eeeeee');
                     return copy.appendTo('body');
                 },
-                
+
                 start: function (event, ui) {
                     dragTerm = $(this).closest('.quarter-div').attr('id');
                     var courseName = ui.helper.find('.courseName').html();
@@ -339,7 +331,7 @@
                        }
                     }
                 },
-                
+
                 stop: function (event, ui) {
                     for (var i in termNames) {
                        for (var j in years) {
@@ -349,8 +341,11 @@
                     }
                 }
             });
-
-			{% for year in years %}
+        
+        }
+        
+        function makeDrop() {
+            {% for year in years %}
 			{% for term in year.terms %}
 			$('#{{ term.condensedName }}').droppable({
 				
@@ -369,7 +364,7 @@
                     plan.getTermById('{{ term.condensedName }}').addCourse(course);
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById(dragTerm).removeCourse(course);
-                    plan.getTermById('{{ term.condensedName }}').removeDraggable(course);
+                    plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
 					updateQuarterUnitsUI('{{ term.condensedName }}', 
 					    parseInt(ui.draggable.find('.units').html()), false);
@@ -378,9 +373,33 @@
 				}
 			});
 			{% endfor %}
+			{% endfor %}   
+        }
+        
+        
+        
+                
+        $(document).ready(function () {
+            
+            {% for year in years %}
+			{% for term in year.terms %}
+			{% for course in term.courses%}
+			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 'placement': 'right'});
+			{% endfor %}
+			{% endfor %}
 			{% endfor %}
 			
 
+            // Static
+            $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
+            $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
+            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
+            $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
+            
+            
+            $('.dropdown-toggle').dropdown();            
+            makeDrag(false);
+            makeDrop();
             
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
@@ -499,12 +518,6 @@
 				data: data
 			});
 			
-        }
-        
-  
-        function closeAddCourse() {
-            clearTimeout(fading_alert_timeout);
-            $('#add-course-alert').fadeOut();
         }
         
         
@@ -668,49 +681,34 @@
         }
         
         
-        function confirmDates(quarterID, course) {
-            
-            var quarterArr = scheduleArray[quarterID];
-            
-            for (var i in quarterArr) {
-                if (quarterArr[i].title == course) {
-                    quarterArr[i].color = '';
+        function addCourseToDraggables(courseTermId, course) {
+            var offerings = course.offerings;
+            for (var i in offerings) {
+                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                    years[parseInt(offerings[i].fields.year) - 1];
+                
+                var offeringCourse = plan.getTermById(termId).getCourse(course.cName);
+                
+                if (offeringCourse != false && !offeringCourse.isAdded) {
+                    continue;
                 }
+                
+                plan.getTermById(termId).addDraggable(course);
             }
             
+            // In case course taken in >1 quarter must remove from itself
+            plan.getTermById(courseTermId).removeDraggable(course.cName);
+            
         }
-        
-        function deleteAddedCourse(courseObj, offerings, quarterID) {
-        
-             for (var i in offerings) {
-
-                    var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
-                        years[parseInt(offerings[i].fields.year) - 1];
-                    
-                    var tableElem = $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier));
-                                                          
-                    if (offeringStr == quarterID || 
-                        (!tableElem.hasClass('possible-course') &&
-                        !tableElem.hasClass('possible-course-warning'))) {
-                        continue;
-                    }
-
-                    $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
-
-                    resetAddedUnits(offeringStr);
-
-                    removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
-                }
-        }
-        
-        
+                
         
         function confirmAddCourse(courseTableID) {
-            var quarterID = $('#' + courseTableID).closest('.quarter-div').attr('id');
-            var units = parseInt($('#' + courseTableID).find('.units').html());
+            
             var courseName = $('#' + courseTableID).find('.courseName').html();
+            var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
             
-            
+            var course = plan.getTermById(termId).getCourse(courseName);  
+                        
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).find('.info').empty();
             
@@ -723,33 +721,18 @@
             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
                 
-            var courseObj = getJSONForCourse(courseName);
-                            
-            // $('#' + courseTableID).popover({
-            //    title: courseObj.fields.identifier,
-            //    content: courseObj.fields.name,
-            //    placement: 'right'
-            // });
                 
-            updateQuarterUnits(quarterID, units, true);
+            updateQuarterUnitsUI(termId, course.units, true);
                 
-            resetAddedUnits(quarterID);
-                        
-            confirmDates(quarterID, courseName);
+            resetAddedUnits(termId);
             
-            deleteAddedCourse(courseObj, jQuery.parseJSON(offeringsJSON[courseName]), quarterID);
+            course.confirmCourse();            
             
-            for (var i in termNames) {
-                for (var j in years) {
-
-                    var pos = $.inArray(termNames[i] + years[j] + makeCondensedName(courseName), 
-                        acceptedDragsForTerms[quarterID]);
-                    if (pos > -1) {
-                        acceptedDragsForTerms[quarterID].splice(pos, 1);
-                    }
-                    
-                }
-            }
+            cancelAddCourse(course.courseObj, course.offerings);
+            
+            makeDrag('#' + termId + course.cName);
+            
+            addCourseToDraggables(termId, course);
             
             
             $('#' + courseTableID).removeClass('possible-course');
@@ -789,20 +772,6 @@
         }
         
 
-        
-        
-        // function addToCalendar(quarterID, offering, courseIdentifier, isWarningAll) {                        
-        //                                                                 
-        //     for (var i = 0; i < offering.weekdays.length; i++) {
-        //      
-        //         var courseEvent = makeNewEvent(offering.weekdays.charAt(i), offering.start_time, 
-        //             offering.end_time, courseIdentifier, true, isWarningAll);
-        //                         
-        //         scheduleArray[quarterID].push(courseEvent);
-        //         
-        //     }
-        // 
-        // }
         
         var WARNING_OFFERING_TIME_CONFLICT = 0;
         var WARNING_ALL_DOUBLE_COURSE = 0;
@@ -854,14 +823,10 @@
                                                 
                 if ($(event.target).hasClass('confirm-add-class')) {
                     
-                    var quarterID = $(event.target).closest('.quarter-div').attr('id');
-                    
-                    confirmAddCourse(quarterID + makeCondensedName(courseName));
-                    
+                    var termId = $(event.target).closest('.quarter-div').attr('id');
+                    confirmAddCourse(termId + makeCondensedName(courseName));
                     $(classLinkItem).parent().removeClass('active');
-
                     $(this).unbind('mousedownoutside');
-                    
                     linkErrorTitle = "";                       
                                         
                 } else if ($(event.target).hasClass('icon-move') ||
@@ -871,14 +836,10 @@
                     ($(event.target).attr('id') != null && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
                         ($(event.target).attr('id') == "course-search"))
-                    ) {
-                        
+                    ) {                        
                         cancelAddCourse(courseObj, offerings);
-                    
                         $(classLinkItem).parent().removeClass('active');
-
                         $(this).unbind('mouseupoutside');
-                                                
                         linkErrorTitle = "";                       
                 }
                                 
@@ -911,11 +872,9 @@
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
                         courseObj.fields.units, courseObj, true, isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
-                            
+                                            
                 // evaluate quarter in which you are going to place the class to validate                
-                                             
-                // addToCalendar(offeringStr, offerings[i].fields, courseObj.fields.identifier, isWarningAll);
-                                                       
+                                                                                                    
                 var warningArrayOffering = evalForWarningOffering(termId, courseName);
                  
                 var isWarningOffering = false;
@@ -945,6 +904,8 @@
                 linkErrorTitle = "Class in schedule in all quarters offered.";
                 $(classLinkItem).tooltip('show'); 
             }
+            
+            
            
         }
         
@@ -993,75 +954,29 @@
             
         }
         
-        
-              //   
-              // function checkIfTimeConflict(termID, courseName, offering) {
-              //     
-              //     var flag = null;
-              //     
-              //     var numOfferings = offering.weekdays.length;
-              //     
-              //     var courses = plan.getTermById(termID).courses;
-              //     
-              //     for (var i in courses) {
-              //     
-              //         var events = courses[i].eventObjects;
-              //        
-              //         for (var j in events) {
-              //         
-              //             var startTime = events[j].start.getTime();
-              //             var endTime = events[j].end.getTime();
-              //             
-              //             for (var k in offerings) {
-              //                 
-              //                 var offeringST = offerings[k].start.getTime();
-              //                 var offeringET = offerings[k].end.getTime();
-              //                 
-              //                 // Time conflict exists
-              //                 if ((offeringST >= startTime && offeringST < endTime) ||
-              //                     (offeringET > startTime && offeringET <= endTime)) {
-              // 
-              //                     // events[j].color = '#ffc40d';
-              //                     flag = couses[i].name;
-              //                     return flag;
-              // 
-              //                 }
-              //                 
-              //             }
-              //             
-              //             
-              //        
-              //        }
-              //         
-              //     }
-              //     
-              //     
-              //     return false;
-              //     
-              // }
-        
+                
         
         function cancelAddCourse(courseObj, offerings) {
            
             for (var i in offerings) {
              
-                var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
+
+                var course = plan.getTermById(termId).getCourse(courseObj.fields.identifier)
                     
                 // Don't delete if course is already in the plan
-                if (!$('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).hasClass('possible-course') &&
-                    !$('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).hasClass('possible-course-warning')) {
+                if (!course.isAdded) {
                         continue;
                 }
-                                        
-                $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
                 
-                resetAddedUnits(offeringStr);
+                $('#' + termId + course.cName).remove();
+                plan.getTermById(termId).removeAddedCourse(course.name);
                 
-                removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
-                                
+                resetAddedUnits(termId);
+                                                
             }
-            
+                        
         }
         
         
