@@ -300,17 +300,20 @@
             
         }
                 
+        var dragTerm = null;
         
-                
-        $(document).ready(function () {
-            
-            draw();
-            
-            var dragTerm = null;
-                            
+        function makeDrag(draggableElemStr) {
             // Reference: http://blog.petersendidit.com/post/drag-table-row-to-a-div-with-jquery/
-            $('.course').draggable({handle: '.icon-move', revert: 'invalid',
-                                    
+            
+            var elemStr;
+            if (draggableElemStr == false) {
+                elemStr = '.course';
+            } else {
+                elemStr = draggableElemStr;
+            }
+            
+            $(elemStr).draggable({handle: '.icon-move', revert: 'invalid',
+
                 helper: function (event) {
                     var copy = $(event.currentTarget).clone();
                     copy.find('.icon-trash').unbind('onclick');
@@ -318,7 +321,7 @@
                     copy.css('background-color', '#eeeeee');
                     return copy.appendTo('body');
                 },
-                
+
                 start: function (event, ui) {
                     dragTerm = $(this).closest('.quarter-div').attr('id');
                     var courseName = ui.helper.find('.courseName').html();
@@ -340,7 +343,7 @@
                        }
                     }
                 },
-                
+
                 stop: function (event, ui) {
                     for (var i in termNames) {
                        for (var j in years) {
@@ -350,9 +353,11 @@
                     }
                 }
             });
-
-			
-			{% for year in years %}
+        
+        }
+        
+        function makeDrop() {
+            {% for year in years %}
 			{% for term in year.terms %}
 			$('#{{ term.condensedName }}').droppable({
 				
@@ -380,9 +385,18 @@
 				}
 			});
 			{% endfor %}
-			{% endfor %}
-			
-
+			{% endfor %}   
+        }
+        
+        
+        
+                
+        $(document).ready(function () {
+            
+            draw();
+            
+            makeDrag(false);
+            makeDrop();
             
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
@@ -699,7 +713,7 @@
         //                }
         //        }
         
-        function addCourseToDraggables(course, courseTermId) {
+        function addCourseToDraggables(courseTermId, course) {
             var offerings = course.offerings;
             for (var i in offerings) {
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
@@ -713,6 +727,11 @@
             }
             
         }
+        
+        function makeCourseDraggable(termId, course) {
+            makeDrag('#' + termId + course.cName);
+        }
+        
         
         function confirmAddCourse(courseTableID) {
             
@@ -738,27 +757,13 @@
                 
             resetAddedUnits(termId);
             
-            course.confirmCourse();
-                        
-            // confirmDates(quarterID, courseName);
-            
-            // deleteAddedCourse(courseObj, jQuery.parseJSON(offeringsJSON[courseName]), quarterID);
+            course.confirmCourse();            
             
             cancelAddCourse(course.courseObj, course.offerings, termId);
             
-            addCourseToDraggables(course, termId);
+            makeCourseDraggable(termId, course);
             
-            // for (var i in termNames) {
-            //                 for (var j in years) {
-            // 
-            //                     var pos = $.inArray(termNames[i] + years[j] + makeCondensedName(courseName), 
-            //                         acceptedDragsForTerms[quarterID]);
-            //                     if (pos > -1) {
-            //                         acceptedDragsForTerms[quarterID].splice(pos, 1);
-            //                     }
-            //                     
-            //                 }
-            //             }
+            addCourseToDraggables(termId, course);
             
             
             $('#' + courseTableID).removeClass('possible-course');
