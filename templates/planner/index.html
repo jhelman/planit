@@ -918,7 +918,7 @@
             
             for (var i in courses) {
                 
-                if (courses[i].name == courseName) {
+                if (courses[i] == undefined || courses[i].name == courseName) {
                     // alert(courseName);
                     continue;
                 }
