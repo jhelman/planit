@@ -518,7 +518,7 @@
 			var data = new Object();
 			data['term'] = term;
 			data['year'] = year;
-			data['course'] = course;
+			data['course'] = course.name;
 			data['plan'] = plan.planName;
 			$.ajax({
 				type: 'POST',
