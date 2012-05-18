@@ -918,7 +918,8 @@
             
             for (var i in courses) {
                 
-                if (courses[i] == undefined || courses[i].name == courseName) {
+                // Can it be null?
+                if (courses[i] == undefined || courses[i] == null || courses[i].name == courseName) {
                     // alert(courseName);
                     continue;
                 }
