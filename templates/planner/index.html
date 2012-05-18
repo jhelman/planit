@@ -174,8 +174,8 @@
     
         Term.prototype.addCourse = function(course) {
             this.courses[course.cName] = course;
-            this.units += course.max_units;
-            this.plan.units += course.max_units;
+            this.units += course.units;
+            this.plan.units += course.units;
         }
     
         Term.prototype.addDraggable = function(course) {
@@ -187,8 +187,8 @@
     
         Term.prototype.removeCourse = function(course) {
             this.courses[course.cName] = undefined;
-            this.units -= course.max_units;
-            this.plan.units -= course.max_units;
+            this.units -= course.units;
+            this.plan.units -= course.units;
         }
         
         Term.prototype.removeDraggable = function(courseName) {
@@ -392,7 +392,7 @@
             {% for year in years %}
 			{% for term in year.terms %}
 			{% for course in term.courses%}
-			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 'placement': 'right'});
+			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.title }}', 'placement': 'right'});
 			{% endfor %}
 			{% endfor %}
 			{% endfor %}
@@ -688,7 +688,7 @@
             
             $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover({
                title: courseObj.identifier,
-               content: courseObj.name,
+               content: courseObj.title,
                placement: 'right'
             });
             
@@ -736,7 +736,7 @@
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
                 
                 
-            updateQuarterUnitsUI(termId, course.max_units, true);
+            updateQuarterUnitsUI(termId, course.units, true);
                 
             resetAddedUnits(termId);
             
@@ -934,7 +934,7 @@
             for (var i in courses) {
                 
                 // Can it be null?
-                if (courses[i] == undefined || courses[i] == null || courses[i].name == courseName) {
+                if (courses[i] == undefined || courses[i] == null || courses[i].title == courseName) {
                     // alert(courseName);
                     continue;
                 }
@@ -954,8 +954,8 @@
                             (offeringET > startTime && offeringET <= endTime)) {
     
                             course.eventObjects[k].color = '#ffc40d';
-                            // flag = couses[i].name;
-                            flag = courses[i].name;
+                            // flag = couses[i].title;
+                            flag = courses[i].title;
     
                         }
                         
@@ -987,7 +987,7 @@
                 }
                 
                 $('#' + termId + course.cName).remove();
-                plan.getTermById(termId).removeAddedCourse(course.name);
+                plan.getTermById(termId).removeAddedCourse(course.title);
                 
                 resetAddedUnits(termId);
                                                 
@@ -1010,7 +1010,7 @@
             for (var i in courses) {
                 
                 var courseShortName = courses[i].fields.identifier;
-                var courseLongName = courses[i].fields.name;
+                var courseLongName = courses[i].fields.title;
                 
                 $('#search-results-nav').append('<li><a href="#" id="' + makeCondensedName(courseShortName)
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + 
@@ -1271,7 +1271,7 @@
                 				            <div class="quarter-info-div">
                 				                <span class="quarter-info-span">
                 				                    Units<br/>
-                    				                <span id="{{ term.condensedName }}-units">{{ term.max_units }}</span><br/>
+                    				                <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
                     				                <span id="{{ term.condensedName }}-added-units" class="added-units">+0</span><br/>
                     				                <br/>
 				            
