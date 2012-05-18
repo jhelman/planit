@@ -183,15 +183,26 @@
             this.plan.units -= course.units;
         }
         
-        Term.prototype.removeDraggable = function(course) {
-            var pos = $.inArray(course, this.acceptedDragsForTerm);
+        Term.prototype.removeDraggable = function(courseName) {
+            var pos = -1;
+            for (var i in this.acceptedDragsForTerm) {
+                if ((this.acceptedDragsForTerm)[i].cName == makeCondensedName(courseName)) {
+                    pos = i;
+                    break;
+                }
+            }
+            
             if (pos > -1) {
                 this.acceptedDragsForTerm.splice(pos, 1);
             }
         }
         
         Term.prototype.getCourse = function(courseName) {
-            return this.courses[makeCondensedName(courseName)];
+            var course = this.courses[makeCondensedName(courseName)];
+            if (course != undefined && course != null) {
+                return course;
+            }
+            return false;
         }
     
         Term.prototype.containsCourse = function(courseName) {
@@ -225,7 +236,7 @@
            this.eventObjects = createEventObjects(this.name, this.offering.fields, isAdded, isWarning);
            this.units = units;
            this.courseObj = courseObj;  // This will be the JSON
-           this.isAdded = isAdded;  
+           this.isAdded = isAdded; 
         }
 
         Course.prototype.confirmCourse = function() {
@@ -255,8 +266,8 @@
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
-    	    {{ course.units }}, jQuery.parseJSON({{ course.course_json }}, 
-    	    false, false));
+    	    {{ course.units }}, jQuery.parseJSON({{ course.course_json }}), 
+    	    false, false);
     	{% endautoescape %}
 		
 		// add draggable information
@@ -277,29 +288,6 @@
         
         var classesJSON = null;
         var offeringsJSON = null;
-            
-        function draw() {
-            
-			{% for year in years %}
-			{% for term in year.terms %}
-			{% for course in term.courses%}
-			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 'placement': 'right'});
-			{% endfor %}
-			{% endfor %}
-			{% endfor %}
-			
-
-            // Static
-            $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
-            $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
-            
-            
-            $('.dropdown-toggle').dropdown();
-            
-        }
-                
         var dragTerm = null;
         
         function makeDrag(draggableElemStr) {
@@ -376,7 +364,7 @@
                     plan.getTermById('{{ term.condensedName }}').addCourse(course);
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById(dragTerm).removeCourse(course);
-                    plan.getTermById('{{ term.condensedName }}').removeDraggable(course);
+                    plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
 					updateQuarterUnitsUI('{{ term.condensedName }}', 
 					    parseInt(ui.draggable.find('.units').html()), false);
@@ -393,8 +381,23 @@
                 
         $(document).ready(function () {
             
-            draw();
+            {% for year in years %}
+			{% for term in year.terms %}
+			{% for course in term.courses%}
+			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.name }}', 'placement': 'right'});
+			{% endfor %}
+			{% endfor %}
+			{% endfor %}
+			
+
+            // Static
+            $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
+            $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
+            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
+            $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             
+            
+            $('.dropdown-toggle').dropdown();            
             makeDrag(false);
             makeDrop();
             
@@ -678,68 +681,34 @@
         }
         
         
-        function confirmDates(quarterID, course) {
-            
-            var quarterArr = scheduleArray[quarterID];
-            
-            for (var i in quarterArr) {
-                if (quarterArr[i].title == course) {
-                    quarterArr[i].color = '';
-                }
-            }
-            
-        }
-        
-        // function deleteAddedCourse(courseObj, offerings, quarterID) {
-        //        
-        //             for (var i in offerings) {
-        // 
-        //                    var offeringStr = termNames[parseInt(offerings[i].fields.term) - 1] + 
-        //                        years[parseInt(offerings[i].fields.year) - 1];
-        //                    
-        //                    var tableElem = $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier));
-        //                                                          
-        //                    if (offeringStr == quarterID || 
-        //                        (!tableElem.hasClass('possible-course') &&
-        //                        !tableElem.hasClass('possible-course-warning'))) {
-        //                        continue;
-        //                    }
-        // 
-        //                    $('#' + offeringStr + makeCondensedName(courseObj.fields.identifier)).remove();
-        // 
-        //                    resetAddedUnits(offeringStr);
-        // 
-        //                    removeClassFromSchedule(courseObj.fields.identifier, offeringStr);
-        //                }
-        //        }
-        
         function addCourseToDraggables(courseTermId, course) {
             var offerings = course.offerings;
             for (var i in offerings) {
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
                 
-                if (termId == courseTermId) {
+                var offeringCourse = plan.getTermById(termId).getCourse(course.cName);
+                
+                if (offeringCourse != false && !offeringCourse.isAdded) {
                     continue;
                 }
                 
                 plan.getTermById(termId).addDraggable(course);
             }
             
+            // In case course taken in >1 quarter must remove from itself
+            plan.getTermById(courseTermId).removeDraggable(course.cName);
+            
         }
-        
-        function makeCourseDraggable(termId, course) {
-            makeDrag('#' + termId + course.cName);
-        }
-        
+                
         
         function confirmAddCourse(courseTableID) {
             
             var courseName = $('#' + courseTableID).find('.courseName').html();
             var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
             
-            var course = plan.getTermById(termId).getCourse(courseName);            
-            
+            var course = plan.getTermById(termId).getCourse(courseName);  
+                        
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).find('.info').empty();
             
@@ -759,9 +728,9 @@
             
             course.confirmCourse();            
             
-            cancelAddCourse(course.courseObj, course.offerings, termId);
+            cancelAddCourse(course.courseObj, course.offerings);
             
-            makeCourseDraggable(termId, course);
+            makeDrag('#' + termId + course.cName);
             
             addCourseToDraggables(termId, course);
             
@@ -867,9 +836,8 @@
                     ($(event.target).attr('id') != null && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
                         ($(event.target).attr('id') == "course-search"))
-                    ) {
-                        
-                        cancelAddCourse(courseObj, offerings, false);
+                    ) {                        
+                        cancelAddCourse(courseObj, offerings);
                         $(classLinkItem).parent().removeClass('active');
                         $(this).unbind('mouseupoutside');
                         linkErrorTitle = "";                       
@@ -904,7 +872,7 @@
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
                         courseObj.fields.units, courseObj, true, isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
-                            
+                                            
                 // evaluate quarter in which you are going to place the class to validate                
                                                                                                     
                 var warningArrayOffering = evalForWarningOffering(termId, courseName);
@@ -936,6 +904,8 @@
                 linkErrorTitle = "Class in schedule in all quarters offered.";
                 $(classLinkItem).tooltip('show'); 
             }
+            
+            
            
         }
         
@@ -986,30 +956,27 @@
         
                 
         
-        function cancelAddCourse(courseObj, offerings, termIdNotToDelete) {
+        function cancelAddCourse(courseObj, offerings) {
            
             for (var i in offerings) {
              
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     years[parseInt(offerings[i].fields.year) - 1];
-                    
-                if (termIdNotToDelete != false && termIdNotToDelete == termId) {
-                    continue;
-                }
 
                 var course = plan.getTermById(termId).getCourse(courseObj.fields.identifier)
                     
                 // Don't delete if course is already in the plan
-                if (course.isAdded == false) {
+                if (!course.isAdded) {
                         continue;
                 }
+                
                 $('#' + termId + course.cName).remove();
                 plan.getTermById(termId).removeAddedCourse(course.name);
                 
                 resetAddedUnits(termId);
                                                 
             }
-            
+                        
         }
         
         
