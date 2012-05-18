@@ -63,7 +63,7 @@ def index(request):
                     if weekday == 'F':
                         days.append(start_day + 4)
                 setattr(course, 'days', days)
-                course_offerings = CourseOffering.objects.filter(course=course)
+                course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3)
                 setattr(course, 'offering_json', simplejson.dumps(serializers.serialize('json', course_offerings)))
                 setattr(course, 'course_json', simplejson.dumps(serializers.serialize('json', [course])))
             terms[t]['units'] = units
@@ -73,7 +73,7 @@ def index(request):
     offerings = {}
     for e in enrolled:
         course = e.course.course
-        course_offerings = CourseOffering.objects.filter(course=course)
+        course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3)
         offered_terms = []
         for offering in course_offerings:
             offered_terms.append((offering.term.num, offering.year))
@@ -92,12 +92,12 @@ def search(request, prefix):
     if len(results) == 0:
         index = re.search('\d', prefix).start()
         prefix = prefix[0:index] + ' ' + prefix[index:]
-        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+        results = Course.objects.filter(identifier__startswith=prefix).exclude(term__num=3).order_by('identifier')
     classNames = []
     offerings = {}
     for course in results:
         classNames.append(course.identifier)
-        course_offerings = CourseOffering.objects.filter(course=course).order_by('year', 'term', 'start_time')
+        course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
         offerings[course.identifier] = serializers.serialize('json', course_offerings)
         
     data = serializers.serialize('json', results)

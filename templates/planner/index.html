@@ -127,10 +127,14 @@
 		{% endfor %}
 		
 		var years = new Array();
+		var yearNums = new Array();
 		{% for year in years %}
 		var start_num = {{ year.start_num }}
 		years.push(start_num + '-' + (start_num + 1));
+		yearNums.push(start_num);
 		{% endfor %}
+		
+		
 
 
         /* Begin Javascript Object representing the model */
@@ -249,7 +253,7 @@
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
                 if (parseInt(offerings[i].fields.term) == termNum + 1 && 
-                    parseInt(offerings[i].fields.year) == yearNum + 1) {
+                    parseInt(offerings[i].fields.year) == yearNums[yearNum]) {
                    return offerings[i];
                 }
             }
