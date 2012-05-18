@@ -90,9 +90,8 @@ def search(request, prefix):
     responseData = {}
     results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     if len(results) == 0:
-        index = re.search('\d', prefix).start()
-        prefix = prefix[0:index] + ' ' + prefix[index:]
-        results = Course.objects.filter(identifier__startswith=prefix).exclude(term__num=3).order_by('identifier')
+        prefix = prefix.replace(' ', '')
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
     offerings = {}
     for course in results:

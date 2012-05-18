@@ -134,6 +134,10 @@
 		yearNums.push(start_num);
 		{% endfor %}
 		
+		function convertYearToLongForm(year) {
+			return year + '-' + (year + 1)
+		}
+		
 		
 
 
@@ -170,8 +174,8 @@
     
         Term.prototype.addCourse = function(course) {
             this.courses[course.cName] = course;
-            this.units += course.units;
-            this.plan.units += course.units;
+            this.units += course.max_units;
+            this.plan.units += course.max_units;
         }
     
         Term.prototype.addDraggable = function(course) {
@@ -183,8 +187,8 @@
     
         Term.prototype.removeCourse = function(course) {
             this.courses[course.cName] = undefined;
-            this.units -= course.units;
-            this.plan.units -= course.units;
+            this.units -= course.max_units;
+            this.plan.units -= course.max_units;
         }
         
         Term.prototype.removeDraggable = function(courseName) {
@@ -651,7 +655,7 @@
             return '<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
                 'class="table table-bordered table-condensed course ' + className + '">' + 
                 '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
-                courseObj.units + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
+                courseObj.max_units + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
                 (isWarning ? '&nbsp;&nbsp;<i class="icon-warning-sign"></i>' : '')
                 + '</td></tr></table>';
                             
@@ -695,7 +699,7 @@
             var offerings = course.offerings;
             for (var i in offerings) {
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
-                    years[parseInt(offerings[i].fields.year) - 1];
+                    convertYearToLongForm(parseInt(offerings[i].fields.year));
                 
                 var offeringCourse = plan.getTermById(termId).getCourse(course.cName);
                 
@@ -732,7 +736,7 @@
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
                 
                 
-            updateQuarterUnitsUI(termId, course.units, true);
+            updateQuarterUnitsUI(termId, course.max_units, true);
                 
             resetAddedUnits(termId);
             
@@ -872,7 +876,7 @@
             for (var i in offerings) {
                                                                                                    
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
-                    years[parseInt(offerings[i].fields.year) - 1];
+                    convertYearToLongForm(parseInt(offerings[i].fields.year));
                                         
                 // double adding class in 1 quarter
                 if (plan.getTermById(termId).containsCourse(courseName)) {
@@ -881,7 +885,7 @@
                 
                 addClassDisplayCount++;
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
-                        courseObj.fields.units, courseObj, true, isWarningAll);
+                        courseObj.fields.max_units, courseObj, true, isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
                                             
                 // evaluate quarter in which you are going to place the class to validate                
@@ -901,7 +905,7 @@
                     isWarning = true;
                 }
                                        
-                updateAddedUnits(termId, courseObj.fields.units, isWarning, false);
+                updateAddedUnits(termId, courseObj.fields.max_units, isWarning, false);
                                                            
                 $('#' + termId + '-courses').prepend(makeAddedCourseHTML(termId, courseObj.fields, isWarning));
                                 
@@ -973,7 +977,7 @@
             for (var i in offerings) {
              
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
-                    years[parseInt(offerings[i].fields.year) - 1];
+                    convertYearToLongForm(parseInt(offerings[i].fields.year));
 
                 var course = plan.getTermById(termId).getCourse(courseObj.fields.identifier)
                     
