@@ -935,7 +935,7 @@
                 
                 // Can it be null?
 
-                if (courses[i] == undefined || courses[i].title == courseName) {
+                if (courses[i] == undefined || courses[i].name == courseName) {
                     // alert(courseName);
                     continue;
                 }
@@ -955,8 +955,8 @@
                             (offeringET > startTime && offeringET <= endTime)) {
     
                             course.eventObjects[k].color = '#ffc40d';
-                            // flag = couses[i].title;
-                            flag = courses[i].title;
+                            // flag = couses[i].name;
+                            flag = courses[i].name;
     
                         }
                         
@@ -988,7 +988,7 @@
                 }
                 
                 $('#' + termId + course.cName).remove();
-                plan.getTermById(termId).removeAddedCourse(course.title);
+                plan.getTermById(termId).removeAddedCourse(course.name);
                 
                 resetAddedUnits(termId);
                                                 
