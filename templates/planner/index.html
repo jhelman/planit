@@ -897,8 +897,7 @@
             $('#' + quarterID + '-added-units').show();
         }
         
-        // TODO Dan define in terms of database
-        var MAX_UNITS_PER_QUARTER = 1;
+        var MAX_UNITS_PER_QUARTER = {{ max_units }};
         
         function checkIfOverUnits(termId) {
             if (plan.getTermById(termId).units > MAX_UNITS_PER_QUARTER) {

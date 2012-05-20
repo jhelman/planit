@@ -83,6 +83,7 @@ def index(request):
     args['totalUnits'] = totalUnits
     args['offerings'] = offerings
     args['term_names'] = term_names
+    args['max_units'] = plan.university.max_units_per_quarter
     print offerings
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
