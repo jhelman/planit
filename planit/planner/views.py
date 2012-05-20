@@ -89,6 +89,7 @@ def index(request):
     
 def search(request, prefix):
     responseData = {}
+    responseData["query"] = prefix
     results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     if len(results) == 0:
         prefix = prefix.replace(' ', '')
