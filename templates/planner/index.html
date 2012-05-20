@@ -894,9 +894,11 @@
             $('#' + quarterID + '-added-units').show();
         }
         
-        // Account for max term units for school!!
+        // TODO Dan define in terms of database
+        var MAX_UNITS_PER_QUARTER = 1;
+        
         function checkIfOverUnits(termId) {
-            if (plan.getTermById(termId).units > 1) {
+            if (plan.getTermById(termId).units > MAX_UNITS_PER_QUARTER) {
                 return true;
             } 
             return false;
