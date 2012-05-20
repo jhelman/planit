@@ -235,14 +235,22 @@
             }
             return false;
         }
+        
+        Term.prototype.updateUnitsForCourse = function(courseName, units) {
+            var baseUnits = this.units - this.courses[makeCondensedName(courseName)].units;
+            this.courses[makeCondensedName(courseName)].units = units;
+            this.units = baseUnits + units;
+        }
     
-        function Course(name, offerings, offering, units, courseObj, isAdded, isWarning) {
+        function Course(name, offerings, offering, minUnits, maxUnits, courseObj, isAdded, isWarning) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offerings = offerings; // All possible offerings in JSON
            this.offering = offering;  // The offering JSON the person is taking
            this.eventObjects = createEventObjects(this.name, this.offering.fields, isAdded, isWarning);
-           this.units = units;
+           this.minUnits = minUnits;
+           this.maxUnits = maxUnits;
+           this.units = maxUnits;
            this.courseObj = courseObj;  // This will be the JSON
            this.isAdded = isAdded; 
         }
@@ -274,7 +282,7 @@
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
-    	    {{ course.max_units }}, jQuery.parseJSON({{ course.course_json }}), 
+    	    {{ course.min_units }}, {{ course.max_units }}, jQuery.parseJSON({{ course.course_json }}), 
     	    false, false);
     	{% endautoescape %}
 		
@@ -375,9 +383,9 @@
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
 					updateQuarterUnitsUI('{{ term.condensedName }}', 
-					    parseInt(ui.draggable.find('.units').html()), false);
+					    parseInt(ui.draggable.find('.units div').html()), false);
 					updateQuarterUnitsUI(dragTerm, 
-				        parseInt("-" + ui.draggable.find('.units').html()), false);
+				        parseInt("-" + ui.draggable.find('.units div').html()), false);
 				}
 			});
 			{% endfor %}
@@ -403,6 +411,12 @@
             $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
             $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
             $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
+            $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
+            
+            
+            
+            $('.units').on('click', function(event) { clickChangeUnits(this) });
+            
             
             
             $('.dropdown-toggle').dropdown();            
@@ -469,7 +483,7 @@
                         
             qDiv.find('.cover').fadeIn();
             
-            updateAddedUnits(qDiv.attr('id'), courseElem.find('.units').html(), false, true);
+            updateAddedUnits(qDiv.attr('id'), courseElem.find('.units div').html(), false, true);
             
             alertBox.fadeIn();
         }
@@ -496,7 +510,7 @@
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
             var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
-            var numUnits = courseElem.find('.units').html();
+            var numUnits = courseElem.find('.units div').html();
             
             courseElem.remove();
             
@@ -644,21 +658,99 @@
         }
         
         
-        function makeAddedCourseHTML(quarterID, courseObj, isWarning) {
+        function changeUnits(selectElem, termId, courseId, oldUnits) {
+
+            var units = parseInt($(selectElem).attr('value'));
+            updateQuarterUnitsUI(termId, -oldUnits, true);
+            plan.getTermById(termId).updateUnitsForCourse(courseId, units);
+            updateQuarterUnitsUI(termId, units, true);
+            
+            removeSelect(selectElem, units);
+            
+        }
+        
+        function removeSelect(selectElem, units) {
+            var unitsElem = $(selectElem).closest('.units');
+            
+            unitsElem.empty();
+            unitsElem.html("<div class='units-rollover'>" + units + "</div>");            
+            unitsElem.find('div').tooltip({'title': 'Change Units', 'placement': 'top'});
+            unitsElem.closest('table').popover('enable');
+            
+            unitsElem.on('click', function(event) {
+               clickChangeUnits(this);
+            });   
+        }
+        
+        function clickChangeUnits(unitsElem) {
+            
+            $(unitsElem).closest('table').popover('hide');
+            $(unitsElem).closest('table').popover('disable');
+            $(unitsElem).find('.units-rollover').tooltip('hide');            
+            
+            var termId = $(unitsElem).closest('.quarter-div').attr('id');
+            var courseId = makeCondensedName($(unitsElem).closest('table').find('.courseName').html());
+            
+            $(unitsElem).off('click');
+            
+            var oldUnits = parseInt($(unitsElem).find('div').html());
+            
+            $(unitsElem).empty();
+            $(unitsElem).html(makeUnitsSelect(courseId, termId, oldUnits, false));
+            $(unitsElem).find('select').on('change blur', function(event) {
+                changeUnits(this, termId, courseId, oldUnits); 
+            });
+        }
+        
+        function changeSelectedUnits(selectElem, termId, courseId) {
+            var units = parseInt($(selectElem).attr('value'));
+            updateAddedUnitsWithCurrent(termId, units);
+            plan.getTermById(termId).getCourse(courseId).units = units;
+        }
+        
+        
+        function makeUnitsSelect(courseId, termId, oldUnits, isAdded) {
+            var course = plan.getTermById(termId).getCourse(courseId);
+            var minUnits = course.minUnits;
+            var maxUnits = course.maxUnits;            
+            var selector = "<select class='units-select'>";
+            for (var i = minUnits; i <= maxUnits; i++) {
+                if (i == oldUnits) {
+                   selector += "<option value='" + i + "' selected>" + i + "</option>";
+                } else {
+                   selector += "<option value='" + i + "'>" + i + "</option>";
+                }
+            }
+            selector += "</select>";
+            return selector;
+        }
+        
+        
+        function makeAddedCourseHTML(addToElem, quarterID, courseObj, isWarning) {
             
             var className = "possible-course";
             
             if (isWarning) {
                 className = "possible-course-warning";
             }
+            
                     
-            return '<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
+            addToElem.prepend('<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
                 'class="table table-bordered table-condensed course ' + className + '">' + 
                 '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
-                courseObj.max_units + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
+                 makeUnitsSelect(courseObj.identifier, quarterID, courseObj.max_units, true) 
+                 + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
                 (isWarning ? '&nbsp;&nbsp;<i class="icon-warning-sign"></i>' : '')
-                + '</td></tr></table>';
-                            
+                + '</td></tr></table>');
+                
+            addToElem.find('select').on('change', function(event) {
+                changeSelectedUnits($(this), quarterID, courseObj.identifier, false);
+            });
+            
+            addToElem.find('.units').on('mouseover', function(event) {
+                $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover('hide');
+            });
+                                        
         }
         
         function createRolloversForAddedCourse(quarterID, courseObj, isWarning, 
@@ -679,7 +771,10 @@
                 for (var j in warningArrayOffering) {
                     if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
                            warningStr += "Course conflicts with " + warningArrayOffering[j] + "<br/>";
-                    } 
+                    }
+                    if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
+                           warningStr += "Over allowed units for quarter.<br/>";
+                    }
                 }
                         
                 $('.icon-warning-sign').tooltip({'title': warningStr, 'placement': 'left'});
@@ -720,6 +815,7 @@
             
             var courseName = $('#' + courseTableID).find('.courseName').html();
             var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
+            var units = parseInt($('#' + courseTableID).find('select').attr('value'));
             
             var course = plan.getTermById(termId).getCourse(courseName);  
                         
@@ -735,8 +831,8 @@
             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
                 
-                
-            updateQuarterUnitsUI(termId, course.units, true);
+                                
+            updateQuarterUnitsUI(termId, units, true);
                 
             resetAddedUnits(termId);
             
@@ -747,6 +843,8 @@
             makeDrag('#' + termId + course.cName);
             
             addCourseToDraggables(termId, course);
+            
+            removeSelect($('#' + courseTableID).find('select'), units);
             
             
             $('#' + courseTableID).removeClass('possible-course');
@@ -786,20 +884,41 @@
             $('#' + quarterID + '-added-units').show();
         }
         
-
+        function updateAddedUnitsWithCurrent(quarterID, units) {
+            var sign = '+';
+            if ($('#' + quarterID + '-added-units').html().indexOf('-') != -1) {
+                sign = '-';
+            }
+            
+            $('#' + quarterID + '-added-units').html(sign + units);        
+            $('#' + quarterID + '-added-units').show();
+        }
+        
+        // TODO Dan define in terms of database
+        var MAX_UNITS_PER_QUARTER = 1;
+        
+        function checkIfOverUnits(termId) {
+            if (plan.getTermById(termId).units > MAX_UNITS_PER_QUARTER) {
+                return true;
+            } 
+            return false;
+        }
+        
         
         var WARNING_OFFERING_TIME_CONFLICT = 0;
+        var WARNING_OFFERING_OVER_UNITS = 1;
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
         function evalForWarningOffering(termID, courseName) {
-            var warningArray = new Array(1);
+            var warningArray = [];
             warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, courseName);
+            warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(termID);
             return warningArray;
         }
         
         function evalForWarningAll(courseName) {
-            var warningArray = new Array(1);            
+            var warningArray = [];            
             warningArray[WARNING_ALL_DOUBLE_COURSE] = checkIfDoubleCourse(courseName);
             return warningArray;
         }
@@ -831,7 +950,7 @@
             var courseName = $(classLinkItem).find('.shortName').html();
                           
             var courseObj = getJSONForCourse(courseName);
-                                                
+                                                            
             var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
             
             $(classLinkItem).bind('mousedownoutside', function (event) {
@@ -871,7 +990,7 @@
             }
             
                 
-            var addClassDisplayCount = 0;
+            // var addClassDisplayCount = 0;
                                                             
             for (var i in offerings) {
                                                                                                    
@@ -883,9 +1002,10 @@
                     continue;
                 }
                 
-                addClassDisplayCount++;
+                // addClassDisplayCount++;
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
-                        courseObj.fields.max_units, courseObj, true, isWarningAll);
+                        courseObj.fields.min_units, courseObj.fields.max_units, courseObj, true, 
+                        isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
                                             
                 // evaluate quarter in which you are going to place the class to validate                
@@ -907,18 +1027,19 @@
                                        
                 updateAddedUnits(termId, courseObj.fields.max_units, isWarning, false);
                                                            
-                $('#' + termId + '-courses').prepend(makeAddedCourseHTML(termId, courseObj.fields, isWarning));
+                makeAddedCourseHTML($('#' + termId + '-courses'), termId, courseObj.fields, isWarning);
                                 
                 createRolloversForAddedCourse(termId, courseObj.fields, isWarning, 
                     warningArrayAll, warningArrayOffering);
                         
             }
             
-            if (addClassDisplayCount == 0) {
-                $(classLinkItem).tooltip({'title': function () {return linkErrorTitle;} });
-                linkErrorTitle = "Class in schedule in all quarters offered.";
-                $(classLinkItem).tooltip('show'); 
-            }
+            // Or if class is not offered during student's time at Stanford
+            // if (addClassDisplayCount == 0) {
+            //     $(classLinkItem).tooltip({'title': function () {return linkErrorTitle;} });
+            //     linkErrorTitle = "Class in schedule in all quarters offered.";
+            //     $(classLinkItem).tooltip('show'); 
+            // }
             
             
            
@@ -1029,9 +1150,6 @@
         
         
         function runSearch() {
-            
-            // var jon = new Array();
-            // alert(jon["jo"]);
             
             var searchValue = $('#course-search').attr('value');
             
@@ -1257,7 +1375,7 @@
                         				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
                         				                    <tr>
                         				                        <td class="courseName">{{ course.identifier }}</td>
-                        				                        <td class="units">{{ course.max_units }}</td>
+                        				                        <td class="units"><div class="units-rollover">{{ course.max_units }}</div></td>
                         				                        <td class="info"><i class="icon-move"></i>&nbsp;
                         				                            <i class="icon-trash" onclick="removeCourse(this);"></i></td>
                         				                    </tr>
@@ -1351,27 +1469,13 @@
                 </tr>
                 
             </table>
-                    
+                                
             
         </td>
         
         
-    </tr></table>
-    
-    <br />
-    <br />
-    <br />
-    <br />
-    
-    <div class="row">
-        <div class="span4">
-            
-            
-        </div>
-        
-        
-        
-    </div>
+    </tr></table>    
+
     
 </body>
 
