@@ -12,6 +12,7 @@ td.courseName {
 
 td.units {
     width: 17.5%;
+		cursor: pointer;
 }
 
 td.info {
@@ -307,5 +308,12 @@ table.possible-course-warning {
 .added-units {
 	color: #54cc33;
 	display: none;
+}
+
+.units-select {
+	width: 40px;
+	height: 20px;
+	padding: 0px;
+	margin: 0px;
 }
 
