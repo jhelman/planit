@@ -697,7 +697,10 @@
             
             $(unitsElem).empty();
             $(unitsElem).html(makeUnitsSelect(courseId, termId, oldUnits, false));
-            $(unitsElem).find('select').on('change blur', function(event) {
+            $(unitsElem).find('select').on('change', function(event) {
+                changeUnits(this, termId, courseId, oldUnits); 
+            });
+            $(unitsElem).find('select').on('mousedownoutside', function(event) {
                 changeUnits(this, termId, courseId, oldUnits); 
             });
         }
@@ -855,7 +858,7 @@
                         
             liElem.parent().removeClass('active');
             
-            liElem.unbind('mouseupoutside');
+            liElem.unbind('mousedownoutside');
 
 			// TODO dan put AJAX call here
 
@@ -973,7 +976,7 @@
                     ) {                        
                         cancelAddCourse(courseObj, offerings);
                         $(classLinkItem).parent().removeClass('active');
-                        $(this).unbind('mouseupoutside');
+                        $(this).unbind('mousedownoutside');
                         linkErrorTitle = "";                       
                 }
                                 
