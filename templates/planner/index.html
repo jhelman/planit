@@ -994,7 +994,6 @@
             
                 
             var addClassDisplayCount = 0;
-            var undefinedFlag = false;
             var containsCourseFlag = false;
                                                             
             for (var i in offerings) {
@@ -1002,12 +1001,12 @@
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
                                         
-                // quarter out of range of schedule or double adding class in 1 quarter
+                // quarter out of range of schedule
                 if (plan.getTermById(termId) == undefined) {
-                    undefinedFlag = true;
                     continue;
                 }
                 
+                // double adding class in 1 quarter
                 if (plan.getTermById(termId).containsCourse(courseName)) {
                     containsCourseFlag = true;
                     continue;
