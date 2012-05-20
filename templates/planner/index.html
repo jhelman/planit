@@ -1131,7 +1131,7 @@
         }
         
         
-        function createSearchResults(courses) {
+        function createSearchResults(courses, str) {
                         
             $('#search-results-nav').empty();
             
@@ -1175,6 +1175,9 @@
             $.ajax({
 				url: '/search/' + searchValue,
                 success: function (data, textStatus, jqXHR) {
+                    if (data.query != $('#course-search').attr('value')) {
+                        return;
+                    }
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
                     createSearchResults(classesJSON);
