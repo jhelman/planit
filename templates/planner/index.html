@@ -518,6 +518,7 @@
             
             var courseName = qDiv.find('.alert-delete-course-name').html();
             var course = plan.getTermById(quarterID).getCourse(courseName);
+            plan.getTermById(quarterID).addDraggable(course);
             plan.getTermById(quarterID).removeCourse(course);
                         
             resetAddedUnits(quarterID);
