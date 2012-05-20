@@ -64,9 +64,9 @@ class Course(models.Model):
     class_number = models.IntegerField()
     max_units = models.IntegerField()
     min_units = models.IntegerField()
-#    instructor = models.ForeignKey(Instructor) #on per class atm
     tags = models.ManyToManyField(Tag, through='TagMapping')
     prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
+    grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
     #repeatable_for_credit = models.BooleanField()
 
     def __unicode__(self):
@@ -176,6 +176,7 @@ class Plan(models.Model):
 class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
+    units = models.IntegerField()
 
     class Meta:
         unique_together = ('plan', 'course')
