@@ -483,7 +483,7 @@
                         
             qDiv.find('.cover').fadeIn();
             
-            updateAddedUnits(qDiv.attr('id'), courseElem.find('.units').html(), false, true);
+            updateAddedUnits(qDiv.attr('id'), courseElem.find('.units div').html(), false, true);
             
             alertBox.fadeIn();
         }
@@ -510,7 +510,7 @@
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
             var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
-            var numUnits = courseElem.find('.units').html();
+            var numUnits = courseElem.find('.units div').html();
             
             courseElem.remove();
             
