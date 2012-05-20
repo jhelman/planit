@@ -697,7 +697,10 @@
             
             $(unitsElem).empty();
             $(unitsElem).html(makeUnitsSelect(courseId, termId, oldUnits, false));
-            $(unitsElem).find('select').on('change blur', function(event) {
+            $(unitsElem).find('select').on('change', function(event) {
+                changeUnits(this, termId, courseId, oldUnits); 
+            });
+            $(unitsElem).find('select').on('mousedownoutside', function(event) {
                 changeUnits(this, termId, courseId, oldUnits); 
             });
         }
@@ -855,7 +858,7 @@
                         
             liElem.parent().removeClass('active');
             
-            liElem.unbind('mouseupoutside');
+            liElem.unbind('mousedownoutside');
 
 			// TODO dan put AJAX call here
 
@@ -973,8 +976,8 @@
                     ) {                        
                         cancelAddCourse(courseObj, offerings);
                         $(classLinkItem).parent().removeClass('active');
-                        $(this).unbind('mouseupoutside');
-                        linkErrorTitle = "";                       
+                        $(this).unbind('mousedownoutside');
+                        $(classLinkItem).tooltip('hide');                     
                 }
                                 
             });
@@ -990,19 +993,26 @@
             }
             
                 
-            // var addClassDisplayCount = 0;
+            var addClassDisplayCount = 0;
+            var containsCourseFlag = false;
                                                             
             for (var i in offerings) {
                                                                                                    
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
                                         
-                // double adding class in 1 quarter
-                if (plan.getTermById(termId).containsCourse(courseName)) {
+                // quarter out of range of schedule
+                if (plan.getTermById(termId) == undefined) {
                     continue;
                 }
                 
-                // addClassDisplayCount++;
+                // double adding class in 1 quarter
+                if (plan.getTermById(termId).containsCourse(courseName)) {
+                    containsCourseFlag = true;
+                    continue;
+                }
+                
+                addClassDisplayCount++;
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
                         courseObj.fields.min_units, courseObj.fields.max_units, courseObj, true, 
                         isWarningAll);
@@ -1034,12 +1044,12 @@
                         
             }
             
-            // Or if class is not offered during student's time at Stanford
-            // if (addClassDisplayCount == 0) {
-            //     $(classLinkItem).tooltip({'title': function () {return linkErrorTitle;} });
-            //     linkErrorTitle = "Class in schedule in all quarters offered.";
-            //     $(classLinkItem).tooltip('show'); 
-            // }
+            if (addClassDisplayCount == 0) {
+                var titleStr = (containsCourseFlag ? 'Class in schedule in all quarters offered.' :
+                    'Class not offered in time at school.');
+                $(classLinkItem).tooltip({'title': titleStr, 'trigger': 'manual'});
+                $(classLinkItem).tooltip('show'); 
+            }
             
             
            
@@ -1100,6 +1110,10 @@
              
                 var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
+                    
+                if (plan.getTermById(termId) == undefined) {
+                    continue;
+                }
 
                 var course = plan.getTermById(termId).getCourse(courseObj.fields.identifier)
                     
