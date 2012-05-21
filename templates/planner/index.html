@@ -1153,6 +1153,7 @@
             
             if (courses.length == 0) {
                 $('#requirements-toolbox-label').html('No results found.');
+                $('#search-scroll-div').nanoScroller();            
                 return;
             }
             
@@ -1189,8 +1190,8 @@
             var searchValue = $('#course-search').attr('value');
             
             if (searchValue.length == 0) {
-                $('#search-scroll-div').empty();
-                $('#requirements-toolbox-label').html('');
+                $('#search-scroll-content').empty();
+                // $('#search-scroll-div').nanoScroller();            
                 return;
             }
                         
