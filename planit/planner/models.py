@@ -37,7 +37,7 @@ class University(models.Model):
 # only ever be numberOfTermsPerYear of them
 # TODO better naming logic
 class Term(models.Model):
-    num = models.IntegerField()
+    num = models.IntegerField(primary_key=True)
     
     def __unicode__(self):
         if self.num == 0:
