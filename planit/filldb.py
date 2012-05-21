@@ -56,7 +56,7 @@ def parse_section(section, course, year):
         start_t = datetime.datetime(*strptime(start_t, "%H:%M:%S %p")[0:6]).time()
         end_t = datetime.datetime(*strptime(end_t, "%H:%M:%S %p")[0:6]).time()
         days_list = schedule.find('days').text.split()
-        daystr = "".join([word[0] if word[0:2] != 'Th' else 'H' for word in days_list])
+        daystr =  "".join([word[0] if word[0:2] != 'Th' else 'H' for word in days_list])
 
         co = CourseOffering.objects.filter(course=course, year=year, term=t, 
             start_time=start_t, end_time=end_t, weekdays=daystr, instructor=ins)
