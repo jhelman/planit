@@ -71,7 +71,7 @@ class Course(models.Model):
     min_units = models.IntegerField()
     tags = models.ManyToManyField(Tag, through='TagMapping')
     prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
-    grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
+    #grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
     #repeatable_for_credit = models.BooleanField()
 
     def __unicode__(self):
@@ -82,6 +82,11 @@ class Course(models.Model):
 class Requirement(models.Model):
     force = models.BooleanField(default=False)
     major = models.ForeignKey(Major, null=True)
+    def is_fulfilled(self, plan):
+        pass
+    
+    def fulfilled_by(self):
+        pass
 
 class CourseRequirement(Requirement):
     name = models.CharField(max_length=64)
@@ -174,11 +179,9 @@ class CourseOffering(models.Model):
 
 #does it scale
 class Enrollment(models.Model):
-    year = models.IntegerField()
-    term = models.ForeignKey(Term)
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
-    units = models.IntegerField()
+    #units = models.IntegerField()
 
     class Meta:
         unique_together = ('plan', 'course')
@@ -187,7 +190,7 @@ class Enrollment(models.Model):
         return self.course.__unicode__() + ' ' + self.plan.__unicode__()
 
 class LogicalRequirement(Requirement):
-    for_major = models.ForeignKey(Major)
+    #for_major = models.ForeignKey(Major, null=True)
     class Meta:
         abstract = True
 
@@ -221,7 +224,7 @@ class LogicalRequirement(Requirement):
         return self.req().force
 
 
-class ConjunctionRequirement(Requirement):
+class ConjunctionRequirement(LogicalRequirement):
     def is_fulfilled(self, plan):
         if(self.get_force()):
             return True
@@ -237,7 +240,7 @@ class ConjunctionRequirement(Requirement):
     def __unicode__(self):
         return self.name
 
-class DisjunctionRequirement(Requirement):
+class DisjunctionRequirement(LogicalRequirement):
     def is_fulfilled(self, plan):
         if(self.get_force()):
             return True

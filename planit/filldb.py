@@ -55,7 +55,6 @@ def parse_section(section, course, year):
         end_t =  schedule.find('endTime').text
         start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
         end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
-        print start_t
         days_list = schedule.find('days').text.split()
         daystr = "".join([word[0] if word[0:2] != 'Th' else 'H' for word in days_list])
         for year in range(4):
@@ -149,10 +148,10 @@ def filldb():
         for t in range(3):
             tn=Term(num=t)
             print t, " ", y
-            co=CourseOffering.objects.filter(term__num=y, course__identifier__startswith=prefixes[t])
+            co=CourseOffering.objects.filter(year=(2008 + y), term__num=t, course__identifier__startswith=prefixes[t])
             if co:
                 co=co[0]
-                e=Enrollment(year=(2008+y), term=tn, course=co, plan=p)
+                e=Enrollment(course=co, plan=p)
                 e.save()
     sc = add_req('systems core','sys_req', ['CS140', 'CS143'], 2,  0)
     ev = add_req('systems elec', 'sys_elv', ['CS144', 'CS155', 'CS145', 'CS149'], 2, 0)
@@ -162,6 +161,12 @@ def filldb():
     ihum2 = add_req('Second quarter IHUM', 'ihum2', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM2')], 1, 0)
     ihum3 = add_req('Third quarter IHUM', 'ihum3', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM3')], 1, 0)
     [r.save() for r in [sc, ev,m5r,scr,ihum1,ihum2,ihum3]]
+    cj = ConjunctionRequirement()
+    cj.save()
+    ih1 = RequirementMapping(coursereq=ihum1.req(), logreq=cj.req())
+    ih2 = RequirementMapping(coursereq=ihum2.req(), logreq=cj.req())
+    ih3 = RequirementMapping(coursereq=ihum3.req(), logreq=cj.req())
+    [r.save() for r in [ih1, ih2, ih3]]
 
 
 def main():
