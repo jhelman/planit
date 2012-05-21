@@ -58,7 +58,7 @@ def index(request):
                         days.append(start_day + 1)
                     if weekday == 'W':
                         days.append(start_day + 2)
-                    if weekday == 'R':
+                    if weekday == 'R' or weekday == 'H':
                         days.append(start_day + 3)
                     if weekday == 'F':
                         days.append(start_day + 4)

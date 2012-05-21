@@ -8,6 +8,13 @@ class Migration(SchemaMigration):
     
     def forwards(self, orm):
         
+        # Adding model 'Major'
+        db.create_table('planner_major', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
+        ))
+        db.send_create_signal('planner', ['Major'])
+
         # Adding model 'Instructor'
         db.create_table('planner_instructor', (
             ('first_name', self.gf('django.db.models.fields.CharField')(max_length=100)),
@@ -30,8 +37,7 @@ class Migration(SchemaMigration):
 
         # Adding model 'Term'
         db.create_table('planner_term', (
-            ('num', self.gf('django.db.models.fields.IntegerField')()),
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('num', self.gf('django.db.models.fields.IntegerField')(primary_key=True)),
         ))
         db.send_create_signal('planner', ['Term'])
 
@@ -56,6 +62,7 @@ class Migration(SchemaMigration):
 
         # Adding model 'Requirement'
         db.create_table('planner_requirement', (
+            ('major', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['planner.Major'], null=True)),
             ('force', self.gf('django.db.models.fields.BooleanField')(default=False, blank=True)),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
         ))
@@ -96,13 +103,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('planner', ['Prereq'])
 
-        # Adding model 'Major'
-        db.create_table('planner_major', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=128)),
-        ))
-        db.send_create_signal('planner', ['Major'])
-
         # Adding model 'Plan'
         db.create_table('planner_plan', (
             ('start_year', self.gf('django.db.models.fields.IntegerField')()),
@@ -133,10 +133,8 @@ class Migration(SchemaMigration):
         # Adding model 'Enrollment'
         db.create_table('planner_enrollment', (
             ('course', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['planner.CourseOffering'])),
-            ('term', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['planner.Term'])),
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('plan', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['planner.Plan'])),
-            ('year', self.gf('django.db.models.fields.IntegerField')()),
         ))
         db.send_create_signal('planner', ['Enrollment'])
 
@@ -146,12 +144,14 @@ class Migration(SchemaMigration):
         # Adding model 'ConjunctionRequirement'
         db.create_table('planner_conjunctionrequirement', (
             ('requirement_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['planner.Requirement'], unique=True, primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
         ))
         db.send_create_signal('planner', ['ConjunctionRequirement'])
 
         # Adding model 'DisjunctionRequirement'
         db.create_table('planner_disjunctionrequirement', (
             ('requirement_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['planner.Requirement'], unique=True, primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
         ))
         db.send_create_signal('planner', ['DisjunctionRequirement'])
 
@@ -166,6 +166,9 @@ class Migration(SchemaMigration):
     
     def backwards(self, orm):
         
+        # Deleting model 'Major'
+        db.delete_table('planner_major')
+
         # Deleting model 'Instructor'
         db.delete_table('planner_instructor')
 
@@ -198,9 +201,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Prereq'
         db.delete_table('planner_prereq')
-
-        # Deleting model 'Major'
-        db.delete_table('planner_major')
 
         # Deleting model 'Plan'
         db.delete_table('planner_plan')
@@ -236,7 +236,8 @@ class Migration(SchemaMigration):
             'requirement_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['planner.Requirement']", 'unique': 'True', 'primary_key': 'True'})
         },
         'planner.conjunctionrequirement': {
-            'Meta': {'object_name': 'ConjunctionRequirement', '_ormbases': ['planner.Requirement']},
+            'Meta': {'object_name': 'ConjunctionRequirement'},
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'requirement_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['planner.Requirement']", 'unique': 'True', 'primary_key': 'True'})
         },
         'planner.course': {
@@ -270,16 +271,15 @@ class Migration(SchemaMigration):
             'requirement_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['planner.Requirement']", 'unique': 'True', 'primary_key': 'True'})
         },
         'planner.disjunctionrequirement': {
-            'Meta': {'object_name': 'DisjunctionRequirement', '_ormbases': ['planner.Requirement']},
+            'Meta': {'object_name': 'DisjunctionRequirement'},
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'requirement_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['planner.Requirement']", 'unique': 'True', 'primary_key': 'True'})
         },
         'planner.enrollment': {
             'Meta': {'unique_together': "(('plan', 'course'),)", 'object_name': 'Enrollment'},
             'course': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['planner.CourseOffering']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'plan': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['planner.Plan']"}),
-            'term': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['planner.Term']"}),
-            'year': ('django.db.models.fields.IntegerField', [], {})
+            'plan': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['planner.Plan']"})
         },
         'planner.instructor': {
             'Meta': {'unique_together': "(('first_name', 'last_name'),)", 'object_name': 'Instructor'},
@@ -311,7 +311,8 @@ class Migration(SchemaMigration):
         'planner.requirement': {
             'Meta': {'object_name': 'Requirement'},
             'force': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'major': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['planner.Major']", 'null': 'True'})
         },
         'planner.requirementmapping': {
             'Meta': {'object_name': 'RequirementMapping'},
@@ -332,8 +333,7 @@ class Migration(SchemaMigration):
         },
         'planner.term': {
             'Meta': {'object_name': 'Term'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'num': ('django.db.models.fields.IntegerField', [], {})
+            'num': ('django.db.models.fields.IntegerField', [], {'primary_key': 'True'})
         },
         'planner.university': {
             'Meta': {'object_name': 'University'},
