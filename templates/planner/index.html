@@ -267,7 +267,7 @@
     
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
-                if (parseInt(offerings[i].fields.term) == termNum + 1 && 
+                if (parseInt(offerings[i].fields.term) == termNum && 
                     parseInt(offerings[i].fields.year) == yearNums[yearNum]) {
                    return offerings[i];
                 }
@@ -799,7 +799,7 @@
         function addCourseToDraggables(courseTermId, course) {
             var offerings = course.offerings;
             for (var i in offerings) {
-                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                var termId = termNames[parseInt(offerings[i].fields.term)] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
                 
                 var offeringCourse = plan.getTermById(termId).getCourse(course.cName);
@@ -1000,7 +1000,7 @@
                                                             
             for (var i in offerings) {
                                                                                                    
-                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                var termId = termNames[parseInt(offerings[i].fields.term)] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
                                         
                 // quarter out of range of schedule
@@ -1110,7 +1110,7 @@
            
             for (var i in offerings) {
              
-                var termId = termNames[parseInt(offerings[i].fields.term) - 1] + 
+                var termId = termNames[parseInt(offerings[i].fields.term)] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
                     
                 if (plan.getTermById(termId) == undefined) {
