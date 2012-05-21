@@ -966,7 +966,7 @@
                     confirmAddCourse(termId + makeCondensedName(courseName));
                     $(classLinkItem).parent().removeClass('active');
                     $(this).unbind('mousedownoutside');
-                    linkErrorTitle = "";                       
+                    $(classLinkItem).off('mouseover');                   
                                         
                 } else if ($(event.target).hasClass('icon-move') ||
                     $(event.target).hasClass('icon-trash') || 
@@ -979,8 +979,10 @@
                         cancelAddCourse(courseObj, offerings);
                         $(classLinkItem).parent().removeClass('active');
                         $(this).unbind('mousedownoutside');
-                        $(classLinkItem).tooltip('hide');                     
+                        $(classLinkItem).tooltip('hide');  
+                        $(classLinkItem).off('mouseover');                   
                 }
+                
                                 
             });
             
@@ -1050,7 +1052,13 @@
                 var titleStr = (containsCourseFlag ? 'Class in schedule in all quarters offered.' :
                     'Class not offered in time at school.');
                 $(classLinkItem).tooltip({'title': titleStr, 'trigger': 'manual'});
-                $(classLinkItem).tooltip('show'); 
+                $(classLinkItem).tooltip('show');
+                $(classLinkItem).on('mouseover', function(event) {
+                    $(classLinkItem).tooltip('show');
+                });
+                $(classLinkItem).on('mouseout', function(event) {
+                    $(classLinkItem).tooltip('hide');
+                });
             }
             
             
