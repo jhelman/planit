@@ -53,17 +53,18 @@ def parse_section(section, course, year):
     for schedule in sch.getiterator(tag='schedule'):
         start_t = schedule.find('startTime').text
         end_t =  schedule.find('endTime').text
-        start_t = datetime.datetime(*strptime(start_t, "%H:%M:%S %p")[0:6]).time()
-        end_t = datetime.datetime(*strptime(end_t, "%H:%M:%S %p")[0:6]).time()
+        start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
+        end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
+        print start_t
         days_list = schedule.find('days').text.split()
         daystr = "".join([word[0] if word[0:2] != 'Th' else 'H' for word in days_list])
-
-        co = CourseOffering.objects.filter(course=course, year=year, term=t, 
-            start_time=start_t, end_time=end_t, weekdays=daystr, instructor=ins)
-        if not co:
-            co = CourseOffering(course=course, year=year, term=t, start_time=start_t, 
-                    end_time=end_t, weekdays=daystr, instructor=ins)
-            catch_save(co)
+        for year in range(4):
+            co = CourseOffering.objects.filter(course=course, year=(2008 + year), term=t, 
+                start_time=start_t, end_time=end_t, weekdays=daystr, instructor=ins)
+            if not co:
+                co = CourseOffering(course=course, year=(2008+year), term=t, start_time=start_t, 
+                        end_time=end_t, weekdays=daystr, instructor=ins)
+                catch_save(co)
 
 def make_tags(tag_strs, course):
     for tag in tag_strs:
@@ -115,10 +116,53 @@ def parse_document(fname):
     for elem in e.getiterator(tag='course'):
         parse_course(elem)
 
+def add_req(name, tag, courses, n, type_):
+    t=Tag(name=tag)
+    t.save()
+    for course in courses:#this duplicates make_tags functionality really, 
+        tm = TagMapping(tag=t, course=Course.objects.filter(identifier=course)[0])
+        tm.save()
+    r = None
+    if(type_== 1):
+        r=DepthRequirement(name=name, fulfillers=t, min_units=n)
+    else:#type=2
+        r=BreadthRequirement(name=name, fulfillers=t, min_courses=n)
+    r.save()
+    return r
+
 def filldb():
+    for i in range(3):
+        t=Term(i)
+        t.save()
     fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml']
     for fname in fnames:
         parse_document(fname)
+    u=University(name='Stanford',max_units_per_quarter=20)
+    u.save()
+    m=Major(name='CS')
+    m.save()
+    p=Plan(student_name='Dan Vinegrad', university=u,
+        major=m,start_year=2008,num_years=4)
+    prefixes=['EC', 'HUM','ME'] 
+    p.save()
+    for y in range(4):
+        for t in range(3):
+            tn=Term(num=t)
+            print t, " ", y
+            co=CourseOffering.objects.filter(term__num=y, course__identifier__startswith=prefixes[t])
+            if co:
+                co=co[0]
+                e=Enrollment(year=(2008+y), term=tn, course=co, plan=p)
+                e.save()
+    sc = add_req('systems core','sys_req', ['CS140', 'CS143'], 2,  0)
+    ev = add_req('systems elec', 'sys_elv', ['CS144', 'CS155', 'CS145', 'CS149'], 2, 0)
+    m5r = add_req('Math', 'math', ['MATH51', 'MATH52', 'MATH53', 'MATH41', 'MATH42'],15, 1 )
+    scr = add_req('Science', 'sci', ['PHYSICS41', 'PHYSICS42', 'PHYSICS43', 'PHYSICS41'], 2 , 0 )
+    ihum1 = add_req('First quarter IHUM', 'ihum1', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM1')], 1, 0)
+    ihum2 = add_req('Second quarter IHUM', 'ihum2', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM2')], 1, 0)
+    ihum3 = add_req('Third quarter IHUM', 'ihum3', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM3')], 1, 0)
+    [r.save() for r in [sc, ev,m5r,scr,ihum1,ihum2,ihum3]]
+
 
 def main():
     print "Wrong wrong wrong (not that there's anyway you'd know that...)"

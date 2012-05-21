@@ -15,6 +15,11 @@ import datetime
 
 TRIMESTER = 0
 SEMESTER = 1
+class Major(models.Model):
+    name = models.CharField(max_length=128)
+    
+    def __unicode__(self):
+        return self.name
 class Instructor(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -75,7 +80,8 @@ class Course(models.Model):
 #add type field to avoid try catch when
 #working with "upcasted" pointers
 class Requirement(models.Model):
-    force = models.BooleanField()
+    force = models.BooleanField(default=False)
+    major = models.ForeignKey(Major, null=True)
 
 class CourseRequirement(Requirement):
     name = models.CharField(max_length=64)
@@ -94,7 +100,7 @@ class CourseRequirement(Requirement):
         superreq.force = val
 
     def get_force(self):
-        return self.req.force
+        return self.req().force
 
 
 class DepthRequirement(CourseRequirement):
@@ -103,7 +109,7 @@ class DepthRequirement(CourseRequirement):
         if(self.get_force()):
             return True
 
-        taken = set(plan.courses_taken.all())
+        taken = set(plan.enrollment_set.all())
         req_opts = set(self.fulfilled_by())
         return sum(c.units for c in set(taken & req_opts)) >= self.min_units
 
@@ -117,7 +123,7 @@ class BreadthRequirement(CourseRequirement):
         if(self.get_force()):
             return True
 
-        taken = set(plan.courses_taken.all())
+        taken = set(plan.enrollment_set.all())
         req_opts = set(self.fulfilled_by())
         return len(taken & req_opts) >= self.min_courses
 
@@ -138,11 +144,6 @@ class Prereq(models.Model):
     mandatory = models.BooleanField()
 #could just as well be a string, but we may want
 #to add additional info to the struct
-class Major(models.Model):
-    name = models.CharField(max_length=128)
-    
-    def __unicode__(self):
-        return self.name
     
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
