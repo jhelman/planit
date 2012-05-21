@@ -12,6 +12,7 @@ td.courseName {
 
 td.units {
     width: 17.5%;
+		cursor: pointer;
 }
 
 td.info {
@@ -20,7 +21,11 @@ td.info {
 }
 
 table.possible-course {
-		background-color: #ffb845;
+		background-color: #54cc33;
+}
+
+table.possible-course-warning {
+		background-color: #ffc40d;
 }
 
 .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
@@ -60,8 +65,27 @@ table.possible-course {
     position: absolute;
     display: none;
     opacity: 0.75;
+		filter: alpha(opacity=75);
     z-index: 10;
 }
+
+.quarter-div-cover-drag {
+		width: 166px;
+		height: 34px;
+		border-radius: 10px;
+		-moz-border-radius: 10px;
+		border: none;
+		background-color: #ec2020;
+		opacity: 0.95;
+		filter: alpha(opacity=95);
+		z-index: 20;
+		margin-top: -4px;
+		position: absolute;
+		display: none;
+		padding: 50px;
+		text-align: center;
+}
+
 
 .quarter-info-div {
     -moz-border-top-right-radius: 10px;
@@ -257,7 +281,7 @@ table.possible-course {
 	padding-left: 10px;
 	padding-right: 10px;
 	margin-top: 20px;
-	overflow: scroll;
+	overflow: hidden;
 }
 
 #search-div {
@@ -275,14 +299,26 @@ table.possible-course {
 }
 
 #course-search-form {
-
 	display: table-cell;
 	vertical-align: middle;
 	
 }
 
 .added-units {
-	color: #fc9c00;
+	color: #54cc33;
 	display: none;
 }
 
+.units-select {
+	width: 40px;
+	height: 20px;
+	padding: 0px;
+	margin: 0px;
+}
+
+#search-scroll-div {
+	height: 400px;
+}
+
+#search-scroll-div .content {
+}

@@ -14,6 +14,7 @@
     
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}nanoscroller/nanoscroller.css"/>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}main.css"/>
     
     
@@ -24,6 +25,8 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}clickoutside/clickoutside.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}nanoscroller/jquery.nanoscroller.min.js"></script>
+    
     
     
     <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
@@ -413,11 +416,10 @@
             $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
             
+            $('#search-scroll-div').nanoScroller({preventPageScrolling: true});
             
             
             $('.units').on('click', function(event) { clickChangeUnits(this) });
-            
-            
             
             $('.dropdown-toggle').dropdown();            
             makeDrag(false);
@@ -1131,10 +1133,15 @@
                         
         }
         
-        
         function createSearchResults(courses, str) {
+            
+            $('#search-scroll-content').empty();
                         
-            $('#search-results-nav').empty();
+            $('#search-scroll-content').append('<span style="font-weight: bold" ' + 
+            'id="requirements-toolbox-label"></span><ul id="search-results-nav" ' + 
+            'class="nav nav-pills nav-stacked"></ul>');
+            
+            // $('#search-results-nav').empty();
             
             if (courses.length == 0) {
                 $('#requirements-toolbox-label').html('No results found.');
@@ -1160,25 +1167,32 @@
                 
             }
             
+            $('.slider').animate({'top': 0});
+            // $('.content').animate({'top': 0});
+            $('#search-scroll-div').nanoScroller({scroll: 'top'});
+            $('#search-scroll-div').nanoScroller();            
+             
         }
         
+        var currentSearch;
         
         function runSearch() {
             
             var searchValue = $('#course-search').attr('value');
             
             if (searchValue.length == 0) {
-                $('#search-results-nav').empty();
+                $('#search-scroll-div').empty();
                 $('#requirements-toolbox-label').html('');
                 return;
             }
-            
+                        
             $.ajax({
 				url: '/search/' + searchValue,
                 success: function (data, textStatus, jqXHR) {
-                    if (data.query != $('#course-search').attr('value')) {
+                    if (data.query != $('#course-search').attr('value') || data.query == currentSearch) {
                         return;
                     }
+                    currentSearch = data.query;
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
                     createSearchResults(classesJSON);
@@ -1343,8 +1357,6 @@
 
     </div>
     
-    
-    
     <table><tr>
         
         <td>
@@ -1461,13 +1473,11 @@
                                 </div>
                             </div>
                             
-                            <b><span id="requirements-toolbox-label"></span></b>
-                            
-                            <br/>
-                            
-                            <ul id="search-results-nav" class="nav nav-pills nav-stacked">
-       
-                            </ul>
+                            <div id="search-scroll-div" class="nano">
+                                <div id="search-scroll-content" class="content">
+                                    
+                                </div>
+                            </div>
                             
                         </div>
   
@@ -1490,9 +1500,8 @@
             
         </td>
         
-        
     </tr></table>    
-
+    
     
 </body>
 

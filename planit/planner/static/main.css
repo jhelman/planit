@@ -281,7 +281,7 @@ table.possible-course-warning {
 	padding-left: 10px;
 	padding-right: 10px;
 	margin-top: 20px;
-	overflow: scroll;
+	overflow: hidden;
 }
 
 #search-div {
@@ -299,7 +299,6 @@ table.possible-course-warning {
 }
 
 #course-search-form {
-
 	display: table-cell;
 	vertical-align: middle;
 	
@@ -317,3 +316,9 @@ table.possible-course-warning {
 	margin: 0px;
 }
 
+#search-scroll-div {
+	height: 400px;
+}
+
+#search-scroll-div .content {
+}
