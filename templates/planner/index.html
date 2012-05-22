@@ -378,18 +378,13 @@
 				
 				
 				drop: function (event, ui) {
-					// TODO better fix than this to show animation
-					if (dragTerm == '{{ term.condensedName }}') return;
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
-					if (course == false) {
-						console.log("ASDfsadfsdfsfsadf");
-					}
+					plan.getTermById(dragTerm).removeCourse(course);
                     plan.getTermById('{{ term.condensedName }}').addCourse(course);
                     plan.getTermById(dragTerm).addDraggable(course);
-                    plan.getTermById(dragTerm).removeCourse(course);
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
 					updateQuarterUnitsUI('{{ term.condensedName }}', 
