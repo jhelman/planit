@@ -121,10 +121,17 @@ def add_course(request):
     
 def delete_course(request):
     params = request.POST.dict()
+    print params
     course_name = params['course']
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
     # TODO find the enrollment and delete it
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name).filter(course__year=year_num).filter(course__term=term_num).filter(plan__student_name=plan_name)
+    if (len(enrollments) == 1):
+        to_delete = enrollments[0]
+        to_delete.delete()
+    else:
+        print "wtf..."
     return HttpResponse()
     
