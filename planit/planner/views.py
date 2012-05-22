@@ -84,7 +84,6 @@ def index(request):
     args['offerings'] = offerings
     args['term_names'] = term_names
     args['max_units'] = plan.university.max_units_per_quarter
-    print offerings
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
@@ -130,17 +129,41 @@ def add_course(request):
     
 def delete_course(request):
     params = request.POST.dict()
-    print params
     course_name = params['course']
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
-    # TODO find the enrollment and delete it
-    enrollments = Enrollment.objects.filter(course__course__identifier=course_name).filter(course__year=year_num).filter(course__term=term_num).filter(plan__student_name=plan_name)
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__student_name=plan_name)
     if len(enrollments) == 1:
         to_delete = enrollments[0]
         to_delete.delete()
     else:
         print "wtf..."
     return HttpResponse()
+
+def move_course(request):
+    params = request.POST.dict()
+    print params
+    course_name = params['course']
+    old_year = params['old_year']
+    old_term = params['old_term']
+    new_year = params['new_year']
+    new_term = params['new_term']
+    plan_name = params['plan']
+    
+    # TODO find the enrollment and switch the offering
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__student_name=plan_name)
+    if len(enrollments) == 1:
+        to_switch = enrollments[0]
+        offerings = CourseOffering.objects.filter(course__identifier=course_name, year=new_year, term=new_term)
+        if len(offerings) > 0:
+            print "ASDFSDF"
+            offering = offerings[0]
+            # TODO correct Plan lookup
+            plan = Plan.objects.filter(student_name=plan_name)[0]
+            to_switch.course = offering
+            to_switch.save()
+        
+    return HttpResponse()
+    
     

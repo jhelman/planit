@@ -378,9 +378,15 @@
 				
 				
 				drop: function (event, ui) {
+					// TODO better fix than this to show animation
+					if (dragTerm == '{{ term.condensedName }}') return;
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
+					
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
+					if (course == false) {
+						console.log("ASDfsadfsdfsfsadf");
+					}
                     plan.getTermById('{{ term.condensedName }}').addCourse(course);
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById(dragTerm).removeCourse(course);
@@ -390,6 +396,28 @@
 					    parseInt(ui.draggable.find('.units div').html()), false);
 					updateQuarterUnitsUI(dragTerm, 
 				        parseInt("-" + ui.draggable.find('.units div').html()), false);
+						
+					var oldTermYear = convertFromCondensedName(dragTerm).split(" ");
+					var oldTermName = oldTermYear[0];
+					var oldTerm = termNames.indexOf(oldTermName);
+					var oldYear = parseInt(oldTermYear[1].split("-"))
+					var newTermYear = convertFromCondensedName('{{ term.condensedName }}').split(" ");
+					var newTermName = newTermYear[0];
+					var newTerm = termNames.indexOf(newTermName);
+					var newYear = parseInt(newTermYear[1].split("-"))
+					var data = new Object();
+					data['old_term'] = oldTerm;
+					data['old_year'] = oldYear;
+					data['new_term'] = newTerm;
+					data['new_year'] = newYear;
+					data['course'] = course.name;
+					data['plan'] = plan.planName;
+					$.ajax({
+						type: 'POST',
+						url: '/moveCourse/',
+						data: data
+					});
+					
 				}
 			});
 			{% endfor %}
