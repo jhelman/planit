@@ -15,6 +15,11 @@ import datetime
 
 TRIMESTER = 0
 SEMESTER = 1
+class Major(models.Model):
+    name = models.CharField(max_length=128)
+    
+    def __unicode__(self):
+        return self.name
 class Instructor(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -64,9 +69,9 @@ class Course(models.Model):
     class_number = models.IntegerField()
     max_units = models.IntegerField()
     min_units = models.IntegerField()
-#    instructor = models.ForeignKey(Instructor) #on per class atm
     tags = models.ManyToManyField(Tag, through='TagMapping')
     prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
+    #grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
     #repeatable_for_credit = models.BooleanField()
 
     def __unicode__(self):
@@ -75,7 +80,13 @@ class Course(models.Model):
 #add type field to avoid try catch when
 #working with "upcasted" pointers
 class Requirement(models.Model):
-    force = models.BooleanField()
+    force = models.BooleanField(default=False)
+    major = models.ForeignKey(Major, null=True)
+    def is_fulfilled(self, plan):
+        pass
+    
+    def fulfilled_by(self):
+        pass
 
 class CourseRequirement(Requirement):
     name = models.CharField(max_length=64)
@@ -94,7 +105,7 @@ class CourseRequirement(Requirement):
         superreq.force = val
 
     def get_force(self):
-        return self.req.force
+        return self.req().force
 
 
 class DepthRequirement(CourseRequirement):
@@ -103,7 +114,7 @@ class DepthRequirement(CourseRequirement):
         if(self.get_force()):
             return True
 
-        taken = set(plan.courses_taken.all())
+        taken = set(plan.enrollment_set.all())
         req_opts = set(self.fulfilled_by())
         return sum(c.units for c in set(taken & req_opts)) >= self.min_units
 
@@ -117,7 +128,7 @@ class BreadthRequirement(CourseRequirement):
         if(self.get_force()):
             return True
 
-        taken = set(plan.courses_taken.all())
+        taken = set(plan.enrollment_set.all())
         req_opts = set(self.fulfilled_by())
         return len(taken & req_opts) >= self.min_courses
 
@@ -138,11 +149,6 @@ class Prereq(models.Model):
     mandatory = models.BooleanField()
 #could just as well be a string, but we may want
 #to add additional info to the struct
-class Major(models.Model):
-    name = models.CharField(max_length=128)
-    
-    def __unicode__(self):
-        return self.name
     
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
@@ -173,10 +179,9 @@ class CourseOffering(models.Model):
 
 #does it scale
 class Enrollment(models.Model):
-    year = models.IntegerField()
-    term = models.ForeignKey(Term)
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
+    #units = models.IntegerField()
 
     class Meta:
         unique_together = ('plan', 'course')
@@ -185,7 +190,7 @@ class Enrollment(models.Model):
         return self.course.__unicode__() + ' ' + self.plan.__unicode__()
 
 class LogicalRequirement(Requirement):
-    for_major = models.ForeignKey(Major)
+    #for_major = models.ForeignKey(Major, null=True)
     class Meta:
         abstract = True
 
@@ -219,7 +224,7 @@ class LogicalRequirement(Requirement):
         return self.req().force
 
 
-class ConjunctionRequirement(Requirement):
+class ConjunctionRequirement(LogicalRequirement):
     def is_fulfilled(self, plan):
         if(self.get_force()):
             return True
@@ -235,7 +240,7 @@ class ConjunctionRequirement(Requirement):
     def __unicode__(self):
         return self.name
 
-class DisjunctionRequirement(Requirement):
+class DisjunctionRequirement(LogicalRequirement):
     def is_fulfilled(self, plan):
         if(self.get_force()):
             return True

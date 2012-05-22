@@ -265,6 +265,7 @@
             }
         }
     
+		// TODO make this account for multiple offerings within term
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
                 if (parseInt(offerings[i].fields.term) == termNum && 
@@ -379,16 +380,39 @@
 				drop: function (event, ui) {
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
+					
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
+					plan.getTermById(dragTerm).removeCourse(course);
                     plan.getTermById('{{ term.condensedName }}').addCourse(course);
                     plan.getTermById(dragTerm).addDraggable(course);
-                    plan.getTermById(dragTerm).removeCourse(course);
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
 					updateQuarterUnitsUI('{{ term.condensedName }}', 
 					    parseInt(ui.draggable.find('.units div').html()), false);
 					updateQuarterUnitsUI(dragTerm, 
 				        parseInt("-" + ui.draggable.find('.units div').html()), false);
+						
+					var oldTermYear = convertFromCondensedName(dragTerm).split(" ");
+					var oldTermName = oldTermYear[0];
+					var oldTerm = termNames.indexOf(oldTermName);
+					var oldYear = parseInt(oldTermYear[1].split("-"))
+					var newTermYear = convertFromCondensedName('{{ term.condensedName }}').split(" ");
+					var newTermName = newTermYear[0];
+					var newTerm = termNames.indexOf(newTermName);
+					var newYear = parseInt(newTermYear[1].split("-"))
+					var data = new Object();
+					data['old_term'] = oldTerm;
+					data['old_year'] = oldYear;
+					data['new_term'] = newTerm;
+					data['new_year'] = newYear;
+					data['course'] = course.name;
+					data['plan'] = plan.planName;
+					$.ajax({
+						type: 'POST',
+						url: '/moveCourse/',
+						data: data
+					});
+					
 				}
 			});
 			{% endfor %}
@@ -527,7 +551,6 @@
             
             cancelDeleteCourse(quarterID);
 			
-			// TODO dan put AJAX call here
 			var termYear = convertFromCondensedName(quarterID).split(" ");
 			var termName = termYear[0];
 			var term = termNames.indexOf(termName);
@@ -863,7 +886,22 @@
             
             liElem.unbind('mousedownoutside');
 
-			// TODO dan put AJAX call here
+			// TODO time, weekdays, etc. for multiple offerings within term
+			var termYear = convertFromCondensedName(termId).split(" ");
+			var termName = termYear[0];
+			var term = termNames.indexOf(termName);
+			var year = parseInt(termYear[1].split("-"))
+			var data = new Object();
+			data['term'] = term;
+			data['year'] = year;
+			data['course'] = course.name;
+			data['plan'] = plan.planName;
+			$.ajax({
+				type: 'POST',
+				url: '/addCourse/',
+				data: data
+			});
+			
 
         }
         
