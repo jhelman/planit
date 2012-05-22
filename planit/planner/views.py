@@ -114,9 +114,18 @@ def add_course(request):
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
-    start_time = params['start']
-    weekdays = params['weekdays']
-    # TODO find the offering and add an enrollment for it
+    # These fields will be needed when dealing with multiple offerings in one term
+    # start_time = params['start']
+    # weekdays = params['weekdays']
+    
+    offerings = CourseOffering.objects.filter(course__identifier=course_name, year=year_num, term=term_num)
+    if len(offerings) > 0:
+        to_add = offerings[0]
+        # TODO correct Plan lookup
+        plan = Plan.objects.filter(student_name=plan_name)[0]
+        enrollment = Enrollment(course=to_add, plan=plan)
+        enrollment.save()
+    
     return HttpResponse()
     
 def delete_course(request):
@@ -128,7 +137,7 @@ def delete_course(request):
     plan_name = params['plan']
     # TODO find the enrollment and delete it
     enrollments = Enrollment.objects.filter(course__course__identifier=course_name).filter(course__year=year_num).filter(course__term=term_num).filter(plan__student_name=plan_name)
-    if (len(enrollments) == 1):
+    if len(enrollments) == 1:
         to_delete = enrollments[0]
         to_delete.delete()
     else:

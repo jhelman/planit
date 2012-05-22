@@ -265,6 +265,7 @@
             }
         }
     
+		// TODO make this account for multiple offerings within term
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
                 if (parseInt(offerings[i].fields.term) == termNum && 
@@ -527,7 +528,6 @@
             
             cancelDeleteCourse(quarterID);
 			
-			// TODO dan put AJAX call here
 			var termYear = convertFromCondensedName(quarterID).split(" ");
 			var termName = termYear[0];
 			var term = termNames.indexOf(termName);
@@ -863,7 +863,22 @@
             
             liElem.unbind('mousedownoutside');
 
-			// TODO dan put AJAX call here
+			// TODO time, weekdays, etc. for multiple offerings within term
+			var termYear = convertFromCondensedName(termId).split(" ");
+			var termName = termYear[0];
+			var term = termNames.indexOf(termName);
+			var year = parseInt(termYear[1].split("-"))
+			var data = new Object();
+			data['term'] = term;
+			data['year'] = year;
+			data['course'] = course.name;
+			data['plan'] = plan.planName;
+			$.ajax({
+				type: 'POST',
+				url: '/addCourse/',
+				data: data
+			});
+			
 
         }
         
