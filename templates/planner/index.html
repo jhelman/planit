@@ -901,8 +901,8 @@
 				url: '/addCourse/',
 				data: data
 			});
-			
-
+				
+				
         }
         
         
@@ -940,6 +940,7 @@
         
         var MAX_UNITS_PER_QUARTER = {{ max_units }};
         
+        // TODO reevaluate when person changes number of units!!!!
         function checkIfOverUnits(termId) {
             if (plan.getTermById(termId).units > MAX_UNITS_PER_QUARTER) {
                 return true;
@@ -1253,6 +1254,7 @@
         var WARNING = 3;
         
         var ajaxMsgTimeout;
+        var ajaxMsgDisplayed = false;
         
         function ajaxMessage(displayStr, msgType) {
             
@@ -1267,6 +1269,10 @@
                 typeStr = "";
             }
             
+            if (ajaxMsgDisplayed) {
+                closeAjaxMessageNoEffect();
+            }
+            
             var alertMsg = $("<div class='alert ajax-alert " + typeStr + "'>" + 
                 "<a href='#' class='close' onclick='closeAjaxMessageNoEffect()'>"
                 + "&times;</a>" + displayStr + "</div>");
@@ -1276,20 +1282,21 @@
             alertMsg.css('left', $(window).width()/2 - $(alertMsg).width()/2);
             
             ajaxMsgTimeout = setTimeout('closeAjaxMessage()', 1000);
+            
+            ajaxMessageDisplayed = true;
+            
         }
         
         function closeAjaxMessage() {
-            var alertMsg = $('body').find('.ajax-alert');
-            
-            alertMsg.fadeOut();            
+            $('body').find('.ajax-alert').fadeOut(5000, function() {
+                ajaxMessageDisplayed = false;
+            });            
         }
         
         
         function closeAjaxMessageNoEffect() {
-            var alertMsg = $('body').find('.ajax-alert');
-            
-            alertMsg.remove();
-            
+            $('body').find('.ajax-alert').remove();
+            ajaxMessageDisplayed = false;
             clearTimeout(ajaxMsgTimeout);
         }
         
