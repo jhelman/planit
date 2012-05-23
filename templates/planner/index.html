@@ -423,7 +423,7 @@
         
                 
         $(document).ready(function () {
-                        
+                                                
             {% for year in years %}
 			{% for term in year.terms %}
 			{% for course in term.courses%}
@@ -1271,9 +1271,9 @@
                 "<a href='#' class='close' onclick='closeAjaxMessageNoEffect()'>"
                 + "&times;</a>" + displayStr + "</div>");
                 
-            alertMsg.css('left', $(window).width()/2 - 75);
-            
             $('body').append(alertMsg);
+            
+            alertMsg.css('left', $(window).width()/2 - $(alertMsg).width()/2);
             
             ajaxMsgTimeout = setTimeout('closeAjaxMessage()', 1000);
         }
