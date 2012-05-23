@@ -423,7 +423,7 @@
         
                 
         $(document).ready(function () {
-            
+                        
             {% for year in years %}
 			{% for term in year.terms %}
 			{% for course in term.courses%}
@@ -1246,6 +1246,55 @@
             });
         }
         
+        
+        var SUCCESS = 0;
+        var ERROR = 1;
+        var INFORMATION = 2;
+        var WARNING = 3;
+        
+        var ajaxMsgTimeout;
+        
+        function ajaxMessage(displayStr, msgType) {
+            
+            var typeStr = "";
+            if (msgType == SUCCESS) {
+                typeStr = "alert-success";
+            } else if (msgType == ERROR) {
+                typeStr = "alert-error";
+            } else if (msgType == INFORMATION) {
+                typeStr = "alert-info";
+            } else if (msgType == WARNING) {
+                typeStr = "";
+            }
+            
+            var alertMsg = $("<div class='alert ajax-alert " + typeStr + "'>" + 
+                "<a href='#' class='close' onclick='closeAjaxMessageNoEffect()'>"
+                + "&times;</a>" + displayStr + "</div>");
+                
+            alertMsg.css('left', $(window).width()/2 - 75);
+            
+            $('body').append(alertMsg);
+            
+            ajaxMsgTimeout = setTimeout('closeAjaxMessage()', 1000);
+        }
+        
+        function closeAjaxMessage() {
+            var alertMsg = $('body').find('.ajax-alert');
+            
+            alertMsg.fadeOut();            
+        }
+        
+        
+        function closeAjaxMessageNoEffect() {
+            var alertMsg = $('body').find('.ajax-alert');
+            
+            alertMsg.remove();
+            
+            clearTimeout(ajaxMsgTimeout);
+        }
+        
+        
+        
     </script>    
     
     
@@ -1254,6 +1303,9 @@
 
 
 <body style="margin-top: 35px;"> 
+    
+    <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
+    
     
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
