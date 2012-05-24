@@ -26,6 +26,8 @@
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}clickoutside/clickoutside.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}nanoscroller/jquery.nanoscroller.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}spin/spin.min.js"></script>
+    
     
     
     
@@ -339,15 +341,35 @@
                            if (dragTerm == termStr) {
                                continue;
                            }
+                           
+                           // Evaluate for errors (then warnings after)
                            if (plan.getTerm(i, j).containsCourse(courseName)) {
                                $('#' + termStr + '-drag-cover').html("<h4>Already taking " + courseName + 
                                    " during this quarter.</h4>");
                                $('#' + termStr + '-drag-cover').show();
+                               continue;
                            } else if (!plan.getTerm(i, j).hasDraggable(courseName)) {
                                 $('#' + termStr + '-drag-cover').html("<h4>" + courseName + 
                                     " not offered this quarter.</h4>");
                                 $('#' + termStr + '-drag-cover').show();
+                                continue;
                            }
+                           
+                           var warningArray = evalForWarningOffering(termStr, courseName);
+                           
+                           var warningStr = "";
+                           warningStr = createWarningStringOffering(warningStr, warningArray);
+                           
+                           // No warnings for the quarter
+                           if (warningStr == "") {
+                               continue;
+                           }
+                           
+                           $('#' + termStr).css('background-color', 'yellow');
+                           $('#' + termStr).tooltip({'title': warningStr, 'placement': 'right', 
+                                'trigger': 'manual'});
+                           $('#' + termStr).tooltip('show');
+                                                      
                        }
                     }
                 },
@@ -357,6 +379,12 @@
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
                            $('#' + termStr + '-drag-cover').hide();
+                           // alert($('#' + termStr).css('background-color'));
+                           // if ($('#' + termStr).css('background-color') == 'yellow') {
+                               $('#' + termStr).css('background-color', 'transparent');
+                               $('#' + termStr).tooltip('hide');
+                           // }
+                           
                        }
                     }
                 }
@@ -782,6 +810,33 @@
                                         
         }
         
+        function createWarningStringAll(warningArrayAll) {
+            var warningStr = "";
+            
+            for (var i in warningArrayAll) {
+                if (i == WARNING_ALL_DOUBLE_COURSE && warningArrayAll[i] != false) {
+                       warningStr += "Course already in " + warningArrayAll[i] + "<br/>";
+                }
+            }
+            
+            return warningStr;
+        }
+        
+        
+        function createWarningStringOffering(warningStr, warningArrayOffering) {
+            for (var j in warningArrayOffering) {
+                if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
+                       warningStr += "Course conflicts with " + warningArrayOffering[j] + "<br/>";
+                }
+                if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
+                       warningStr += "Over allowed units for quarter.<br/>";
+                }
+            }
+            
+            return warningStr;   
+        }
+        
+        
         function createRolloversForAddedCourse(quarterID, courseObj, isWarning, 
                 warningArrayAll, warningArrayOffering) {
             
@@ -789,22 +844,9 @@
             
             if (isWarning) {
             
-                var warningStr = "";
+                var warningStr = createWarningStringAll(warningArrayAll);
                 
-                for (var i in warningArrayAll) {
-                    if (i == WARNING_ALL_DOUBLE_COURSE && warningArrayAll[i] != false) {
-                           warningStr += "Course already in " + warningArrayAll[i] + "<br/>";
-                    }
-                }
-                
-                for (var j in warningArrayOffering) {
-                    if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
-                           warningStr += "Course conflicts with " + warningArrayOffering[j] + "<br/>";
-                    }
-                    if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
-                           warningStr += "Over allowed units for quarter.<br/>";
-                    }
-                }
+                warningStr = createWarningStringOffering(warningStr, warningArrayOffering);                
                         
                 $('.icon-warning-sign').tooltip({'title': warningStr, 'placement': 'left'});
                 
