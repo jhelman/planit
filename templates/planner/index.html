@@ -410,7 +410,10 @@
 					$.ajax({
 						type: 'POST',
 						url: '/moveCourse/',
-						data: data
+						data: data,
+						success: function(data, textStatus, jqXHR) {
+							ajaxMessage(courseName +  " Moved", SUCCESS);
+						}
 					});
 					
 				}
@@ -563,7 +566,10 @@
 			$.ajax({
 				type: 'POST',
 				url: '/deleteCourse/',
-				data: data
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					ajaxMessage(courseName +  " Deleted", SUCCESS);
+				}
 			});
 			
         }
@@ -899,7 +905,11 @@
 			$.ajax({
 				type: 'POST',
 				url: '/addCourse/',
-				data: data
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					ajaxMessage(courseName +  " Added", SUCCESS);
+				}
+				
 			});
 				
 				
