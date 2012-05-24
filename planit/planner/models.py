@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import datetime
 
 #class Course(models.Model):
@@ -15,6 +16,10 @@ import datetime
 
 TRIMESTER = 0
 SEMESTER = 1
+class UserData(models.Model):
+    user = models.ForeignKey(User, unique=True)
+    name = models.CharField(max_length=64)
+
 class Major(models.Model):
     name = models.CharField(max_length=128)
     
@@ -132,9 +137,6 @@ class BreadthRequirement(CourseRequirement):
         req_opts = set(self.fulfilled_by())
         return len(taken & req_opts) >= self.min_courses
 
-    def req(self):
-        return Requirement.objects.get(depthrequirement=self)
-
     def __unicode__(self):
         return self.name
 
@@ -152,6 +154,7 @@ class Prereq(models.Model):
     
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
+    user = models.ForeignKey(UserData, null=True)
     university = models.OneToOneField(University)
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()

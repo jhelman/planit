@@ -150,7 +150,8 @@ def filldb():
             print t, " ", y
             co=CourseOffering.objects.filter(year=(2008 + y), term__num=t, course__identifier__startswith=prefixes[t])
             if co:
-                co=co[0]
+                co=co[random.randint(0, len(co) - 1)]
+     
                 e=Enrollment(course=co, plan=p)
                 e.save()
     sc = add_req('systems core','sys_req', ['CS140', 'CS143'], 2,  0)
