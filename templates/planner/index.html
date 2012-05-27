@@ -541,11 +541,15 @@
         });
         
         
+        function turnHeadingsColor(elem, color) {
+            $('#' + years[getYearArrayIndex(elem.attr('id'))]).css('background-color', color);
+            $('#' + getTermName(elem.attr('id'))).css('background-color', color);
+        }
+        
         function doQDivMouseOver(elem) {
             elem.css('background-color', '#d9edf7'); 
             // alert(elem.css('background-color'));
-            $('#' + years[getYearArrayIndex(elem.attr('id'))]).css('background-color', '#d9edf7');
-            $('#' + getTermName(elem.attr('id'))).css('background-color', '#d9edf7');
+            turnHeadingsColor(elem, '#d9edf7');
         }
         
         function doQDivMouseOut(elem) {
