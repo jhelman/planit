@@ -149,7 +149,15 @@ div.possible-course-warning {
 		text-align: center;
 }
 
+#search-spinner-over {
+	position: relative;
+}
 
+#search-spinner {
+	position: absolute;
+	top: -15px;
+	left: 265px;
+}
 
 
 

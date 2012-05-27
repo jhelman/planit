@@ -1424,16 +1424,19 @@
         
         function runSearch() {
             
+            makeNewSpinner();
+            
             var searchValue = $('#course-search').attr('value');
             
             if (searchValue.length == 0) {
                 $('#search-scroll-content').empty();
+                removeSpinner();
                 return;
             }
                         
             $.ajax({
 				url: '/search/' + searchValue,
-                success: function (data, textStatus, jqXHR) {
+                success: function (data, textStatus, jqXHR) {                    
                     if (data.query != $('#course-search').attr('value') || data.query == currentSearch) {
                         return;
                     }
@@ -1441,6 +1444,7 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
                     createSearchResults(classesJSON);
+                    removeSpinner();
                 }
             });
         }
@@ -1498,7 +1502,31 @@
             clearTimeout(ajaxMsgTimeout);
         }
         
+        var hasSpinner = false;
         
+        function makeNewSpinner() {
+            
+            if (hasSpinner) {
+                return;
+            }
+            
+            var options = {
+                lines: 10,
+                length: 3,
+                width: 2,
+                radius: 4,
+                color: '#888888'
+            };
+            
+            var spin = new Spinner(options).spin();
+            $('#search-spinner').append(spin.el);
+            hasSpinner = true;
+        }
+        
+        function removeSpinner() {
+            $('#search-spinner').empty();
+            hasSpinner = false;
+        }
         
     </script>    
     
@@ -1789,6 +1817,7 @@
                             <div id="search-div">
                                 <div id="course-search-form">
                                     <input type="text" id="course-search" onkeyup="runSearch();" placeholder="Search for classes" class="input-medium search-query"/>
+                                    <div id="search-spinner-over"><span id="search-spinner"></span></div>
                                     <!-- <button class="btn" onclick="runSearch()">Search</button> -->
                                 </div>
                             </div>
