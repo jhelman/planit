@@ -322,19 +322,22 @@
                 elemStr = draggableElemStr;
             }
             
-            $(elemStr).draggable({handle: '.icon-move', revert: 'invalid',
+            $(elemStr).draggable({revert: 'invalid',
 
                 helper: function (event) {
                     var copy = $(event.currentTarget).clone();
-                    copy.find('.icon-trash').unbind('onclick');
+                    // copy.find('.icon-trash').unbind('onclick');
+                    copy.find('.info-over').hide();
                     copy.css('z-index', '1000');
-                    copy.css('background-color', '#eeeeee');
+                    copy.css('background-color', '#d9edf7');
                     return copy.appendTo('body');
                 },
 
                 start: function (event, ui) {
                     dragTerm = $(this).closest('.quarter-div').attr('id');
+                    turnOffQDivMouse();
                     var courseName = ui.helper.find('.courseName').html();
+                    return;
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
@@ -381,7 +384,7 @@
                            $('#' + termStr + '-drag-cover').hide();
                            // alert($('#' + termStr).css('background-color'));
                            // if ($('#' + termStr).css('background-color') == 'yellow') {
-                               $('#' + termStr).css('background-color', 'transparent');
+                               // $('#' + termStr).css('background-color', 'transparent');
                                $('#' + termStr).tooltip('hide');
                            // }
                            
@@ -395,6 +398,7 @@
         function makeDrop() {
             {% for year in years %}
 			{% for term in year.terms %}
+						
 			$('#{{ term.condensedName }}').droppable({
 				
 				accept: function (elem) {
@@ -404,8 +408,22 @@
 			        return false;
 				},
 				
+				over: function (event, ui) {
+				    $(this).css('background-color', '#dff0d8');
+			    },
+			    
+			    out: function (event, ui) {   
+			        var yearIndex = getYearArrayIndex($(this).attr('id'));
+                    $(this).css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+                },
+				
 				
 				drop: function (event, ui) {
+				    
+                    doQDivMouseOut($('#' + dragTerm));
+                    turnOnQDivMouse();
+                    doQDivMouseOver($('#{{ term.condensedName }}'));
+                    
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
@@ -415,10 +433,8 @@
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
-					updateQuarterUnitsUI('{{ term.condensedName }}', 
-					    parseInt(ui.draggable.find('.units div').html()), false);
-					updateQuarterUnitsUI(dragTerm, 
-				        parseInt("-" + ui.draggable.find('.units div').html()), false);
+					updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
+					updateQuarterUnitsUI(dragTerm, -course.units, false);
 						
 					var oldTermYear = convertFromCondensedName(dragTerm).split(" ");
 					var oldTermName = oldTermYear[0];
@@ -508,15 +524,75 @@
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
             });
             
+           turnOnQDivMouse();
+           
+           $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
+           
+           
+           // Show delete button           
+           $('.course').on('mouseover', function () {
+               $(this).find('.info-over').show();
+           });
+          
+           $('.course').on('mouseout', function () {
+               $(this).find('.info-over').hide();
+           });
             
-        
         });
         
         
+        function doQDivMouseOver(elem) {
+            elem.css('background-color', '#d9edf7'); 
+            // alert(elem.css('background-color'));
+            $('#' + years[getYearArrayIndex(elem.attr('id'))]).css('background-color', '#d9edf7');
+            $('#' + getTermName(elem.attr('id'))).css('background-color', '#d9edf7');
+        }
+        
+        function doQDivMouseOut(elem) {
+            var yearIndex = getYearArrayIndex(elem.attr('id'));
+            elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+            $('#' + years[yearIndex]).css('background-color', 
+               (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+           $('#' + getTermName(elem.attr('id'))).css('background-color', 'white');
+        }
+        
+        function turnOnQDivMouse() {
+            $('.quarter-div').on('mouseover', function () {
+               doQDivMouseOver($(this));
+            });
 
+            $('.quarter-div').on('mouseout', function () {
+                doQDivMouseOut($(this));
+            });
+        }
         
+        function turnOffQDivMouse() {
+            $('.quarter-div').off('mouseover');
+            $('.quarter-div').off('mouseout');   
+        }
+                
         
+        function getYearArrayIndex(id) {
+            for (var i in years) {
+                if (id.indexOf(years[i]) != -1) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        function getTermName(id) {
+            for (var i in termNames) {
+                if (id.indexOf(termNames[i]) != -1) {
+                    return termNames[i];
+                }
+            }
+        }
+        
+                
         function removeCourse(infoElem) {
+            
+            turnOffQDivMouse($(infoElem).closest('.quarter-div'));
             
             var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
@@ -551,6 +627,8 @@
             
             qDiv.find('.delete-alert').hide();
             qDiv.find('.cover').hide();
+            
+            turnOnQDivMouse(qDiv);
                         
             resetAddedUnits(quarterID);
         }
@@ -567,7 +645,7 @@
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
             var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
-            var numUnits = courseElem.find('.units div').html();
+            var numUnits = plan.getTermById(quarterID).getCourse(courseElem.find('.courseName').html()).units;
             
             courseElem.remove();
             
@@ -799,7 +877,7 @@
             
                     
             addToElem.prepend('<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
-                'class="table table-bordered table-condensed course ' + className + '">' + 
+                'class="course ' + className + '">' + 
                 '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
                  makeUnitsSelect(courseObj.identifier, quarterID, courseObj.max_units, true) 
                  + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
@@ -1518,74 +1596,91 @@
         
         <td>
     
-	        <table>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td class="quarter-label"><center><h4>Autumn Quarter</h4></center></td>
-                    <td class="quarter-label"><center><h4>Winter Quarter</h4></center></td>
-                    <td class="quarter-label"><center><h4>Spring Quarter</h4></center></td>
+	        <table style="padding: 0px; margin: -10px;">
+                <tr style="height: 30px">
+                    <td style="border-bottom: 2px solid;">&nbsp;</td>
+                    <td id="Autumn" class="quarter-label"><h4>Autumn Quarter</h4></td>
+                    <td id="Winter" class="quarter-label"><h4>Winter Quarter</h4></td>
+                    <td id="Spring" class="quarter-label"><h4>Spring Quarter</h4></td>
                 </tr>
 		
 		
         		{% for year in years %}
         		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-        			<tr style="background-color: #{% cycle eeeeee,d9edf7 %}">
-        				<td class="year-label"><center><h4>{{ year.name }}<br/>({{ year.year }})</h4></center></td>
+                    <tr style="background-color: #{% cycle eaeaea,f7f7f7 %}">
+                    <!-- <tr> -->
+        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
 			
 			
         				{% for term in year.terms %}
-        					<td>	
+        					<td class="quarter-td">
+        					    
+        					    <div class="quarter-div" id="{{ term.condensedName }}">
+			    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
+        						    <div class="quarter-div cover"></div>
 
-        				        <table>
-        				            <tr>
-        				                <td style="padding: 0px">
-				                		    
-        						            <div class="quarter-div" id="{{ term.condensedName }}" style="overflow: scroll;">
-						    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
-                    						    <div class="quarter-div cover"></div>
+            				        <div class="alert alert-error delete-alert">
+                                	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
+                                	    <h4 class="alert-heading"></h4>
+                                	    <span class="alert-body"></span>
+                                	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
+                                	    <span class="alert-delete-course-name" style="display: none; visibility; hidden;"></span>
+                                	    
+                                	    <br />
+                                	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
+                                	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
+                                    </div>
+			    	
+			    	                <div class="courses-div" id="{{ term.condensedName }}-courses">
+        							    {% for course in term.courses %}
+            				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
+            				                    <div class="courseName">{{ course.identifier }}</div>
+            				                    <div class="info-over">
+            				                        <div class="info" onclick="removeCourse(this);">
+            				                            <i style="position: relative; top: 2px;" class="icon-remove"></i>
+            				                        </div>
+        				                        </div>
+            				                    
+            				                    <!-- <tr>
+                                                    <td class="courseName"></td>
+                                                    <td class="units"><div class="units-rollover">{{ course.max_units }}</div></td>
+                                                    <td class="info"><i class="icon-move"></i>&nbsp;
+                                                        <i class="icon-trash" onclick="removeCourse(this);"></i></td>
+                                                </tr> -->
+            				                </div>
+            							{% endfor %}
+            						</div>
+            						
+            						<div class="units-div" onclick="openCalendar('{{ term.condensedName }}', this);">
+            						    <div id="{{ term.condensedName }}-units">{{ term.units }}</div>
+            						</div>
+            						
+        						</div>
+                                
+        					    
+        					    	
 
-                        				        <div class="alert alert-error delete-alert">
-                                            	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
-                                            	    <h4 class="alert-heading"></h4>
-                                            	    <span class="alert-body"></span>
-                                            	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
-                                            	    <span class="alert-delete-course-name" style="display: none; visibility; hidden;"></span>
-                                            	    
-                                            	    <br />
-                                            	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
-                                            	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
-                                                </div>
-						    	
-						    	                <div id="{{ term.condensedName }}-courses">
-                    							    {% for course in term.courses %}
-                        				                <table id="{{ term.condensedName|add:course.condensedID }}" class="table table-bordered table-condensed course">
-                        				                    <tr>
-                        				                        <td class="courseName">{{ course.identifier }}</td>
-                        				                        <td class="units"><div class="units-rollover">{{ course.max_units }}</div></td>
-                        				                        <td class="info"><i class="icon-move"></i>&nbsp;
-                        				                            <i class="icon-trash" onclick="removeCourse(this);"></i></td>
-                        				                    </tr>
-                        				                </table>
-                        							{% endfor %}
-                        						</div>
-                    						</div>
-						
-        					            </td>
-				    
-                				        <td style="padding: 0px">
-                				            <div class="quarter-info-div">
-                				                <span class="quarter-info-span">
-                				                    Units<br/>
-                    				                <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
-                    				                <span id="{{ term.condensedName }}-added-units" class="added-units">+0</span><br/>
-                    				                <br/>
-				            
-                    				                <i class="icon-calendar" onclick="openCalendar('{{ term.condensedName }}', this);"></i>
-                    				            </span>
-                				            </div>
-                				        </td>
-        			                </tr>
-        		                </table>
+        				       <!-- <table>
+                                    <tr>
+                                        <td style="padding: 0px">
+                                            
+                                            
+                                        </td>
+                    
+                                        <td style="padding: 0px">
+                                            <div class="quarter-info-div">
+                                                <span class="quarter-info-span">
+                                                    Units<br/>
+                                                    <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
+                                                    <span id="{{ term.condensedName }}-added-units" class="added-units">+0</span><br/>
+                                                    <br/>
+                            
+                                                    <i class="icon-calendar" onclick="openCalendar('{{ term.condensedName }}', this);"></i>
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table> -->
 						
 						
 						
