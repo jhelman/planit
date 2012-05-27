@@ -15,6 +15,14 @@
     z-index: 20;
 }
 
+.delete-alert {
+   width: 170px;
+   align: center;
+   display: none;
+   z-index: 20;
+   position: absolute;
+}
+
 .quarter-div-hover {
 	background-color: #d9edf7;
 }
@@ -37,12 +45,12 @@ div.course {
 }
 
 .info-over {
+	position: relative;
 	display: none;
-	position: absolute;
 }
 
 .info {
-		position: relative;
+		position: absolute;
 		left: 175px;
 		top: -20px;
 		z-index: 10;
@@ -100,12 +108,11 @@ div.course {
 		text-align: center;
 }
 
-
-table.possible-course {
+div.possible-course {
 		background-color: #54cc33;
 }
 
-table.possible-course-warning {
+div.possible-course-warning {
 		background-color: #ffc40d;
 }
 
@@ -127,26 +134,23 @@ table.possible-course-warning {
     width: 230px;
 }
 
-
-
-
-
 .quarter-div-cover-drag {
-		width: 166px;
-		height: 34px;
-		border-radius: 10px;
-		-moz-border-radius: 10px;
+		width: 142px;
+		height: 52px;
 		border: none;
 		background-color: #ec2020;
 		opacity: 0.95;
 		filter: alpha(opacity=95);
 		z-index: 20;
-		margin-top: -4px;
+		margin: -1px;
 		position: absolute;
 		display: none;
-		padding: 50px;
+		padding: 40px;
 		text-align: center;
 }
+
+
+
 
 
 .quarter-info-div {
@@ -290,13 +294,7 @@ table.possible-course-warning {
     padding: 0px;
 }  
 
-.delete-alert {
-   width: 171px;
-   align: center;
-   display: none;
-   z-index: 20;
-   position: absolute;
-}
+
 
 
 #schedule-modal {

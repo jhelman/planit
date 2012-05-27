@@ -336,8 +336,15 @@
                 start: function (event, ui) {
                     dragTerm = $(this).closest('.quarter-div').attr('id');
                     turnOffQDivMouse();
+                    
+                    // Need to try to stop any interaction (disable ALL rollovers)
+                    $(this).find('.info-over').hide();
+                    
+                    // $('.units-div').tooltip({'title': ''});
+                    // $('.course').off('mouseover');
+                    // $('.course').off('mouseout');
+                    
                     var courseName = ui.helper.find('.courseName').html();
-                    return;
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
@@ -368,31 +375,53 @@
                                continue;
                            }
                            
-                           $('#' + termStr).css('background-color', 'yellow');
-                           $('#' + termStr).tooltip({'title': warningStr, 'placement': 'right', 
-                                'trigger': 'manual'});
-                           $('#' + termStr).tooltip('show');
+                           var pos = warningStr.indexOf('<br/>');
+                           if (pos != -1) {
+                               warningStr = warningStr.substring(0, pos);
+                           }
+                           
+                           $('#' + termStr).css('background-color', '#f3eed2');
+                           $('#' + termStr + '-units-div').empty();
+                           $('#' + termStr + '-units-div').html('<div class="units">' + warningStr + '</div>');
                                                       
                        }
                     }
                 },
 
                 stop: function (event, ui) {
+                    // $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
+                    //                    $('.course').on('mouseover', function () {
+                    //                        $(this).find('.info-over').show();
+                    //                    });
+                    // 
+                    //                    $('.course').on('mouseout', function () {
+                    //                        $(this).find('.info-over').hide();
+                    //                    });
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
                            $('#' + termStr + '-drag-cover').hide();
-                           // alert($('#' + termStr).css('background-color'));
-                           // if ($('#' + termStr).css('background-color') == 'yellow') {
-                               // $('#' + termStr).css('background-color', 'transparent');
-                               $('#' + termStr).tooltip('hide');
-                           // }
+                           if ($('#' + termStr + '-added-units').length == 0) {
+                               $('#' + termStr + '-units-div').empty();
+                               $('#' + termStr + '-units-div').html('<span class="units" ' + 
+                                'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' + 
+                                '&nbsp;<span id="' + termStr + '-added-units" style="display: none"></span>');
+                               
+                               if ($('#' + termStr).css('background-color') != "rgb(217,237,247)") {
+                                   returnCellToColor($('#' + termStr));
+                               }
+                           }
                            
                        }
                     }
                 }
             });
         
+        }
+        
+        function returnCellToColor(elem) {
+            var yearIndex = getYearArrayIndex(elem.attr('id'));
+            elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
         }
         
         function makeDrop() {
@@ -409,12 +438,15 @@
 				},
 				
 				over: function (event, ui) {
-				    $(this).css('background-color', '#dff0d8');
+				    if ($(this).find('.added-units').length > 0) {
+				        $(this).css('background-color', '#dff0d8');
+			        }
 			    },
 			    
-			    out: function (event, ui) {   
-			        var yearIndex = getYearArrayIndex($(this).attr('id'));
-                    $(this).css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+			    out: function (event, ui) {  
+			        if ($(this).find('.added-units').length > 0) { 
+			            returnCellToColor($(this));
+		            }
                 },
 				
 				
@@ -481,16 +513,16 @@
 			
 
             // Static
-            $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
-            $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
-            $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
+            // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
+            // $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
+            // $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
+            // $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
+            // $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
             
             $('#search-scroll-div').nanoScroller({preventPageScrolling: true});
             
             
-            $('.units').on('click', function(event) { clickChangeUnits(this) });
+            // $('.units').on('click', function(event) { clickChangeUnits(this) });
             
             $('.dropdown-toggle').dropdown();            
             makeDrag(false);
@@ -538,18 +570,16 @@
                $(this).find('.info-over').hide();
            });
             
-        });
+        });       
         
-        
-        function turnHeadingsColor(elem, color) {
-            $('#' + years[getYearArrayIndex(elem.attr('id'))]).css('background-color', color);
-            $('#' + getTermName(elem.attr('id'))).css('background-color', color);
+        function turnHeadingsColor(id, color) {
+            $('#' + years[getYearArrayIndex(id)]).css('background-color', color);
+            $('#' + getTermName(id)).css('background-color', color);
         }
         
         function doQDivMouseOver(elem) {
             elem.css('background-color', '#d9edf7'); 
-            // alert(elem.css('background-color'));
-            turnHeadingsColor(elem, '#d9edf7');
+            turnHeadingsColor(elem.attr('id'), '#d9edf7');
         }
         
         function doQDivMouseOut(elem) {
@@ -596,15 +626,19 @@
                 
         function removeCourse(infoElem) {
             
-            turnOffQDivMouse($(infoElem).closest('.quarter-div'));
-            
             var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
+            var qDiv = courseElem.closest('.quarter-div');
+            
+            var course = plan.getTermById(qDiv.attr('id')).getCourse(courseName);
+            
+            turnOffQDivMouse(qDiv);
+            turnHeadingsColor(qDiv.attr('id'), '#f2dede');
+            // qDiv.css('background-color', '#f2dede');
                         
             courseElem.find('.icon-trash').tooltip('hide');
             courseElem.popover('hide');
             
-            var qDiv = courseElem.closest('.quarter-div');
             var cover = qDiv.find('.cover');
             var alertBox = qDiv.find('.delete-alert');
             
@@ -619,8 +653,7 @@
             cover.css('top', qDiv.position().top);
                         
             qDiv.find('.cover').fadeIn();
-            
-            updateAddedUnits(qDiv.attr('id'), courseElem.find('.units div').html(), false, true);
+            // updateAddedUnits(qDiv.attr('id'), course.units, false, true);
             
             alertBox.fadeIn();
         }
@@ -632,9 +665,11 @@
             qDiv.find('.delete-alert').hide();
             qDiv.find('.cover').hide();
             
+            turnHeadingsColor(qDiv.attr('id'), '#d9edf7');
+            // qDiv.css('background-color', '#d9edf7');
             turnOnQDivMouse(qDiv);
-                        
-            resetAddedUnits(quarterID);
+            
+            // resetAddedUnits(quarterID);
         }
         
         function updateQuarterUnitsUI(quarterID, unitChange, updateTotal) {
@@ -649,14 +684,14 @@
         function confirmDeleteCourse(quarterID) {
             var qDiv = $('#' + quarterID);
             var courseElem = $('#' + qDiv.find('.alert-delete-course-id').html());
-            var numUnits = plan.getTermById(quarterID).getCourse(courseElem.find('.courseName').html()).units;
-            
+            var course = plan.getTermById(quarterID).getCourse(courseElem.find('.courseName').html());
+            var numUnits = course.units;
+                        
             courseElem.remove();
             
             updateQuarterUnitsUI(quarterID, parseInt("-" + numUnits), true);
             
             var courseName = qDiv.find('.alert-delete-course-name').html();
-            var course = plan.getTermById(quarterID).getCourse(courseName);
             plan.getTermById(quarterID).addDraggable(course);
             plan.getTermById(quarterID).removeCourse(course);
                         
@@ -879,15 +914,19 @@
                 className = "possible-course-warning";
             }
             
-                    
-            addToElem.prepend('<table id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
+            addToElem.prepend('<div id="' + quarterID + makeCondensedName(courseObj.identifier) + '"' + 
                 'class="course ' + className + '">' + 
-                '<tr><td class="courseName">' + courseObj.identifier + '</td><td class="units">' + 
-                 makeUnitsSelect(courseObj.identifier, quarterID, courseObj.max_units, true) 
-                 + '</td><td class="info"><i class="icon-ok confirm-add-class"></i>' + 
+                '<table><tr>' + 
+                '<td class="courseName">' + courseObj.identifier + '</td>' + 
+                '<td class="units">' +  makeUnitsSelect(courseObj.identifier, quarterID, courseObj.max_units, true)  
+                + '</td>' + '<td class="icons"><i class="icon-ok confirm-add-class"></i>' + 
                 (isWarning ? '&nbsp;&nbsp;<i class="icon-warning-sign"></i>' : '')
                 + '</td></tr></table>');
                 
+            addToElem.find('#' + quarterID + makeCondensedName(courseObj.identifier)).width($('.course').width()); 
+                 
+            addToElem.find('td').width($('.course').width() / 3);
+                                       
             addToElem.find('select').on('change', function(event) {
                 changeSelectedUnits($(this), quarterID, courseObj.identifier, false);
             });
@@ -914,7 +953,7 @@
         function createWarningStringOffering(warningStr, warningArrayOffering) {
             for (var j in warningArrayOffering) {
                 if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
-                       warningStr += "Course conflicts with " + warningArrayOffering[j] + "<br/>";
+                       warningStr += "Course conflicts with " + warningArrayOffering[j] + ".<br/>";
                 }
                 if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
                        warningStr += "Over allowed units for quarter.<br/>";
@@ -976,21 +1015,46 @@
             var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
             var units = parseInt($('#' + courseTableID).find('select').attr('value'));
             
-            var course = plan.getTermById(termId).getCourse(courseName);  
-                        
+            var course = plan.getTermById(termId).getCourse(courseName);
+                                    
+            // $('#' + courseTableID).find('.icon-ok').tooltip('hide');
+            //             $('#' + courseTableID).find('.info').empty();
+            //             
+            //             // Remember to redraw the dragging for this course!
+            //             
+            //             var infoTD = $('#' + courseTableID).find('.info');
+            //             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
+            //                 '<i class="icon-trash" onclick="removeCourse(this);"></i>');
+            //                 
+            //             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
+            //             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
+            //          
+            
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
-            $('#' + courseTableID).find('.info').empty();
+            $('#' + courseTableID).popover('hide');
+            $('#' + courseTableID).popover('disable');
+            $('#' + courseTableID).remove();
             
-            // Remember to redraw the dragging for this course!
+            $('#' + termId + '-courses').prepend('<div id="' + termId + makeCondensedName(courseName) + '" ' + 
+                'class="course"><div class="courseName">' + courseName + '</div>' +
+                '<div class="info-over"><div class="info" onclick="removeCourse(this);">' + 
+                '<i style="position: relative; top: 2px;" class="icon-remove"></i>' + 
+                '</div></div></div>');                 
+                
+            $('#' + termId + makeCondensedName(courseName)).on('mouseover', function () {
+                 $(this).find('.info-over').show();
+            });
+ 
+            $('#' + termId + makeCondensedName(courseName)).on('mouseout', function () {
+                $(this).find('.info-over').hide();
+            });
             
-            var infoTD = $('#' + courseTableID).find('.info');
-            infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
-                '<i class="icon-trash" onclick="removeCourse(this);"></i>');
-                
-            infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-                
-                                
+            $('#' + termId + makeCondensedName(courseName)).popover({
+               title: course.name,
+               content: course.courseObj.fields.title,
+               placement: 'right'
+            });
+                                              
             updateQuarterUnitsUI(termId, units, true);
                 
             resetAddedUnits(termId);
@@ -1003,12 +1067,12 @@
             
             addCourseToDraggables(termId, course);
             
-            removeSelect($('#' + courseTableID).find('select'), units);
+            // removeSelect($('#' + courseTableID).find('select'), units);
             
-            
-            $('#' + courseTableID).removeClass('possible-course');
-            $('#' + courseTableID).removeClass('possible-course-warning');
-            $('#' + courseTableID).css('background-color', 'none');
+            // 
+            // $('#' + courseTableID).removeClass('possible-course');
+            // $('#' + courseTableID).removeClass('possible-course-warning');
+            // $('#' + courseTableID).css('background-color', 'none');
                         
             var liElem = $('#' + makeCondensedName(courseName) + '-search-result');
                         
@@ -1058,7 +1122,7 @@
             } else {
                 $('#' + quarterID + '-added-units').css('color', '#54cc33');
             }         
-            $('#' + quarterID + '-added-units').html(sign + units);        
+            $('#' + quarterID + '-added-units').html('(' + sign + units + ')');        
             $('#' + quarterID + '-added-units').show();
         }
         
@@ -1068,7 +1132,7 @@
                 sign = '-';
             }
             
-            $('#' + quarterID + '-added-units').html(sign + units);        
+            $('#' + quarterID + '-added-units').html('(' + sign + units + ')');        
             $('#' + quarterID + '-added-units').show();
         }
         
@@ -1641,10 +1705,9 @@
             				                    <div class="courseName">{{ course.identifier }}</div>
             				                    <div class="info-over">
             				                        <div class="info" onclick="removeCourse(this);">
-            				                            <i style="position: relative; top: 2px;" class="icon-remove"></i>
-            				                        </div>
-        				                        </div>
-            				                    
+                                                        <i style="position: relative; top: 2px;" class="icon-remove"></i>
+                                                    </div>
+                                                </div>
             				                    <!-- <tr>
                                                     <td class="courseName"></td>
                                                     <td class="units"><div class="units-rollover">{{ course.max_units }}</div></td>
@@ -1655,8 +1718,9 @@
             							{% endfor %}
             						</div>
             						
-            						<div class="units-div" onclick="openCalendar('{{ term.condensedName }}', this);">
-            						    <div id="{{ term.condensedName }}-units">{{ term.units }}</div>
+            						<div class="units-div" id="{{ term.condensedName }}-units-div" onclick="openCalendar('{{ term.condensedName }}', this);">
+            						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
+                                        &nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" style="display: none"></span>
             						</div>
             						
         						</div>
