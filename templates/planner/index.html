@@ -1422,7 +1422,12 @@
         
         var currentSearch;
         
-        function runSearch() {
+        function runSearch(event) {
+            
+            // Don't run a search if enter
+            if (event.keyCode == 13) {
+                return;
+            }
             
             makeNewSpinner();
             
@@ -1816,7 +1821,7 @@
                             
                             <div id="search-div">
                                 <div id="course-search-form">
-                                    <input type="text" id="course-search" onkeyup="runSearch();" placeholder="Search for classes" class="input-medium search-query"/>
+                                    <input type="text" id="course-search" onkeyup="runSearch(event);" placeholder="Search for classes" class="input-medium search-query"/>
                                     <div id="search-spinner-over"><span id="search-spinner"></span></div>
                                     <!-- <button class="btn" onclick="runSearch()">Search</button> -->
                                 </div>
