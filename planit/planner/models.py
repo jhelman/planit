@@ -86,8 +86,6 @@ class RequirementGroup(models.Model):
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
     n_prereqs = models.IntegerField()
-    def is_fulfilled(self, plan):
-        return True
 
 #add type field to avoid try catch when
 #working with "upcasted" pointers
@@ -95,8 +93,9 @@ class Requirement(models.Model):
     name = models.CharField(max_length=64)
     fulfillers = models.ForeignKey(Tag)
     n_class = models.IntegerField();
-    force = models.BooleanField(default=False)
     group = models.ForeignKey(RequirementGroup)
+    def __unicode__(self):
+        return self.name + ", " + self.fulfillers + ", " + str(n_class)
 
 #through class for many to many, will change
 class TagMapping(models.Model):

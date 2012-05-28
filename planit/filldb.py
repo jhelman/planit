@@ -118,16 +118,28 @@ def parse_document(fname):
 def add_req(name, tag, courses, n, type_):
     t=Tag(name=tag)
     t.save()
-    for course in courses:#this duplicates make_tags functionality really, 
+    for course in courses:
         tm = TagMapping(tag=t, course=Course.objects.filter(identifier=course)[0])
         tm.save()
-    r = None
-    if(type_== 1):
-        r=DepthRequirement(name=name, fulfillers=t, min_units=n)
-    else:#type=2
-        r=BreadthRequirement(name=name, fulfillers=t, min_courses=n)
-    r.save()
+
+    #rg = Requirem
+    #r = Requirement(name=name, fulfillers=t, n_class=n, force=False, 
     return r
+
+def add_tag(tag_str, arr):
+    t=Tag(name=tag_str)
+    t.save()
+    for cname in arr:
+        tm = TagMapping(tag=t, course=Course.objects.filter(identifier=cname)[0])
+        tm.save()
+    return t
+    
+def add_tags(arr):
+    for cname in arr:
+        tag = Tag(name=cname+"_tag")
+        tag.save()
+        tm = TagMapping(tag=tag, course=Course.objects.filter(identifier=cname)[0])
+        tm.save()
 
 def filldb():
     for i in range(3):
@@ -154,21 +166,38 @@ def filldb():
      
                 e=Enrollment(course=co, plan=p)
                 e.save()
-    sc = add_req('systems core','sys_req', ['CS140', 'CS143'], 2,  0)
-    ev = add_req('systems elec', 'sys_elv', ['CS144', 'CS155', 'CS145', 'CS149'], 2, 0)
-    m5r = add_req('Math', 'math', ['MATH51', 'MATH52', 'MATH53', 'MATH41', 'MATH42'],15, 1 )
-    scr = add_req('Science', 'sci', ['PHYSICS41', 'PHYSICS42', 'PHYSICS43', 'PHYSICS41'], 2 , 0 )
-    ihum1 = add_req('First quarter IHUM', 'ihum1', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM1')], 1, 0)
-    ihum2 = add_req('Second quarter IHUM', 'ihum2', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM2')], 1, 0)
-    ihum3 = add_req('Third quarter IHUM', 'ihum3', [o.course.identifier for o in CourseOffering.objects.filter(course__identifier__startswith=u'IHUM3')], 1, 0)
-    [r.save() for r in [sc, ev,m5r,scr,ihum1,ihum2,ihum3]]
-    cj = ConjunctionRequirement()
-    cj.save()
-    ih1 = RequirementMapping(coursereq=ihum1.req(), logreq=cj.req())
-    ih2 = RequirementMapping(coursereq=ihum2.req(), logreq=cj.req())
-    ih3 = RequirementMapping(coursereq=ihum3.req(), logreq=cj.req())
-    [r.save() for r in [ih1, ih2, ih3]]
 
+    rg = RequirementGroup(major=m, name='math', n_prereqs=7)
+    rg.save()
+
+    basic_math = Tag(name='basic math')
+    basic_math.save()
+    maths = add_tag('basic_math', ['MATH41', 'MATH42', 'CS103', 'CS109'])
+    fifties = add_tag('fifties', ['MATH52', 'MATH53'])
+
+    basic_math = Requirement(name='basic_math', fulfillers=maths, n_class=4, 
+        force=False, group=rg)
+
+    basic_math = Requirement(name='advanced fifties', fulfillers=fifties, n_class=2, 
+        force=False, group=rg)
+
+    basic_math.save()
+    fifties.save()
+
+    others = ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 
+        'MATH110', 'MATH113', 'CS157, CS205A'] 
+
+    for o in others:
+        selftag = Tag(name=o+"_tag")
+        selftag.save()
+        req = Requirement(name=o + "_req", fulfillers=selftag, 
+            n_class=1, force=False, group=rg)
+        req.save()
+    
+    #scr = add_req('Science', 'sci', ['PHYSICS41', 'PHYSICS43'])
+    #ef = add_req('Engineering Fundamentals', 'engr', ['CS106B', 'ENGR40'])
+    #csc = add_req('CS Core', 'cs_core', ['CS107', 'CS110', 'CS161'])
+    #sd = add_req('Systems Depth', 'cs_sys_depth', ['CS140', 'CS143'])
 
 def main():
     print "Wrong wrong wrong (not that there's anyway you'd know that...)"
