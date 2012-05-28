@@ -95,7 +95,7 @@ class Requirement(models.Model):
     n_class = models.IntegerField();
     group = models.ForeignKey(RequirementGroup)
     def __unicode__(self):
-        return self.name + ", " + self.fulfillers + ", " + str(n_class)
+        return self.name + ", " + str(self.fulfillers) + ", " + str(self.n_class)
 
 #through class for many to many, will change
 class TagMapping(models.Model):
