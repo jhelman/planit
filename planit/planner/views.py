@@ -104,15 +104,25 @@ def search(request, prefix):
         results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
     offerings = {}
+    prereq_groups = {}
     for course in results:
         classNames.append(course.identifier)
         course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
         offerings[course.identifier] = serializers.serialize('json', course_offerings)
+        course_prereqs = []
+        for group in PrereqGroup.objects.filter(for_course=course):
+            satisfiers = []
+            for c in group.satisfiers.all():
+                satisfiers.append(c.identifier)
+            course_prereqs.append(satisfiers)
+        prereq_groups[course.identifier] = course_prereqs
+            
         
     data = serializers.serialize('json', results)
     responseData["classes"] = data
     responseData["classNames"] = classNames
     responseData["offerings"] = offerings
+    responseData["prereq_groups"] = prereq_groups
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
 
