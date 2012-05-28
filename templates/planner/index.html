@@ -596,10 +596,14 @@
            // Show delete button           
            $('.course').on('mouseover', function () {
                $(this).find('.info-over').show();
+               $(this).find('.grab-over').show();
+               
            });
           
            $('.course').on('mouseout', function () {
                $(this).find('.info-over').hide();
+               $(this).find('.grab-over').hide();
+               
            });
             
         });       
@@ -1776,6 +1780,11 @@
         							    {% for course in term.courses %}
             				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
             				                    <div class="courseName">{{ course.identifier }}</div>
+            				                    <div class="grab-over">
+            				                        <div class="grab-line" style="top: -7px;"></div>
+            				                        <div class="grab-line" style="top: -11px;"></div>
+            				                        <div class="grab-line" style="top: -15px;"></div>
+        				                        </div>
             				                    <div class="info-over">
             				                        <div class="info" onclick="removeCourse(this);">
                                                         <i style="position: relative; top: 2px;" class="icon-remove"></i>

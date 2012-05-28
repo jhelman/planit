@@ -53,7 +53,7 @@ div.course {
 		position: absolute;
 		left: 175px;
 		top: -20px;
-		z-index: 10;
+		z-index: 20;
 		height: 22px;
 		width: 20px;
 		border-top-right-radius: 5px;
@@ -61,6 +61,21 @@ div.course {
 		-moz-border-top-right-radius: 5px;
 		-moz-border-bottom-right-radius: 5px;
 		background-color: #f2dede;
+}
+
+.grab-over {
+	position: relative;
+	display: none;
+}
+
+.grab-line {
+	position: absolute;
+	height: 0px; 
+	width: 20px; 
+	z-index: 20;
+	border-bottom-style: ridge; 
+	border-color: #cccccc; 
+	left: 0px;
 }
 
 .courses-div {
