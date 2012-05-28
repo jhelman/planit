@@ -255,7 +255,7 @@
             this.units = baseUnits + units;
         }
     
-        function Course(name, offerings, offering, minUnits, maxUnits, courseObj, isAdded, isWarning) {
+        function Course(name, offerings, offering, minUnits, maxUnits, courseObj, prereqGroups, isAdded, isWarning) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offerings = offerings; // All possible offerings in JSON
@@ -265,6 +265,7 @@
            this.maxUnits = maxUnits;
            this.units = maxUnits;
            this.courseObj = courseObj;  // This will be the JSON
+		   this.prereqGroups = prereqGroups;
            this.isAdded = isAdded; 
         }
 
@@ -311,12 +312,20 @@
     	{% for term in year.terms %}
     	var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
     	{% for course in term.courses %}
+		var prereqGroups = [];
+		{% for group in course.prereq_groups %}
+		var satisfiers = [];
+		{% for c in group %}
+		satisfiers.push('{{ c }}')
+		{% endfor %}
+		prereqGroups.push(satisfiers);
+		{% endfor %}
     	{% autoescape off %}
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
     	    {{ course.min_units }}, {{ course.max_units }}, jQuery.parseJSON({{ course.course_json }}), 
-    	    false, false);
+    	    prereqGroups, false, false);
     	{% endautoescape %}
 		
 		// add draggable information
@@ -337,6 +346,7 @@
         
         var classesJSON = null;
         var offeringsJSON = null;
+		var prereqsJSON = null;
         var dragTerm = null;
         var dropTerm = null;
         
@@ -1322,8 +1332,8 @@
                 
                 addClassDisplayCount++;
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
-                        courseObj.fields.min_units, courseObj.fields.max_units, courseObj, true, 
-                        isWarningAll);
+                        courseObj.fields.min_units, courseObj.fields.max_units, courseObj, 
+						prereqsJSON[makeCondensedName(courseName)], true, isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
                                             
                 // evaluate quarter in which you are going to place the class to validate                
@@ -1524,6 +1534,7 @@
                     currentSearch = data.query;
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
+					prereqsJSON = data.prereq_groups;
                     createSearchResults(classesJSON);
                     removeSpinner();
                 }
