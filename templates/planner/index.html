@@ -436,14 +436,22 @@
                                var termStr = termNames[i] + years[j];
                                $('#' + termStr + '-drag-cover').hide();
                                if ($('#' + termStr + '-added-units').length == 0) {
+                                   returnCellToColor($('#' + termStr));
                                    $('#' + termStr + '-units-div').empty();
-                                   $('#' + termStr + '-units-div').html('<span class="units" ' + 
-                                    'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
-                                    '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
-                                    '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
-                                    '</span>' + 
-                                    '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
-                                    'style="display: none"></span>');
+                                   $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
+                                        '</span>' +
+       						            '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);">' + 
+                                        '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                        '</span>&nbsp;<span class="added-units" id="' + termStr + 
+                                        '-added-units" style="display: none"></span>');
+                                   
+                                   // $('#' + termStr + '-units-div').html('<span class="units" ' + 
+                                   //                                     'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
+                                   //                                     '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
+                                   //                                     '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                   //                                     '</span>' + 
+                                   //                                     '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
+                                   //                                     'style="display: none"></span>');
 
                                }
 
@@ -1399,7 +1407,7 @@
                         if ((offeringST >= startTime && offeringST < endTime) ||
                             (offeringET > startTime && offeringET <= endTime)) {
     
-                            course.eventObjects[k].color = '#ffc40d';
+                            courseEvents[k].color = '#ffc40d';
                             // flag = couses[i].name;
                             flag = courses[i].name;
     
