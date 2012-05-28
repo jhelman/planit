@@ -266,6 +266,25 @@
                 (this.eventObjects)[i].color = 'none';
             }
         }
+        
+        Course.prototype.getEventsForTermId = function(termId) {
+            var expandedStr = convertFromCondensedName(termId);
+            var termNum = $.inArray(expandedStr.substring(0, expandedStr.indexOf(' ')), termNames);
+            var startYear = expandedStr.substring(expandedStr.indexOf(' ') + 1, expandedStr.indexOf('-'));
+            
+            for (var i in this.offerings) {
+                if ((this.offerings)[i].fields.term == termNum && offerings[i].fields.year == startYear) {
+                    return createEventObjects(this.cName, (this.offerings)[i].fields, 
+                        false, false)
+                }
+            }
+        }
+        
+        Course.prototype.changeEventsToTerm = function(termId) {
+            this.eventObjects = this.getEventsForTermId(termId);
+        }
+        
+        
     
 		// TODO make this account for multiple offerings within term
         function getOffering(offerings, termNum, yearNum) {
@@ -297,6 +316,7 @@
 		{% if offering.year.start_num != year.start_num or offering.term.num != term.num %}
 		var possibleTargetTerm = plan.getTerm({{ offering.term.num }}, {{ offering.year }} - {{ plan.start_year }});
 		possibleTargetTerm.addDraggable(c);
+        // alert(possibleTargetTerm.termID + " " + c.cName);
 		{% endif %}
 		{% endfor %}
     	t.addCourse(c);
@@ -334,17 +354,19 @@
                 },
 
                 start: function (event, ui) {
+                    var courseName = ui.helper.find('.courseName').html();
                     dragTerm = $(this).closest('.quarter-div').attr('id');
+                    var course = plan.getTermById(dragTerm).getCourse(courseName);
+                    
                     turnOffQDivMouse();
                     
                     // Need to try to stop any interaction (disable ALL rollovers)
                     $(this).find('.info-over').hide();
                     
-                    // $('.units-div').tooltip({'title': ''});
+                    // $('.units-div').tooltip({'title': '', 'placement': 'top'});
                     // $('.course').off('mouseover');
                     // $('.course').off('mouseout');
                     
-                    var courseName = ui.helper.find('.courseName').html();
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
@@ -365,7 +387,7 @@
                                 continue;
                            }
                            
-                           var warningArray = evalForWarningOffering(termStr, courseName);
+                           var warningArray = evalForWarningOffering(termStr, course, true);
                            
                            var warningStr = "";
                            warningStr = createWarningStringOffering(warningStr, warningArray);
@@ -390,13 +412,15 @@
 
                 stop: function (event, ui) {
                     // $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
-                    //                    $('.course').on('mouseover', function () {
-                    //                        $(this).find('.info-over').show();
-                    //                    });
+                    // $('.course').on('mouseover', function () {
+                    //     $(this).find('.info-over').show();
+                    // });
                     // 
-                    //                    $('.course').on('mouseout', function () {
-                    //                        $(this).find('.info-over').hide();
-                    //                    });
+                    // $('.course').on('mouseout', function () {
+                    //     $(this).find('.info-over').hide();
+                    // });
+                    
+                    
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
@@ -414,6 +438,10 @@
                            
                        }
                     }
+                    
+					turnOnQDivMouse();
+					doQDivMouseOut($('#' + dragTerm));
+                    
                 }
             });
         
@@ -423,6 +451,7 @@
             var yearIndex = getYearArrayIndex(elem.attr('id'));
             elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
         }
+        
         
         function makeDrop() {
             {% for year in years %}
@@ -451,17 +480,16 @@
 				
 				
 				drop: function (event, ui) {
-				    
-                    doQDivMouseOut($('#' + dragTerm));
-                    turnOnQDivMouse();
-                    doQDivMouseOver($('#{{ term.condensedName }}'));
-                    
+                                        
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
+					
+					doQDivMouseOver($('#{{ term.condensedName }}'));
 					
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
 					plan.getTermById(dragTerm).removeCourse(course);
                     plan.getTermById('{{ term.condensedName }}').addCourse(course);
+                    course.changeEventsToTerm('{{ term.condensedName }}');
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
@@ -695,7 +723,7 @@
             plan.getTermById(quarterID).addDraggable(course);
             plan.getTermById(quarterID).removeCourse(course);
                         
-            resetAddedUnits(quarterID);
+            // resetAddedUnits(quarterID);
             
             cancelDeleteCourse(quarterID);
 			
@@ -884,7 +912,7 @@
         
         function changeSelectedUnits(selectElem, termId, courseId) {
             var units = parseInt($(selectElem).attr('value'));
-            updateAddedUnitsWithCurrent(termId, units);
+            // updateAddedUnitsWithCurrent(termId, units);
             plan.getTermById(termId).getCourse(courseId).units = units;
         }
         
@@ -1057,7 +1085,7 @@
                                               
             updateQuarterUnitsUI(termId, units, true);
                 
-            resetAddedUnits(termId);
+            // resetAddedUnits(termId);
             
             course.confirmCourse();            
             
@@ -1152,9 +1180,9 @@
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
-        function evalForWarningOffering(termID, courseName) {
+        function evalForWarningOffering(termID, course, isDrag) {
             var warningArray = [];
-            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, courseName);
+            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, course, isDrag);
             warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(termID);
             return warningArray;
         }
@@ -1261,7 +1289,7 @@
                                             
                 // evaluate quarter in which you are going to place the class to validate                
                                                                                                     
-                var warningArrayOffering = evalForWarningOffering(termId, courseName);
+                var warningArrayOffering = evalForWarningOffering(termId, addedCourse, false);
                  
                 var isWarningOffering = false;
                 for (var i in warningArrayOffering) {
@@ -1276,7 +1304,7 @@
                     isWarning = true;
                 }
                                        
-                updateAddedUnits(termId, courseObj.fields.max_units, isWarning, false);
+                // updateAddedUnits(termId, courseObj.fields.max_units, isWarning, false);
                                                            
                 makeAddedCourseHTML($('#' + termId + '-courses'), termId, courseObj.fields, isWarning);
                                 
@@ -1303,31 +1331,39 @@
         }
         
         
-        function checkIfTimeConflict(termId, courseName) {
+        function checkIfTimeConflict(termId, course, isDrag) {
             
             var flag = null;
-            var course = plan.getTermById(termId).getCourse(courseName);
+            
+            var courseEvents;
+            if (!isDrag) {
+                courseEvents = course.eventObjects;
+            } else {
+                courseEvents = course.getEventsForTermId(termId);
+            }
+            
             var courses = plan.getTermById(termId).courses;
             
             for (var i in courses) {
                 
                 // Can it be null?
 
-                if (courses[i] == undefined || courses[i].name == courseName) {
+                if (courses[i] == undefined || courses[i].name == course.name) {
                     // alert(courseName);
                     continue;
                 }
                 
                 var events = courses[i].eventObjects;
+                            
                 for (var j in events) {
                    
                     var startTime = events[j].start.getTime();
                     var endTime = events[j].end.getTime();
                    
-                    for (var k in course.eventObjects) {
+                    for (var k in courseEvents) {
                         
-                        var offeringST = course.eventObjects[k].start.getTime();
-                        var offeringET = course.eventObjects[k].end.getTime();
+                        var offeringST = courseEvents[k].start.getTime();
+                        var offeringET = courseEvents[k].end.getTime();
                         
                         if ((offeringST >= startTime && offeringST < endTime) ||
                             (offeringET > startTime && offeringET <= endTime)) {
@@ -1372,7 +1408,7 @@
                 $('#' + termId + course.cName).remove();
                 plan.getTermById(termId).removeAddedCourse(course.name);
                 
-                resetAddedUnits(termId);
+                // resetAddedUnits(termId);
                                                 
             }
                         
