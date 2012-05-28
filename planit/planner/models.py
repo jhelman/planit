@@ -75,7 +75,7 @@ class Course(models.Model):
     max_units = models.IntegerField()
     min_units = models.IntegerField()
     tags = models.ManyToManyField(Tag, through='TagMapping')
-    prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
+    #prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
     #grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
     #repeatable_for_credit = models.BooleanField()
 
@@ -102,10 +102,15 @@ class TagMapping(models.Model):
     tag = models.ForeignKey(Tag)
     course = models.ForeignKey(Course)
 
-class Prereq(models.Model):
-    prereq = models.ForeignKey(Course, related_name='prereq')
-    for_course = models.ForeignKey(Course, related_name='for')
+class PrereqGroup(models.Model):
+    for_course = models.ForeignKey(Course, related_name='prereqs')
     mandatory = models.BooleanField()
+    satisfiers = models.ManyToManyField(Course)
+
+# class Prereq(models.Model):
+#     prereq = models.ForeignKey(Course, related_name='prereq')
+#     for_course = models.ForeignKey(Course, related_name='for')
+#     mandatory = models.BooleanField()
 #could just as well be a string, but we may want
 #to add additional info to the struct
     

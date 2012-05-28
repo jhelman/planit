@@ -1,30 +1,145 @@
-table.course {
-    width: 200px;
-    margin-top: 3px;
+.quarter-div {
+    width: 220px;
+    height: 130px;
+    padding: 0px;
+		margin: 0px;
+		overflow: hidden;
+}
+
+.cover {
+    background-color: black;
+    position: absolute;
+    display: none;
+    opacity: 0.75;
+		filter: alpha(opacity=75);
+    z-index: 20;
+}
+
+.delete-alert {
+   width: 170px;
+   align: center;
+   display: none;
+   z-index: 20;
+   position: absolute;
+}
+
+.quarter-div-hover {
+	background-color: #d9edf7;
+}
+
+div.course {
+    width: 190px;
+    margin-top: 2px;
     margin-bottom: 3px;
     margin-left: auto;
     margin-right: auto;
-}
-
-td.courseName {
-    width: 55%;
-}
-
-td.units {
-    width: 17.5%;
+		padding-top: 2px;
+		padding-bottom: 2px;
+		padding-left: 5px;
+		padding-right: 5px;
+		border: 1px solid #000000;
+		border-radius: 5px;
+		-moz-border-radius: 5px;
 		cursor: pointer;
-}
-
-td.info {
-    width: 27.5%;
 		text-align: center;
 }
 
-table.possible-course {
+.info-over {
+	position: relative;
+	display: none;
+}
+
+.info {
+		position: absolute;
+		left: 175px;
+		top: -20px;
+		z-index: 20;
+		height: 22px;
+		width: 20px;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+		-moz-border-top-right-radius: 5px;
+		-moz-border-bottom-right-radius: 5px;
+		background-color: #f2dede;
+}
+
+.grab-over {
+	position: relative;
+	display: none;
+}
+
+.grab-line {
+	position: absolute;
+	height: 0px; 
+	width: 20px; 
+	z-index: 20;
+	border-bottom-style: ridge; 
+	border-color: #cccccc; 
+	left: 3px;
+}
+
+.calendar-over {
+	position: relative;
+	display: none;
+}
+
+.calendar-button {
+	position: absolute;
+	left: 85px;
+	top: 0px;
+	z-index: 20;
+}
+
+
+.courses-div {
+	height: 110px;
+	overflow: scroll;
+	border-bottom: 1px dashed;
+}
+
+.units-div {
+	height: 20px;
+	width: 220px;
+	display: table;
+	margin-left: auto;
+	margin-right: auto;
+	font-weight: bold;
+	text-align: center;
+}
+
+.units-text-div {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.quarter-label {
+    vertical-align: middle;
+    width: 150px;
+		border-left: 2px solid;
+		border-right: 2px solid;
+		border-bottom: 2px solid;
+		text-align: center;
+}
+
+.quarter-td {
+		border-left: 2px solid;
+		border-right: 2px solid;
+		border-bottom: 2px solid;
+}
+
+.year-label {
+		vertical-align: middle;
+		padding-left: 15px;
+		padding-right: 15px;
+		border-bottom: 2px solid;
+		text-align: center;
+}
+
+div.possible-course {
 		background-color: #54cc33;
 }
 
-table.possible-course-warning {
+div.possible-course-warning {
 		background-color: #ffc40d;
 }
 
@@ -46,45 +161,31 @@ table.possible-course-warning {
     width: 230px;
 }
 
-.quarter-div {
-    width: 220px;
-    height: 130px;
-    padding-top: 4px;
-    -moz-border-top-left-radius: 10px;
-    border-top-left-radius: 10px;
-    -moz-border-bottom-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-left: 1px solid;
-    border-top: 1px solid;
-    border-bottom: 1px solid;
-    border-right: 1px dashed;
-}
-
-.cover {
-    background-color: black;
-    position: absolute;
-    display: none;
-    opacity: 0.75;
-		filter: alpha(opacity=75);
-    z-index: 10;
-}
-
 .quarter-div-cover-drag {
-		width: 166px;
-		height: 34px;
-		border-radius: 10px;
-		-moz-border-radius: 10px;
+		width: 142px;
+		height: 52px;
 		border: none;
 		background-color: #ec2020;
 		opacity: 0.95;
 		filter: alpha(opacity=95);
 		z-index: 20;
-		margin-top: -4px;
+		margin: -1px;
 		position: absolute;
 		display: none;
-		padding: 50px;
+		padding: 40px;
 		text-align: center;
 }
+
+#search-spinner-over {
+	position: relative;
+}
+
+#search-spinner {
+	position: absolute;
+	top: -15px;
+	left: 265px;
+}
+
 
 
 .quarter-info-div {
@@ -218,16 +319,9 @@ table.possible-course-warning {
     margin: 10px;
 }
 
-.year-label {
-	vertical-align: middle;
-	padding-left: 15px;
-	padding-right: 15px;
-}
 
-.quarter-label {
-    vertical-align: middle;
-    width: 150px;
-}
+
+
 
 .spacing-row {
     height: 0px;
@@ -235,13 +329,7 @@ table.possible-course-warning {
     padding: 0px;
 }  
 
-.delete-alert {
-   width: 171px;
-   align: center;
-   display: none;
-   z-index: 20;
-   position: absolute;
-}
+
 
 
 #schedule-modal {
@@ -322,3 +410,17 @@ table.possible-course-warning {
 
 #search-scroll-div .content {
 }
+
+.ajax-alert {
+	z-index: 9999;
+	position: absolute;
+	top: 0px;
+	padding-left: 5px;
+	padding-right: 30px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	margin: 0px;
+	font-weight: bold;
+}
+
+

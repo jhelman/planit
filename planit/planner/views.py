@@ -37,6 +37,15 @@ def index(request):
                 setattr(course, 'start_time', e.course.start_time)
                 setattr(course, 'end_time', e.course.end_time)
                 setattr(course, 'weekdays', e.course.weekdays)
+                prereq_groups = PrereqGroup.objects.filter(for_course=course)
+                groups = []
+                for group in prereq_groups:
+                    satisfiers = []
+                    for c in group.satisfiers.all():
+                        satisfiers.append(c.identifier)
+                    groups.append(satisfiers)
+                setattr(course, 'prereq_groups', groups)                    
+                    
                 terms[t]['courses'].append(course)
                 
             terms[t]['name'] = term.__unicode__() + years[year_num]['year']
@@ -58,7 +67,7 @@ def index(request):
                         days.append(start_day + 1)
                     if weekday == 'W':
                         days.append(start_day + 2)
-                    if weekday == 'R':
+                    if weekday == 'R' or weekday == 'H':
                         days.append(start_day + 3)
                     if weekday == 'F':
                         days.append(start_day + 4)
@@ -84,7 +93,6 @@ def index(request):
     args['offerings'] = offerings
     args['term_names'] = term_names
     args['max_units'] = plan.university.max_units_per_quarter
-    print offerings
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
@@ -96,15 +104,25 @@ def search(request, prefix):
         results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
     offerings = {}
+    prereq_groups = {}
     for course in results:
         classNames.append(course.identifier)
         course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
         offerings[course.identifier] = serializers.serialize('json', course_offerings)
+        course_prereqs = []
+        for group in PrereqGroup.objects.filter(for_course=course):
+            satisfiers = []
+            for c in group.satisfiers.all():
+                satisfiers.append(c.identifier)
+            course_prereqs.append(satisfiers)
+        prereq_groups[course.identifier] = course_prereqs
+            
         
     data = serializers.serialize('json', results)
     responseData["classes"] = data
     responseData["classNames"] = classNames
     responseData["offerings"] = offerings
+    responseData["prereq_groups"] = prereq_groups
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
 
@@ -114,9 +132,18 @@ def add_course(request):
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
-    start_time = params['start']
-    weekdays = params['weekdays']
-    # TODO find the offering and add an enrollment for it
+    # These fields will be needed when dealing with multiple offerings in one term
+    # start_time = params['start']
+    # weekdays = params['weekdays']
+    
+    offerings = CourseOffering.objects.filter(course__identifier=course_name, year=year_num, term=term_num)
+    if len(offerings) > 0:
+        to_add = offerings[0]
+        # TODO correct Plan lookup
+        plan = Plan.objects.filter(student_name=plan_name)[0]
+        enrollment = Enrollment(course=to_add, plan=plan)
+        enrollment.save()
+    
     return HttpResponse()
     
 def delete_course(request):
@@ -125,6 +152,37 @@ def delete_course(request):
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
-    # TODO find the enrollment and delete it
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__student_name=plan_name)
+    if len(enrollments) == 1:
+        to_delete = enrollments[0]
+        to_delete.delete()
+    else:
+        print "wtf..."
     return HttpResponse()
+
+def move_course(request):
+    params = request.POST.dict()
+    print params
+    course_name = params['course']
+    old_year = params['old_year']
+    old_term = params['old_term']
+    new_year = params['new_year']
+    new_term = params['new_term']
+    plan_name = params['plan']
+    
+    # TODO find the enrollment and switch the offering
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__student_name=plan_name)
+    if len(enrollments) == 1:
+        to_switch = enrollments[0]
+        offerings = CourseOffering.objects.filter(course__identifier=course_name, year=new_year, term=new_term)
+        if len(offerings) > 0:
+            print "ASDFSDF"
+            offering = offerings[0]
+            # TODO correct Plan lookup
+            plan = Plan.objects.filter(student_name=plan_name)[0]
+            to_switch.course = offering
+            to_switch.save()
+        
+    return HttpResponse()
+    
     
