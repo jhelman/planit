@@ -1028,6 +1028,9 @@
                 if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
                        warningStr += "Over allowed units for quarter.<br/>";
                 }
+                if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
+                       warningStr += "Course violates prerequisite: " + warningArrayOffering[j] + ".<br/>";
+                }
             }
             
             return warningStr;   
@@ -1223,9 +1226,21 @@
             return false;
         }
         
+        // TermID is term you are evaluating in
+        // Course is course you are moving
+        // Return what prereq course violates
+        function checkIfPrereqViolation(termID, course) {
+            
+            
+            
+            
+            return null;
+        }
+        
         
         var WARNING_OFFERING_TIME_CONFLICT = 0;
         var WARNING_OFFERING_OVER_UNITS = 1;
+        var WARNING_OFFERING_PREREQ = 2;
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
@@ -1233,6 +1248,7 @@
             var warningArray = [];
             warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, course, isDrag);
             warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(termID);
+            warningArray[WARNING_OFFERING_PREREQ] = checkIfPrereqViolation(termID, course);
             return warningArray;
         }
         
