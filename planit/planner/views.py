@@ -37,6 +37,15 @@ def index(request):
                 setattr(course, 'start_time', e.course.start_time)
                 setattr(course, 'end_time', e.course.end_time)
                 setattr(course, 'weekdays', e.course.weekdays)
+                prereq_groups = PrereqGroup.objects.filter(for_course=course)
+                groups = []
+                for group in prereq_groups:
+                    satisfiers = []
+                    for c in group.satisfiers.all():
+                        satisfiers.append(c.identifier)
+                    groups.append(satisfiers)
+                setattr(course, 'prereq_groups', groups)                    
+                    
                 terms[t]['courses'].append(course)
                 
             terms[t]['name'] = term.__unicode__() + years[year_num]['year']
@@ -95,15 +104,25 @@ def search(request, prefix):
         results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     classNames = []
     offerings = {}
+    prereq_groups = {}
     for course in results:
         classNames.append(course.identifier)
         course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
         offerings[course.identifier] = serializers.serialize('json', course_offerings)
+        course_prereqs = []
+        for group in PrereqGroup.objects.filter(for_course=course):
+            satisfiers = []
+            for c in group.satisfiers.all():
+                satisfiers.append(c.identifier)
+            course_prereqs.append(satisfiers)
+        prereq_groups[course.identifier] = course_prereqs
+            
         
     data = serializers.serialize('json', results)
     responseData["classes"] = data
     responseData["classNames"] = classNames
     responseData["offerings"] = offerings
+    responseData["prereq_groups"] = prereq_groups
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
 
