@@ -1073,16 +1073,23 @@
             
             $('#' + termId + '-courses').prepend('<div id="' + termId + makeCondensedName(courseName) + '" ' + 
                 'class="course"><div class="courseName">' + courseName + '</div>' +
+                '<div class="grab-over">' +
+                '<div class="grab-line" style="top: -7px;"></div>' +
+                '<div class="grab-line" style="top: -11px;"></div>' + 
+                '<div class="grab-line" style="top: -15px;"></div>' +
+                '</div>' + 
                 '<div class="info-over"><div class="info" onclick="removeCourse(this);">' + 
                 '<i style="position: relative; top: 2px;" class="icon-remove"></i>' + 
                 '</div></div></div>');                 
                 
             $('#' + termId + makeCondensedName(courseName)).on('mouseover', function () {
                  $(this).find('.info-over').show();
+                 $(this).find('.grab-over').show();
             });
  
             $('#' + termId + makeCondensedName(courseName)).on('mouseout', function () {
                 $(this).find('.info-over').hide();
+                $(this).find('.grab-over').hide();
             });
             
             $('#' + termId + makeCondensedName(courseName)).popover({
