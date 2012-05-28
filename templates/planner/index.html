@@ -183,10 +183,14 @@
             this.plan.units += course.units;
         }
     
-        Term.prototype.addDraggable = function(course) {
-            if ($.inArray(course, this.acceptedDragsForTerm) == -1) {
-                this.acceptedDragsForTerm.push(course);
+        Term.prototype.addDraggable = function(course) {            
+            for (var i in this.acceptedDragsForTerm) {
+                if ((this.acceptedDragsForTerm)[i].name == course.name) {
+                    return;
+                }
             }
+            this.acceptedDragsForTerm.push(course);
+            
         }
         
     
@@ -480,7 +484,7 @@
 				
 				
 				drop: function (event, ui) {
-                                        
+                                     
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
