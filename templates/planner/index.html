@@ -672,7 +672,8 @@
             turnHeadingsColor(qDiv.attr('id'), '#f2dede');
             // qDiv.css('background-color', '#f2dede');
                         
-            courseElem.find('.icon-trash').tooltip('hide');
+            courseElem.find('.info-over').hide();
+            courseElem.find('.grab-over').hide();
             courseElem.popover('hide');
             
             var cover = qDiv.find('.cover');
