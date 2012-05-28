@@ -335,6 +335,7 @@
         var classesJSON = null;
         var offeringsJSON = null;
         var dragTerm = null;
+        var dropTerm = null;
         
         function makeDrag(draggableElemStr) {
             // Reference: http://blog.petersendidit.com/post/drag-table-row-to-a-div-with-jquery/
@@ -364,8 +365,10 @@
                     
                     turnOffQDivMouse();
                     
-                    // Need to try to stop any interaction (disable ALL rollovers)
                     $(this).find('.info-over').hide();
+                    $(this).closest('.quarter-div').find('.calendar-over').hide();
+                    
+                    // Need to try to stop any interaction (disable ALL rollovers)
                     
                     // $('.units-div').tooltip({'title': '', 'placement': 'top'});
                     // $('.course').off('mouseover');
@@ -424,27 +427,33 @@
                     //     $(this).find('.info-over').hide();
                     // });
                     
-                    
+                    // alert($(event.currentTarget).attr('id'));
                     for (var i in termNames) {
-                       for (var j in years) {
-                           var termStr = termNames[i] + years[j];
-                           $('#' + termStr + '-drag-cover').hide();
-                           if ($('#' + termStr + '-added-units').length == 0) {
-                               $('#' + termStr + '-units-div').empty();
-                               $('#' + termStr + '-units-div').html('<span class="units" ' + 
-                                'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' + 
-                                '&nbsp;<span id="' + termStr + '-added-units" style="display: none"></span>');
-                               
-                               if ($('#' + termStr).css('background-color') != "rgb(217,237,247)") {
-                                   returnCellToColor($('#' + termStr));
+                           for (var j in years) {
+                               var termStr = termNames[i] + years[j];
+                               $('#' + termStr + '-drag-cover').hide();
+                               if ($('#' + termStr + '-added-units').length == 0) {
+                                   $('#' + termStr + '-units-div').empty();
+                                   $('#' + termStr + '-units-div').html('<span class="units" ' + 
+                                    'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
+                                    '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
+                                    '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                    '</span>' + 
+                                    '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
+                                    'style="display: none"></span>');
+
                                }
+
                            }
-                           
                        }
-                    }
                     
-					turnOnQDivMouse();
-					doQDivMouseOut($('#' + dragTerm));
+
+                    turnOnQDivMouse();
+                    doQDivMouseOut($('#' + dragTerm));
+					if (dropTerm != null) {
+					    doQDivMouseOver($('#' + dropTerm));
+				    }
+					dropTerm = null;
                     
                 }
             });
@@ -471,15 +480,15 @@
 				},
 				
 				over: function (event, ui) {
-				    if ($(this).find('.added-units').length > 0) {
+				    if ($(this).find('.added-units').length > 0) { 
 				        $(this).css('background-color', '#dff0d8');
-			        }
+                    }
 			    },
 			    
 			    out: function (event, ui) {  
-			        if ($(this).find('.added-units').length > 0) { 
+                    if ($(this).find('.added-units').length > 0) { 
 			            returnCellToColor($(this));
-		            }
+                    }
                 },
 				
 				
@@ -488,7 +497,7 @@
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
-					doQDivMouseOver($('#{{ term.condensedName }}'));
+					dropTerm = '{{ term.condensedName }}';
 					
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
 					plan.getTermById(dragTerm).removeCourse(course);
@@ -499,6 +508,7 @@
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
 					updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
 					updateQuarterUnitsUI(dragTerm, -course.units, false);
+					
 						
 					var oldTermYear = convertFromCondensedName(dragTerm).split(" ");
 					var oldTermName = oldTermYear[0];
@@ -590,7 +600,7 @@
             
            turnOnQDivMouse();
            
-           $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
+           // $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
            
            
            // Show delete button           
@@ -616,6 +626,7 @@
         function doQDivMouseOver(elem) {
             elem.css('background-color', '#d9edf7'); 
             turnHeadingsColor(elem.attr('id'), '#d9edf7');
+            elem.find('.calendar-over').show();
         }
         
         function doQDivMouseOut(elem) {
@@ -624,6 +635,7 @@
             $('#' + years[yearIndex]).css('background-color', 
                (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
            $('#' + getTermName(elem.attr('id'))).css('background-color', 'white');
+           elem.find('.calendar-over').hide();
         }
         
         function turnOnQDivMouse() {
@@ -1809,8 +1821,11 @@
             							{% endfor %}
             						</div>
             						
-            						<div class="units-div" id="{{ term.condensedName }}-units-div" onclick="openCalendar('{{ term.condensedName }}', this);">
+            						<div class="units-div" id="{{ term.condensedName }}-units-div">
             						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
+            						    <span class="calendar-over" onclick="openCalendar('{{ term.condensedName }}', this);">
+                                            <span class="calendar-button"><i class="icon-calendar"></i></span>
+                                        </span>
                                         &nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" style="display: none"></span>
             						</div>
             						

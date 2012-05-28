@@ -78,6 +78,19 @@ div.course {
 	left: 3px;
 }
 
+.calendar-over {
+	position: relative;
+	display: none;
+}
+
+.calendar-button {
+	position: absolute;
+	left: 85px;
+	top: 0px;
+	z-index: 20;
+}
+
+
 .courses-div {
 	height: 110px;
 	overflow: scroll;
@@ -91,7 +104,6 @@ div.course {
 	margin-left: auto;
 	margin-right: auto;
 	font-weight: bold;
-	cursor: pointer;
 	text-align: center;
 }
 
