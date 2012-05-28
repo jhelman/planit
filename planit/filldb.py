@@ -176,10 +176,10 @@ def filldb():
     fifties = add_tag('fifties', ['MATH52', 'MATH53'])
 
     basic_math = Requirement(name='basic_math', fulfillers=maths, n_class=4, 
-        force=False, group=rg)
+        group=rg)
 
     basic_math = Requirement(name='advanced fifties', fulfillers=fifties, n_class=2, 
-        force=False, group=rg)
+         group=rg)
 
     basic_math.save()
     fifties.save()
@@ -191,7 +191,7 @@ def filldb():
         selftag = Tag(name=o+"_tag")
         selftag.save()
         req = Requirement(name=o + "_req", fulfillers=selftag, 
-            n_class=1, force=False, group=rg)
+            n_class=1,  group=rg)
         req.save()
     
     #scr = add_req('Science', 'sci', ['PHYSICS41', 'PHYSICS43'])
