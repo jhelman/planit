@@ -82,63 +82,21 @@ class Course(models.Model):
     def __unicode__(self):
         return self.identifier
 
+class RequirementGroup(models.Model):
+    major = models.ForeignKey(Major, null=True)
+    name = models.CharField(max_length=64)
+    n_prereqs = models.IntegerField()
+    def is_fulfilled(self, plan):
+        return True
+
 #add type field to avoid try catch when
 #working with "upcasted" pointers
 class Requirement(models.Model):
-    force = models.BooleanField(default=False)
-    major = models.ForeignKey(Major, null=True)
-    def is_fulfilled(self, plan):
-        pass
-    
-    def fulfilled_by(self):
-        pass
-
-class CourseRequirement(Requirement):
     name = models.CharField(max_length=64)
     fulfillers = models.ForeignKey(Tag)
-    class Meta:
-        abstract = True
-
-    def fulfilled_by(self):
-        return [o.course for o in TagMapping.objects.filter(tag=self.fulfillers)]
-
-    def req(self):
-        return Requirement.objects.get(depthrequirement=self)
-
-    def set_force(self, val):
-        superreq = self.req()
-        superreq.force = val
-
-    def get_force(self):
-        return self.req().force
-
-
-class DepthRequirement(CourseRequirement):
-    min_units = models.IntegerField(default=15)
-    def is_fulfilled(self, plan):
-        if(self.get_force()):
-            return True
-
-        taken = set(plan.enrollment_set.all())
-        req_opts = set(self.fulfilled_by())
-        return sum(c.units for c in set(taken & req_opts)) >= self.min_units
-
-    def __unicode__(self):
-        return self.name
-
-class BreadthRequirement(CourseRequirement):
-    min_courses = models.IntegerField(default=4)
-
-    def is_fulfilled(self, plan):
-        if(self.get_force()):
-            return True
-
-        taken = set(plan.enrollment_set.all())
-        req_opts = set(self.fulfilled_by())
-        return len(taken & req_opts) >= self.min_courses
-
-    def __unicode__(self):
-        return self.name
+    n_class = models.IntegerField();
+    force = models.BooleanField(default=False)
+    group = models.ForeignKey(RequirementGroup)
 
 #through class for many to many, will change
 class TagMapping(models.Model):
@@ -179,7 +137,6 @@ class CourseOffering(models.Model):
     def __unicode__(self):
         return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year) + '-' + str(self.year + 1)
 
-
 #does it scale
 class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)
@@ -191,73 +148,6 @@ class Enrollment(models.Model):
         
     def __unicode__(self):
         return self.course.__unicode__() + ' ' + self.plan.__unicode__()
-
-class LogicalRequirement(Requirement):
-    #for_major = models.ForeignKey(Major, null=True)
-    class Meta:
-        abstract = True
-
-    name = models.CharField(max_length=64)
-    def fulfilled_by(self):
-        courses = []
-        for req in self.subrequirements():
-            courses.extend(req.fulfilled_by())
-        return courses
-
-    def subrequirements(self):
-        subreqs = []
-        try:
-            subreqs.extend([DepthRequirement.objects.get(requirement_ptr=o) for o in 
-                RequirementMapping.objects.filter(logreq=self.req())])
-        except Exception:
-            pass
-        try:
-            subreqs.extend([BreadthRequirement.objects.get(requirement_ptr=o) for o in 
-                RequirementMapping.objects.filter(logreq=self.req())])
-        except Exception:
-            pass
-
-        return subreqs
-
-    def set_force(self, val):
-        superreq = self.req()
-        superreq.force = val
-
-    def get_force(self):
-        return self.req().force
-
-
-class ConjunctionRequirement(LogicalRequirement):
-    def is_fulfilled(self, plan):
-        if(self.get_force()):
-            return True
-
-        for req in self.reqs.all():
-            if(not req.is_fulfilled(plan)):
-                return False
-        return True
- 
-    def req(self):
-        return Requirement.objects.get(conjunctionrequirement=self)
-
-    def __unicode__(self):
-        return self.name
-
-class DisjunctionRequirement(LogicalRequirement):
-    def is_fulfilled(self, plan):
-        if(self.get_force()):
-            return True
-
-        for req in self.reqs.all():
-            if(req.is_fulfilled(plan)):
-                return True
-        return False
-
-    def req(self):
-        return Requirement.objects.get(disjunctionrequirement=self)
-
-    def __unicode__(self):
-        return self.name
 
 #through class for manyToMany, will change
 class RequirementMapping(models.Model):
