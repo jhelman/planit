@@ -277,7 +277,7 @@
             var startYear = expandedStr.substring(expandedStr.indexOf(' ') + 1, expandedStr.indexOf('-'));
             
             for (var i in this.offerings) {
-                if ((this.offerings)[i].fields.term == termNum && offerings[i].fields.year == startYear) {
+                if ((this.offerings)[i].fields.term == termNum && (this.offerings)[i].fields.year == startYear) {
                     return createEventObjects(this.cName, (this.offerings)[i].fields, 
                         false, false)
                 }
