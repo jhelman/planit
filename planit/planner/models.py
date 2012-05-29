@@ -107,13 +107,6 @@ class PrereqGroup(models.Model):
     mandatory = models.BooleanField()
     satisfiers = models.ManyToManyField(Course)
 
-# class Prereq(models.Model):
-#     prereq = models.ForeignKey(Course, related_name='prereq')
-#     for_course = models.ForeignKey(Course, related_name='for')
-#     mandatory = models.BooleanField()
-#could just as well be a string, but we may want
-#to add additional info to the struct
-    
 class Plan(models.Model):
     student_name = models.CharField(max_length=100) #eventually user
     user = models.ForeignKey(UserData, null=True)

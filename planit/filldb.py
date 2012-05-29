@@ -138,10 +138,14 @@ def add_tags(arr):
     for cname in arr:
         tag = Tag(name=cname+"_tag")
         tag.save()
-        tm = TagMapping(tag=tag, course=Course.objects.filter(identifier=cname)[0])
-        tm.save()
+        print cname
+        c = course=Course.objects.filter(identifier=cname)
+        if(c):
+            tm = TagMapping(tag=tag,course=c[0])
+            tm.save()
 
 def filldb():
+    
     for i in range(3):
         t=Term(i)
         t.save()
@@ -169,24 +173,15 @@ def filldb():
 
     rg = RequirementGroup(major=m, name='math', n_prereqs=7)
     rg.save()
-
-    basic_math = Tag(name='basic math')
-    basic_math.save()
     maths = add_tag('basic_math', ['MATH41', 'MATH42', 'CS103', 'CS109'])
     fifties = add_tag('fifties', ['MATH52', 'MATH53'])
-
-    basic_math = Requirement(name='basic_math', fulfillers=maths, n_class=4, 
-        group=rg)
-
-    basic_math = Requirement(name='advanced fifties', fulfillers=fifties, n_class=2, 
-         group=rg)
-
+    basic_math = Requirement(name='basic_math', fulfillers=maths, n_class=4, group=rg)
+    basic_math.save()
+    fifties = Requirement(name='advanced fifties', fulfillers=fifties, n_class=2, group=rg)
     basic_math.save()
     fifties.save()
-
-    others = ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 
-        'MATH110', 'MATH113', 'CS157, CS205A'] 
-
+    others = ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 'MATH110', 'MATH113', 'CS157', 'CS205A'] 
+    add_tags(others)
     for o in others:
         selftag = Tag(name=o+"_tag")
         selftag.save()
@@ -194,6 +189,67 @@ def filldb():
             n_class=1,  group=rg)
         req.save()
     
+
+    econ1a = Course.objects.filter(identifier__startswith="ECON1A")[0]
+    econ1b = Course.objects.filter(identifier__startswith="ECON1B")[0]
+    econ50 = Course.objects.filter(identifier__startswith="ECON50")[0]
+    econ51 = Course.objects.filter(identifier__startswith="ECON51")[0]
+    econ52 = Course.objects.filter(identifier__startswith="ECON52")[0]
+    econ102a = Course.objects.filter(identifier__startswith="ECON102A")[0]
+    econ102b = Course.objects.filter(identifier__startswith="ECON102B")[0]
+    econ1bpg=PrereqGroup(for_course=econ1b, mandatory=True)
+    econ1bpg.save()
+    econ1bpg.satisfiers.add(econ1a)
+    econ1bpg.save()
+    econ50pg=PrereqGroup(for_course=econ50, mandatory=True)
+    econ50pg.save()
+    econ50pg.satisfiers.add(econ1a)
+    econ50pg.save()
+    econ51pg=PrereqGroup(for_course=econ51, mandatory=True)
+    econ51pg.save()
+    econ51pg.satisfiers.add(econ50)
+    econ51pg.save()
+    econ52pg=PrereqGroup(for_course=econ52, mandatory=True)
+    econ52pg.save()
+    econ52pg.satisfiers.add(econ1b)
+    econ52pg.satisfiers.add(econ50)
+    econ52pg.save()
+    econ102apg=PrereqGroup(for_course=econ102a, mandatory=True)
+    econ102apg.save()
+    econ102apg.satisfiers.add(econ1a)
+    econ102apg.save()
+    econ102bpg=PrereqGroup(for_course=econ102b, mandatory=True)
+    econ102bpg.save()
+    econ102bpg.satisfiers.add(econ102a)
+    econ102bpg.save()
+
+
+    cs106a = Course.objects.filter(identifier__startswith="CS106A")[0]
+    cs106b = Course.objects.filter(identifier__startswith="CS106B")[0]
+    cs106bpg=PrereqGroup(for_course=cs106b, mandatory=False)
+    cs106bpg.save()
+    cs106bpg.satisfiers.add(cs106a)
+    cs106bpg.save()
+
+    cs110 = Course.objects.filter(identifier__startswith="CS110")[0]
+    cs110pg=PrereqGroup(for_course=cs110, mandatory=False)
+    cs110pg.save()
+    cs110pg.satisfiers.add(cs106b)
+    cs110pg.save()
+
+    cs140 = Course.objects.filter(identifier__startswith="CS140")[0]
+    cs140pg=PrereqGroup(for_course=cs140, mandatory=False)
+    cs140pg.save()
+    cs140pg.satisfiers.add(cs110)
+    cs140pg.save()
+
+    cs155 = Course.objects.filter(identifier__startswith="CS155")[0]
+    cs155pg=PrereqGroup(for_course=cs155, mandatory=False)
+    cs155pg.save()
+    cs155pg.satisfiers.add(cs140)
+    cs155pg.save()
+
+ 
     #scr = add_req('Science', 'sci', ['PHYSICS41', 'PHYSICS43'])
     #ef = add_req('Engineering Fundamentals', 'engr', ['CS106B', 'ENGR40'])
     #csc = add_req('CS Core', 'cs_core', ['CS107', 'CS110', 'CS161'])
