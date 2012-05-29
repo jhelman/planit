@@ -407,7 +407,7 @@
                                 continue;
                            }
                            
-                           var warningArray = evalForWarningOffering(termStr, course, true);
+                           var warningArray = evalForWarningOffering(termStr, dragTerm, course, true);
                            
                            var warningStr = "";
                            warningStr = createWarningStringOffering(warningStr, warningArray);
@@ -681,6 +681,15 @@
                     return i;
                 }
             }
+            return -1;
+        }
+        
+        function getTermArrayIndex(id) {
+             for (var i in termNames) {
+                    if (id.indexOf(termNames[i]) != -1) {
+                        return i;
+                    }
+                }
             return -1;
         }
         
@@ -1226,14 +1235,58 @@
             return false;
         }
         
-        // TermID is term you are evaluating in
         // Course is course you are moving
         // Return what prereq course violates
-        function checkIfPrereqViolation(termID, course) {
-            
-            
-            
-            
+        function checkIfPrereqViolation(toTermId, fromTermId, course, isDrag) {
+       
+           // Check forwards
+           if (isDrag) {
+           
+               for (var i = getYearArrayIndex(fromTermId); i < years.length; i++) {
+                   for (var j = 0; j < termNames.length; j++) {
+                   
+                       if (i == 0 && j <= getTermArrayIndex(fromTermId)) {
+                           continue;
+                       }
+                   
+                       var term = plan.getTerm(j, i);
+                       for (var k in term.courses) {
+                           var course = (term.courses)[k];
+                           
+                           if (course != undefined) {
+                               break;
+                           }
+                           
+                           var prereqGroups = course.prereqGroups;
+                           for (var x in prereqGroups) {
+                              
+                              if ($.inArray(course.cName, prereqGroups[x])) {
+                                  if (prereqGroups[x].length == 1) {
+                                      return course.cName;
+                                  } else {
+                                      
+                                  }
+                                  
+                              }
+                            
+                            
+                               
+                           }
+                           
+                       
+                       }
+                   
+                   }
+               } 
+               
+            }
+               
+            // Just check backwards
+               
+               
+               
+               
+               
             return null;
         }
         
@@ -1244,11 +1297,11 @@
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
-        function evalForWarningOffering(termID, course, isDrag) {
+        function evalForWarningOffering(toTermID, fromTermID, course, isDrag) {
             var warningArray = [];
-            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, course, isDrag);
-            warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(termID);
-            warningArray[WARNING_OFFERING_PREREQ] = checkIfPrereqViolation(termID, course);
+            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(toTermID, course, isDrag);
+            warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(toTermID);
+            warningArray[WARNING_OFFERING_PREREQ] = checkIfPrereqViolation(toTermID, fromTermID, course, isDrag);
             return warningArray;
         }
         
@@ -1354,7 +1407,7 @@
                                             
                 // evaluate quarter in which you are going to place the class to validate                
                                                                                                     
-                var warningArrayOffering = evalForWarningOffering(termId, addedCourse, false);
+                var warningArrayOffering = evalForWarningOffering(termId, false, addedCourse, false);
                  
                 var isWarningOffering = false;
                 for (var i in warningArrayOffering) {
