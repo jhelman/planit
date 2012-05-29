@@ -6,6 +6,25 @@ from django.core import serializers
 from models import *
 import re
 
+def get_python_dict_for_reqs(requirement_groups):
+    req_groups = {}
+    for group in requirement_groups:
+        req_group_info = {}
+        req_group_info['num_reqs_to_fulfill'] = group.n_prereqs
+        reqs = {}
+        for req in group.requirement_set.all():
+            req_info = {}
+            req_info['num_courses_to_fulfull'] = req.n_class
+            fulfillers = []
+            for course in Course.objects.filter(tags=req.fulfillers):
+                fulfillers.append(course.identifier)
+            req_info['fulfillers'] = fulfillers
+            reqs[req.name] = req_info
+        req_group_info['requirements'] = reqs
+        req_groups[group.name] = req_group_info
+    return req_groups
+    
+
 def index(request):
     plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
     enrolled = Enrollment.objects.filter(plan=plan)
@@ -87,12 +106,18 @@ def index(request):
         for offering in course_offerings:
             offered_terms.append((offering.term.num, offering.year))
         offerings[str(course.identifier)] = course_offerings
+        
+    major_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major=plan.major))
+    general_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major__isnull=True))
             
     args['years'] = years
     args['totalUnits'] = totalUnits
     args['offerings'] = offerings
     args['term_names'] = term_names
     args['max_units'] = plan.university.max_units_per_quarter
+    args['general_reqs'] = general_req_groups
+    args['major_reqs'] = major_req_groups
+    print simplejson.dumps(major_req_groups)
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
