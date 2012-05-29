@@ -138,8 +138,11 @@ def add_tags(arr):
     for cname in arr:
         tag = Tag(name=cname+"_tag")
         tag.save()
-        tm = TagMapping(tag=tag, course=Course.objects.filter(identifier=cname)[0])
-        tm.save()
+        print cname
+        c = course=Course.objects.filter(identifier=cname)
+        if(c):
+            tm = TagMapping(tag=tag,c[0])[0])
+            tm.save()
 
 def filldb():
     
@@ -178,6 +181,7 @@ def filldb():
     basic_math.save()
     fifties.save()
     others = ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 'MATH110', 'MATH113', 'CS157, CS205A'] 
+    add_tags(others)
     for o in others:
         selftag = Tag(name=o+"_tag")
         selftag.save()
