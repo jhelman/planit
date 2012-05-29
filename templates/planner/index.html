@@ -1235,6 +1235,10 @@
             return false;
         }
         
+        /* Take out of evalForWarningsOffering and split up into forwards and backwards...
+           only call one on adding and call both on dragging
+           Can then eliminate isDrag parameter (as well as from evalFromWarningsOffering) */
+        
         // Course is course you are moving
         // Return what prereq course violates
         function checkIfPrereqViolation(toTermId, fromTermId, course, isDrag) {
@@ -1253,15 +1257,17 @@
                        for (var k in term.courses) {
                            var course = (term.courses)[k];
                            
-                           if (course != undefined) {
+                           // Need to check??
+                           if (course == undefined) {
                                break;
                            }
                            
                            var prereqGroups = course.prereqGroups;
+                           console.log(course.cName + " " + prereqGroups);
                            for (var x in prereqGroups) {
-                              
                               if ($.inArray(course.cName, prereqGroups[x])) {
                                   if (prereqGroups[x].length == 1) {
+                                      console.log(course.cName + " in " + toTermId);
                                       return course.cName;
                                   } else {
                                       
