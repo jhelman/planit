@@ -138,9 +138,9 @@ def add_tags(arr):
     for cname in arr:
         tag = Tag(name=cname+"_tag")
         tag.save()
-        print cname
         c = course=Course.objects.filter(identifier=cname)
         if(c):
+            print cname
             tm = TagMapping(tag=tag,course=c[0])
             tm.save()
 
@@ -183,8 +183,7 @@ def filldb():
     others = ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 'MATH110', 'MATH113', 'CS157', 'CS205A'] 
     add_tags(others)
     for o in others:
-        selftag = Tag(name=o+"_tag")
-        selftag.save()
+        selftag = Tag.objects.get(name__startswith=o+"_tag")
         req = Requirement(name=o + "_req", fulfillers=selftag, 
             n_class=1,  group=rg)
         req.save()
