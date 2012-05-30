@@ -1238,6 +1238,12 @@
         /* Take out of evalForWarningsOffering and split up into forwards and backwards...
            only call one on adding and call both on dragging
            Can then eliminate isDrag parameter (as well as from evalFromWarningsOffering) */
+		   
+		/*
+		   Adding: Check backwards (to -> beginning) for missing prereqs for added course
+		   Dragging Backward: Check backwards (to -> beginning) for missing prereqs for dragged course
+		   Dragging Forward: Check betweeen to/from quarters for courses with dragged course as prereq 
+		 */
         
         // Course is course you are moving
         // Return what prereq course violates
