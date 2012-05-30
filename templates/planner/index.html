@@ -1253,10 +1253,40 @@
         // Course is course you are moving
         // Return what prereq course violates
         function checkIfPrereqViolation(toTermId, fromTermId, course, isDrag) {
-       
-           // Check forwards
-           if (isDrag) {
-           
+			
+			if (fromTermId == false) {
+				var prereqGroups = course.prereqGroups;
+				if (prereqGroups.length == 0) return false;
+				var sat = new Array(prereqGroups.length);
+				var numSat = 0;
+				for (var i = 0; i < sat.length; i++) {
+					sat[i] = false;
+				}
+				// add
+				for (var i = getYearArrayIndex(toTermId); i >= 0; i--) {
+					for (var j = termNames.length - 1; j >=0; j--) {
+						if (i == getYearArrayIndex(toTermId) && j >= getTermArrayIndex(toTermId)) {
+							continue;
+						}
+						var term = plan.getTerm(j, i);
+						for (var key in term.courses) {
+							var c = (term.courses)[key];
+							if (c == undefined) continue; // something else?
+							for (var k = 0; k < prereqGroups.length; k++) {
+								if (sat[k]) continue;
+								var group = prereqGroups[k];
+								if ($.inArray(c.cName, group) != -1) {
+									sat[k] = true;
+									if (++numSat == prereqGroups.length) return false;
+								}
+							}
+							
+						}
+					}
+				}
+				return course.cName;
+			} else {
+				// drag
                for (var i = getYearArrayIndex(fromTermId); i < years.length; i++) {
                    for (var j = 0; j < termNames.length; j++) {
                    
@@ -1304,7 +1334,7 @@
                
                
                
-            return null;
+            return false;
         }
         
         

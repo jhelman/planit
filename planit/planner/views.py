@@ -195,13 +195,13 @@ def add_course(request):
     # These fields will be needed when dealing with multiple offerings in one term
     # start_time = params['start']
     # weekdays = params['weekdays']
-    
     offerings = CourseOffering.objects.filter(course__identifier=course_name, year=year_num, term=term_num)
+    
     if len(offerings) > 0:
         to_add = offerings[0]
         # TODO correct Plan lookup
         plan = Plan.objects.filter(student_name=plan_name)[0]
-        enrollment = Enrollment(course=to_add, plan=plan)
+        enrollment = Enrollment(course=to_add, plan=plan, units=to_add.course.max_units)
         enrollment.save()
     
     return HttpResponse()
