@@ -398,17 +398,57 @@ div.possible-course-warning {
 }
 
 .units-select {
-	width: 40px;
+	width: 50px;
 	height: 20px;
 	padding: 0px;
 	margin: 0px;
 }
 
 #search-scroll-div {
-	height: 400px;
+	height: 360px;
+	margin-left: 5px;
 }
 
 #search-scroll-div .content {
+}
+
+#search-scroll-div .nav {
+	margin-top: 8px;
+}
+
+.content-div {
+	position: relative;
+	left: 0px;
+	top: 0px;
+}
+
+.cdiv {
+	position: relative;
+}
+
+.new-content-div {
+	position: relative;
+}
+
+.requirement-heading {
+	margin-top: 5px;
+	font-weight: bold;
+}
+
+.req-link {
+	text-align: center;
+}
+
+#breadcrumb-div {
+	width: 320px;
+	margin-left: -10px;
+	margin-top: -10px;
+}
+
+.breadcrumb {
+	padding: 5px 14px;
+	margin: 0 0 10px;
+	height: 18px;
 }
 
 .ajax-alert {
