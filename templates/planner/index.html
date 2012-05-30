@@ -1296,60 +1296,14 @@
 				var fromTerm = getTermArrayIndex(fromTermId);
 				if (toYear < fromYear || (toYear == fromYear && toTerm < fromTerm)) {
 					return checkBackwardForMissingPrereq(toYear, toTerm, course);
+				} else {
+					/*
+					  loop from fromTerm + 1 to toTerm and call the backward prereq check
+					  for every course encountered that contains 'course' in its prereq groups
+					*/
+					return true;
 				}
-				return true;
 			}
-				
-			// } else {
-			// 				// drag
-			//                for (var i = getYearArrayIndex(fromTermId); i < years.length; i++) {
-			//                    for (var j = 0; j < termNames.length; j++) {
-			//                    
-			//                        if (i == 0 && j <= getTermArrayIndex(fromTermId)) {
-			//                            continue;
-			//                        }
-			//                    
-			//                        var term = plan.getTerm(j, i);
-			//                        for (var k in term.courses) {
-			//                            var course = (term.courses)[k];
-			//                            
-			//                            // Need to check??
-			//                            if (course == undefined) {
-			//                                break;
-			//                            }
-			//                            
-			//                            var prereqGroups = course.prereqGroups;
-			//                            console.log(course.cName + " " + prereqGroups);
-			//                            for (var x in prereqGroups) {
-			//                               if ($.inArray(course.cName, prereqGroups[x])) {
-			//                                   if (prereqGroups[x].length == 1) {
-			//                                       console.log(course.cName + " in " + toTermId);
-			//                                       return course.cName;
-			//                                   } else {
-			//                                       // If disjunction (106B or 106X for 107)
-			//                                   }
-			//                                   
-			//                               }
-			//                             
-			//                             
-			//                                
-			//                            }
-			//                            
-			//                        
-			//                        }
-			//                    
-			//                    }
-			//                } 
-			//                
-			//             }
-               
-            // Just check backwards
-               
-               
-               
-               
-               
-            return false;
         }
         
         
