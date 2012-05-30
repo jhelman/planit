@@ -404,19 +404,20 @@ div.possible-course-warning {
 	margin: 0px;
 }
 
-#search-scroll-div {
+#content-div .nano {
+	position: absolute;
 	height: 360px;
 	margin-left: 5px;
 }
 
-#search-scroll-div .content {
+#content-div .content {
 }
 
-#search-scroll-div .nav {
+#content-div .nav {
 	margin-top: 8px;
 }
 
-.content-div {	
+#content-div {	
 	position: relative;
 	left: 0px;
 	top: 0px;

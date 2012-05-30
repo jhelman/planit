@@ -587,7 +587,7 @@
             // $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             // $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
             
-            $('#search-scroll-div').nanoScroller({preventPageScrolling: true});
+            // $('.nano').nanoScroller({preventPageScrolling: true});
             
             
             // $('.units').on('click', function(event) { clickChangeUnits(this) });
@@ -1557,15 +1557,18 @@
             
             // $('#search-scroll-content').empty();
                         
-            html += '<span style="font-weight: bold" ' + 
-            'id="requirements-toolbox-label">' +
-            (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                : ('Courses satisfying ' + reqName + ':')) +
-            '</span><ul id="search-results-nav" ' + 
-            'class="nav nav-pills nav-stacked">';
+            var html = '<div id="search-scroll-div1" class="nano">' +
+                '<div id="search-scroll-content1" class="content">' +
+                    '<div class="cdiv" id="cdiv1" style="position: relative; top: 0px; left: 0px;">' +
+                        '<div class="requirement-heading">' +
+                        (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
+                            : ('Courses satisfying ' + reqName + ':')) +
+                        '</div>' +
+                        '<ul class="nav nav-pills nav-stacked">';
+
             
             if (courses.length == 0) {
-                html += '</ul>';
+                html += '</ul></div></div></div>';
                 return html;
             }
             
@@ -1586,28 +1589,30 @@
                 
             }
             
-            html += '</ul>';   
+            html += '</ul></div></div></div>';
             
             return html;      
              
         }
         
         
-        function refreshScroll() {
+        function refreshScroll(num) {
             $('.slider').animate({'top': 0});
-            $('#search-scroll-div').nanoScroller({scroll: 'top'});
-            $('#search-scroll-div').nanoScroller();   
+            $('#search-scroll-div' + num).nanoScroller({preventPageScrolling: true});
+            $('#search-scroll-div' + num).nanoScroller({scroll: 'top'});
         }
         
         function returnHome() {
-            var html = '<div class="content-div">' +
-                '<div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">' + 
-                    '<div class="requirement-heading">Select a requirement group:</div>' + 
-                    '<div class="nav nav-tabs nav-stacked">' + 
-                        '<li class="req-link"><a href="#" onclick="getUniversityRequirements();">University Requirements</a></li>' + 
-                        '<li class="req-link"><a href="#" onclick="getMajorRequirements();">Major Requirements</a></li>' +                                             
-                    '</div>' + 
-                '</div>' + 
+            var html = '<div id="search-scroll-div0" class="nano">' +
+                '<div id="search-scroll-content0" class="content">' +
+                    '<div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">' +
+                        '<div class="requirement-heading">Select a requirement group:</div>' +
+                        '<div class="nav nav-tabs nav-stacked">' +
+                            '<li class="req-link"><a href="#" onclick="getUniversityRequirements();">University Requirements</a></li>' +
+                            '<li class="req-link"><a href="#" onclick="getMajorRequirements();">Major Requirements</a></li>' +                                            
+                        '</div>' + 
+                    '</div>' +
+                '</div>' +
             '</div>';
             
             $('#blevel1').remove();
@@ -1615,8 +1620,8 @@
             $('#blevel0').addClass('active');
             
             $('#course-search').attr('value', '');
-            $('#search-scroll-content').html(html); 
-            refreshScroll();
+            $('#content-div').html(html); 
+            refreshScroll(0);
         }
         
         var currentSearch;
@@ -1642,8 +1647,8 @@
             $('#breadcrumb-div').find('.breadcrumb').empty();
             $('#breadcrumb-div').find('.breadcrumb').html('<li class="active" id="blevel0">' + 
                 '<a href="#" onclick="returnHome();">Home</a></li>');
+                
             moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue);
-            // $('#blevel0').html('<a href="#" onclick="returnHome();">Home</a><span class="divider">/</span>');
                         
             $.ajax({
 				url: '/search/' + searchValue,
@@ -1656,8 +1661,8 @@
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
                     var html = createSearchResults(classesJSON, false, false);
-                    $('#search-scroll-content').html(html);
-                    refreshScroll();
+                    $('#content-div').html(html);
+                    refreshScroll(1);
                     removeSpinner();
                 }
             });
@@ -1751,6 +1756,8 @@
                 '">' + name + '</li>');
         } 
         
+        var SPACER = 40;
+        
         
         function getUniversityRequirements() {
 
@@ -1760,11 +1767,13 @@
         
         function getMajorRequirements() {
             
-            var cDiv = $('#cdiv0');
-                        
-            var html = '<div class="cdiv" id="cdiv1" style="left: ' + (parseInt(cDiv.width()) + 30) + 'px; ' +
-                // 'top: -' + (18 + parseInt(cDiv.height())) + 'px">' + 
+            var cDiv = $('#search-scroll-div0');
+              
+            var scroller = '<div id="search-scroll-div1" class="nano" style="left: ' + 
+                (parseInt(cDiv.width()) + SPACER) + 'px; ' +
                 'top: 0px">' + 
+                '<div id="search-scroll-content1" class="content">';          
+            var html = scroller + '<div class="cdiv" id="cdiv1">' + 
                 '<div class="requirement-heading">Select major requirement group:</div>' +
                 '<div class="nav nav-tabs nav-stacked">'
             
@@ -1773,20 +1782,18 @@
                     i + '</a></li>';
             }
             
-            html += '</div></div>';
+            html += '</div></div></div></div>';
+            $('#content-div').append(html);
             
             moveToNextBreadcrumbLevel(1, 'Major');
+                        
+            $('#search-scroll-div0').find('.pane').hide();
             
-            // alert($('#search-scroll-div').find('.content-div').html());
-            $('#search-scroll-div').find('.content-div').append(html);
-            $('#search-scroll-div').find('.content-div').animate(
-                {'left': -cDiv.width() - 30}, 750, function () {
+            $('#content-div').animate(
+                {'left': -cDiv.width() - SPACER}, 750, function () {
                     $('#blevel0').html('<a href="#" onclick="moveBackNLevels(this)">' + 
                             $('#blevel0').find('a').html() + '</a><span class="divider">/</span>');
-                    $('.slider').animate({'top': 0});
-                    $('#search-scroll-div').nanoScroller({scroll: 'top'});
-                    $('#search-scroll-div').nanoScroller();            
-                    
+                    refreshScroll(1);         
             });
             
             
@@ -1796,7 +1803,7 @@
             elem = $(elem);
             var liElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var num = parseInt(elem.closest('li').attr('id').substring(6));
-            var cDiv = $('#search-scroll-div').find('.content-div');
+            var cDiv = $('#search-scroll-div0');
 
             for (var i = liElems.length - 1; i > num; i--) {
                 $('#blevel' + i).remove();
@@ -1805,14 +1812,15 @@
             $('#blevel' + num).addClass('active');
             $('#blevel' + num).html($('#blevel' + num).find('a').html());
 
-            cDiv.animate({'left': -((cDiv.width() + 30) * num)}, 750, function () {
+            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
                     
-                var cDivs = $('#search-scroll-div').find('.cdiv');
+                var cDivs = $('#content-div').find('.nano');
                 for (var j = cDivs.length; j > num; j--) {
-                    $('#cdiv' + j).remove();
+                    $('#search-scroll-div' + j).remove();
                 }
                 
-                refreshScroll();            
+                $('#search-scroll-div' + num).find('.pane').show();
+                refreshScroll(num);            
             });
         }
         
@@ -1831,7 +1839,7 @@
 					prereqsJSON = data.prereq_groups;
                     var html = createSearchResults(classesJSON, true, elem.html());
                     addClassesCDiv(html, 3, elem.html());
-                    refreshScroll();
+                    refreshScroll(3);
                     removeSpinner();
                 }
             });
@@ -1844,32 +1852,30 @@
             
             var count = $(html).find('li').length;
             
-            var cDiv = $('#cdiv0');
+            var cDiv = $('#search-scroll-div0');
                   
-            var html = '<div class="cdiv" id="cdiv' + bElems.length +'" style="left: ' + 
-                 (bElems.length * (parseInt(cDiv.width()) + 30)) + 'px; ' +
-                 'top: 0px">' +                  
+            var scroller = '<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
+                (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
+                'top: 0px">' + 
+                '<div id="search-scroll-content' + bElems.length +'" class="content">';
+            var html = scroller + '<div class="cdiv" id="cdiv">' +                  
                  html + '</div>';
                 
             moveToNextBreadcrumbLevel(bElems.length, reqName);
+            
+            $('#search-scroll-div' + (level - 1)).find('.pane').hide();
                 
-            $('#search-scroll-div').find('.content-div').append(html);
-            $('#search-scroll-div').find('.content-div').animate(
-                {'left': -bElems.length * (cDiv.width() + 30)}, 750, function () {
+            $('#content-div').append(html);
+            $('#content-div').animate(
+                {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
                     var cur = $('#blevel' + (bElems.length - 1));
                     cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                           cur.find('a').html() + '</a><span class="divider">/</span>');
-                        // alert($('#cdiv' + bElems.length).height());
-                    $('#search-scroll-content').css('height', $('#cdiv' + bElems.length).height());                        
-                    // $('#search-scroll-div').find('.content-div').css('height', $('#cdiv' + bElems.length).height());
                     
-                    refreshScroll();          
+                    refreshScroll(bElems.length);          
 
             });     
-            
-                
-                
-            
+
         }
         
         
@@ -1897,27 +1903,30 @@
                 count++;
              }
                         
-             var cDiv = $('#cdiv0');
-                     
-             var html = '<div class="cdiv" id="cdiv' + bElems.length +'" style="left: ' + 
-                 (bElems.length * (parseInt(cDiv.width()) + 30)) + 'px; ' +
-                 // 'top: -' + ((9 * count)  + parseInt(cDiv.height())) + 'px">' + 
+             var cDiv = $('#search-scroll-div0');
+                
+             var scroller = '<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
+                 (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
                  'top: 0px">' + 
+                 '<div id="search-scroll-content' + bElems.length +'" class="content">';
+                     
+             var html = scroller + '<div class="cdiv" id="cdiv' + bElems.length +'">' +
                  '<div class="requirement-heading">Select requirement:</div>' +
                  '<div class="nav nav-tabs nav-stacked">' + liHTML + 
                  '</div></div>';
                       
-             // alert($('#search-scroll-div').find('.content-div').html());
-             $('#search-scroll-div').find('.content-div').append(html);
+             $('#content-div').append(html);
              
-            moveToNextBreadcrumbLevel(bElems.length, reqName);
+             moveToNextBreadcrumbLevel(bElems.length, reqName);
              
-             $('#search-scroll-div').find('.content-div').animate(
-                 {'left': -bElems.length * (cDiv.width() + 30)}, 750, function () {
+             $('#search-scroll-div' + (bElems.length - 1)).find('.pane').hide();
+             
+             $('#content-div').animate(
+                 {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
                         var cur = $('#blevel' + (bElems.length - 1));
                         cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                               cur.find('a').html() + '</a><span class="divider">/</span>');
-                        refreshScroll();        
+                        refreshScroll(bElems.length);        
                         
              });
          
@@ -2232,9 +2241,10 @@
                                 </ul>
                             </div>
                             
-                            <div id="search-scroll-div" class="nano">
-                                <div id="search-scroll-content" class="content">
-                                    <div class="content-div">
+                            
+                           <div id="content-div">
+                                <div id="search-scroll-div0" class="nano">
+                                    <div id="search-scroll-content0" class="content">
                                         <div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">
                                             <div class="requirement-heading">Select a requirement group:</div>
                                             <div class="nav nav-tabs nav-stacked">
