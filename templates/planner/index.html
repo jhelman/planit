@@ -347,8 +347,11 @@
         var classesJSON = null;
         var offeringsJSON = null;
 		var prereqsJSON = null;
-		var generalReqs = jQuery.parseJSON("{{ general_reqs }}".replace(/&quot;/g, '"'));
-        var majorReqs = jQuery.parseJSON("{{ major_reqs }}".replace(/&quot;/g, '"'));
+		{% autoescape off %}
+		var generalReqs = {{ general_reqs }};
+        var majorReqs = {{ major_reqs }};
+        {% endautoescape %}
+        
         var dragTerm = null;
         var dropTerm = null;
         
@@ -1548,32 +1551,32 @@
                         
         }
         
-        function createSearchResults(courses, str) {
+        function createSearchResults(courses, isReq, reqName) {
             
-            $('#search-scroll-content').empty();
+            var html = "";
+            
+            // $('#search-scroll-content').empty();
                         
-            $('#search-scroll-content').append('<span style="font-weight: bold" ' + 
-            'id="requirements-toolbox-label"></span><ul id="search-results-nav" ' + 
-            'class="nav nav-pills nav-stacked"></ul>');
-            
-            // $('#search-results-nav').empty();
+            html += '<span style="font-weight: bold" ' + 
+            'id="requirements-toolbox-label">' +
+            (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
+                : ('Courses satisfying ' + reqName + ':')) +
+            '</span><ul id="search-results-nav" ' + 
+            'class="nav nav-pills nav-stacked">';
             
             if (courses.length == 0) {
-                $('#requirements-toolbox-label').html('No results found.');
-                $('#search-scroll-div').nanoScroller();            
-                return;
+                html += '</ul>';
+                return html;
             }
-            
-            $('#requirements-toolbox-label').html('Search results (' + courses.length + '): ');
             
             for (var i in courses) {
                 
                 var courseShortName = courses[i].fields.identifier;
                 var courseLongName = courses[i].fields.title;
                 
-                $('#search-results-nav').append('<li><a href="#" id="' + makeCondensedName(courseShortName)
+                html += '<li><a href="#" id="' + makeCondensedName(courseShortName)
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + 
-                    courseShortName  + '</span>: ' + courseLongName +  '</a></li>');
+                    courseShortName  + '</span>: ' + courseLongName +  '</a></li>';
                     
                 // $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
                 //     title: courseShortName,
@@ -1583,12 +1586,18 @@
                 
             }
             
-            $('.slider').animate({'top': 0});
-            $('#search-scroll-div').nanoScroller({scroll: 'top'});
-            $('#search-scroll-div').nanoScroller();            
+            html += '</ul>';   
+            
+            return html;      
              
         }
         
+        
+        function refreshScroll() {
+            $('.slider').animate({'top': 0});
+            $('#search-scroll-div').nanoScroller({scroll: 'top'});
+            $('#search-scroll-div').nanoScroller();   
+        }
         
         function returnHome() {
             var html = '<div class="content-div">' +
@@ -1607,8 +1616,7 @@
             
             $('#course-search').attr('value', '');
             $('#search-scroll-content').html(html); 
-            $('#search-scroll-div').nanoScroller();
-                       
+            refreshScroll();
         }
         
         var currentSearch;
@@ -1631,13 +1639,11 @@
                 return;
             }
             
-            if ($('#blevel1').length > 0) {
-                $('#blevel1').remove();
-                $('#blevel0').html('Home');
-                $('#blevel0').addClass('active');
-            }
+            $('#breadcrumb-div').find('.breadcrumb').empty();
+            $('#breadcrumb-div').find('.breadcrumb').html('<li class="active" id="blevel0">' + 
+                '<a href="#" onclick="returnHome();">Home</a></li>');
             moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue);
-            $('#blevel0').html('<a href="#" onclick="returnHome();">Home</a><span class="divider">/</span>');
+            // $('#blevel0').html('<a href="#" onclick="returnHome();">Home</a><span class="divider">/</span>');
                         
             $.ajax({
 				url: '/search/' + searchValue,
@@ -1649,7 +1655,9 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
-                    createSearchResults(classesJSON);
+                    var html = createSearchResults(classesJSON, false, false);
+                    $('#search-scroll-content').html(html);
+                    refreshScroll();
                     removeSpinner();
                 }
             });
@@ -1755,7 +1763,8 @@
             var cDiv = $('#cdiv0');
                         
             var html = '<div class="cdiv" id="cdiv1" style="left: ' + (parseInt(cDiv.width()) + 30) + 'px; ' +
-                'top: -' + (18 + parseInt(cDiv.height())) + 'px">' + 
+                // 'top: -' + (18 + parseInt(cDiv.height())) + 'px">' + 
+                'top: 0px">' + 
                 '<div class="requirement-heading">Select major requirement group:</div>' +
                 '<div class="nav nav-tabs nav-stacked">'
             
@@ -1803,12 +1812,64 @@
                     $('#cdiv' + j).remove();
                 }
                 
-                $('.slider').animate({'top': 0});
-                $('#search-scroll-div').nanoScroller({scroll: 'top'});
-                $('#search-scroll-div').nanoScroller();            
-                
-                            
+                refreshScroll();            
             });
+        }
+        
+        
+        function getReqClasses(elem) {
+            elem = $(elem);
+            
+            makeNewSpinner();
+            
+            
+            $.ajax({
+				url: '/req_search/' + elem.html(),
+                success: function (data, textStatus, jqXHR) {                    
+                    classesJSON = jQuery.parseJSON(data.classes);
+                    offeringsJSON = data.offerings;
+					prereqsJSON = data.prereq_groups;
+                    var html = createSearchResults(classesJSON, true, elem.html());
+                    addClassesCDiv(html, 3, elem.html());
+                    refreshScroll();
+                    removeSpinner();
+                }
+            });
+            
+        }
+        
+        function addClassesCDiv(html, level, reqName) {
+            
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            
+            var count = $(html).find('li').length;
+            
+            var cDiv = $('#cdiv0');
+                  
+            var html = '<div class="cdiv" id="cdiv' + bElems.length +'" style="left: ' + 
+                 (bElems.length * (parseInt(cDiv.width()) + 30)) + 'px; ' +
+                 'top: 0px">' +                  
+                 html + '</div>';
+                
+            moveToNextBreadcrumbLevel(bElems.length, reqName);
+                
+            $('#search-scroll-div').find('.content-div').append(html);
+            $('#search-scroll-div').find('.content-div').animate(
+                {'left': -bElems.length * (cDiv.width() + 30)}, 750, function () {
+                    var cur = $('#blevel' + (bElems.length - 1));
+                    cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
+                          cur.find('a').html() + '</a><span class="divider">/</span>');
+                        // alert($('#cdiv' + bElems.length).height());
+                    $('#search-scroll-content').css('height', $('#cdiv' + bElems.length).height());                        
+                    // $('#search-scroll-div').find('.content-div').css('height', $('#cdiv' + bElems.length).height());
+                    
+                    refreshScroll();          
+
+            });     
+            
+                
+                
+            
         }
         
         
@@ -1831,7 +1892,7 @@
             var count = 0;
             var liHTML = "";
             for (var i in reqJSON.requirements) {
-                 liHTML += '<li class="req-link"><a href="#" onclick="getNextLevelOfReqs(this);">' + 
+                 liHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
                     i  + '</a></li>';
                 count++;
              }
@@ -1840,7 +1901,8 @@
                      
              var html = '<div class="cdiv" id="cdiv' + bElems.length +'" style="left: ' + 
                  (bElems.length * (parseInt(cDiv.width()) + 30)) + 'px; ' +
-                 'top: -' + ((9 * count)  + parseInt(cDiv.height())) + 'px">' + 
+                 // 'top: -' + ((9 * count)  + parseInt(cDiv.height())) + 'px">' + 
+                 'top: 0px">' + 
                  '<div class="requirement-heading">Select requirement:</div>' +
                  '<div class="nav nav-tabs nav-stacked">' + liHTML + 
                  '</div></div>';
@@ -1855,9 +1917,7 @@
                         var cur = $('#blevel' + (bElems.length - 1));
                         cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                               cur.find('a').html() + '</a><span class="divider">/</span>');
-                        $('.slider').animate({'top': 0});
-                        $('#search-scroll-div').nanoScroller({scroll: 'top'});
-                        $('#search-scroll-div').nanoScroller();            
+                        refreshScroll();        
                         
              });
          

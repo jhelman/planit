@@ -416,14 +416,15 @@ div.possible-course-warning {
 	margin-top: 8px;
 }
 
-.content-div {
+.content-div {	
 	position: relative;
 	left: 0px;
 	top: 0px;
 }
 
 .cdiv {
-	position: relative;
+	position: absolute;
+	width: 280px;
 }
 
 .new-content-div {
