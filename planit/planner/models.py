@@ -75,6 +75,7 @@ class Course(models.Model):
     max_units = models.IntegerField()
     min_units = models.IntegerField()
     tags = models.ManyToManyField(Tag, through='TagMapping')
+    APskip = models.BooleanField(default=False)
     #prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
     #grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
     #repeatable_for_credit = models.BooleanField()
@@ -85,7 +86,7 @@ class Course(models.Model):
 class RequirementGroup(models.Model):
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
-    n_prereqs = models.IntegerField()
+    n_prereqs = models.IntegerField() #gonna change the name of this
 
 #add type field to avoid try catch when
 #working with "upcasted" pointers
@@ -126,7 +127,7 @@ class CourseOffering(models.Model):
     end_time = models.TimeField(default=datetime.time(9,50))
     weekdays = models.CharField(max_length=5,default="MWF")
     instructor = models.ForeignKey(Instructor, null=True)
-    #ctype = models.IntegerField() #section or lecture
+    ctype = models.IntegerField(default=1) #section or lecture
     #duration = models.IntegerField()
     class Meta:
         unique_together = ('course', 'year', 'term', 'weekdays', 'start_time')
@@ -138,10 +139,11 @@ class CourseOffering(models.Model):
 class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
-    #units = models.IntegerField()
+    units = models.IntegerField()
 
     class Meta:
-        unique_together = ('plan', 'course')
+        pass
+        #unique_together = ('plan', 'course')
         
     def __unicode__(self):
         return self.course.__unicode__() + ' ' + self.plan.__unicode__()

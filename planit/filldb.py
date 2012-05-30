@@ -88,7 +88,7 @@ def parse_course(course_elem):
     max_u = int(course_elem.find('unitsMax').text)
     min_u = int(course_elem.find('unitsMin').text)
     c = Course.objects.filter(identifier=idstr, title=title, description=desc, class_number=idnum,
-        max_units=max_u, min_units=min_u)
+        max_units=max_u, min_units=min_u, APskip=True if (idstr=="MATH42" or idstr=="MATH41") else False)
     if not c:
         c = Course(identifier=idstr, title=title, description=desc, class_number=idnum,
             max_units=max_u, min_units=min_u)
@@ -168,7 +168,7 @@ def filldb():
             if co:
                 co=co[random.randint(0, len(co) - 1)]
      
-                e=Enrollment(course=co, plan=p)
+                e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
 
     rg = RequirementGroup(major=m, name='math', n_prereqs=7)
