@@ -1551,18 +1551,23 @@
                         
         }
         
-        function createSearchResults(courses, isReq, reqName) {
-            
-            var html = "";
-            
-            // $('#search-scroll-content').empty();
+        function createSearchResults(courses, isReq, reqName, num) {
                         
-            var html = '<div id="search-scroll-div1" class="nano">' +
-                '<div id="search-scroll-content1" class="content">' +
-                    '<div class="cdiv" id="cdiv1" style="position: relative; top: 0px; left: 0px;">' +
+                        
+            if (!isReq) {
+                num = 1;
+            }
+            // $('#search-scroll-content').empty();
+                                    
+            var scroller = '<div id="search-scroll-div' + num + '" class="nano"' + 
+                    (isReq ? ('" style="left: ' + (num * (parseInt($('#search-scroll-div0').width()) + SPACER)) + 
+                        'px; ' + 'top: 0px">') : '>') + 
+                    '<div id="search-scroll-content' + num +'" class="content">';
+                        
+            var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
                         '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                            : ('Courses satisfying ' + reqName + ':')) +
+                            : ('Courses satisfying ' + reqName + ' (' + courses.length + '):')) +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
@@ -1577,7 +1582,7 @@
                 var courseShortName = courses[i].fields.identifier;
                 var courseLongName = courses[i].fields.title;
                 
-                html += '<li><a href="#" id="' + makeCondensedName(courseShortName)
+                html += '<li class="search-result"><a href="#" id="' + makeCondensedName(courseShortName)
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + 
                     courseShortName  + '</span>: ' + courseLongName +  '</a></li>';
                     
@@ -1639,7 +1644,7 @@
             
             if (searchValue.length == 0) {
                 returnHome();
-                $('#search-scroll-div').nanoScroller();
+                // $('#search-scroll-div').nanoScroller();
                 removeSpinner();
                 return;
             }
@@ -1660,7 +1665,8 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
-                    var html = createSearchResults(classesJSON, false, false);
+                    var html = createSearchResults(classesJSON, false, false, 0);
+                    $('#content-div').css('left', '0px');
                     $('#content-div').html(html);
                     refreshScroll(1);
                     removeSpinner();
@@ -1837,7 +1843,8 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
-                    var html = createSearchResults(classesJSON, true, elem.html());
+					var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+                    var html = createSearchResults(classesJSON, true, elem.html(), bElems.length);
                     addClassesCDiv(html, 3, elem.html());
                     refreshScroll(3);
                     removeSpinner();
@@ -1846,6 +1853,7 @@
             
         }
         
+
         function addClassesCDiv(html, level, reqName) {
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
@@ -1853,13 +1861,6 @@
             var count = $(html).find('li').length;
             
             var cDiv = $('#search-scroll-div0');
-                  
-            var scroller = '<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
-                (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
-                'top: 0px">' + 
-                '<div id="search-scroll-content' + bElems.length +'" class="content">';
-            var html = scroller + '<div class="cdiv" id="cdiv">' +                  
-                 html + '</div>';
                 
             moveToNextBreadcrumbLevel(bElems.length, reqName);
             
