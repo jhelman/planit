@@ -88,7 +88,7 @@ def parse_course(course_elem):
     max_u = int(course_elem.find('unitsMax').text)
     min_u = int(course_elem.find('unitsMin').text)
     c = Course.objects.filter(identifier=idstr, title=title, description=desc, class_number=idnum,
-        max_units=max_u, min_units=min_u, APskip=True if (idstr=="MATH42" or idstr=="MATH41") else False)
+        max_units=max_u, min_units=min_u)
     if not c:
         c = Course(identifier=idstr, title=title, description=desc, class_number=idnum,
             max_units=max_u, min_units=min_u)
