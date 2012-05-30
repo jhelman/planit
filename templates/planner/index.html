@@ -1240,6 +1240,40 @@
             return false;
         }
         
+		function checkBackwardForMissingPrereq(toYear, toTerm, course) {
+			var prereqGroups = course.prereqGroups;
+			if (prereqGroups.length == 0) return false;
+			var sat = new Array(prereqGroups.length);
+			var numSat = 0;
+			for (var i = 0; i < sat.length; i++) {
+				sat[i] = false;
+			}
+			// add
+			for (var i = toYear; i >= 0; i--) {
+				for (var j = termNames.length - 1; j >=0; j--) {
+					if (i == toYear && j >= toTerm) {
+						continue;
+					}
+					var term = plan.getTerm(j, i);
+					for (var key in term.courses) {
+						var c = (term.courses)[key];
+						if (c == undefined) continue; // something else?
+						for (var k = 0; k < prereqGroups.length; k++) {
+							if (sat[k]) continue;
+							var group = prereqGroups[k];
+							if ($.inArray(c.cName, group) != -1) {
+								sat[k] = true;
+								if (++numSat == prereqGroups.length) return false;
+							}
+						}
+							
+					}
+				}
+			}
+			return course.cName;
+			
+		}
+		
         /* Take out of evalForWarningsOffering and split up into forwards and backwards...
            only call one on adding and call both on dragging
            Can then eliminate isDrag parameter (as well as from evalFromWarningsOffering) */
@@ -1253,80 +1287,61 @@
         // Course is course you are moving
         // Return what prereq course violates
         function checkIfPrereqViolation(toTermId, fromTermId, course, isDrag) {
-			
+			var toYear = getYearArrayIndex(toTermId);
+			var toTerm = getTermArrayIndex(toTermId);
 			if (fromTermId == false) {
-				var prereqGroups = course.prereqGroups;
-				if (prereqGroups.length == 0) return false;
-				var sat = new Array(prereqGroups.length);
-				var numSat = 0;
-				for (var i = 0; i < sat.length; i++) {
-					sat[i] = false;
-				}
-				// add
-				for (var i = getYearArrayIndex(toTermId); i >= 0; i--) {
-					for (var j = termNames.length - 1; j >=0; j--) {
-						if (i == getYearArrayIndex(toTermId) && j >= getTermArrayIndex(toTermId)) {
-							continue;
-						}
-						var term = plan.getTerm(j, i);
-						for (var key in term.courses) {
-							var c = (term.courses)[key];
-							if (c == undefined) continue; // something else?
-							for (var k = 0; k < prereqGroups.length; k++) {
-								if (sat[k]) continue;
-								var group = prereqGroups[k];
-								if ($.inArray(c.cName, group) != -1) {
-									sat[k] = true;
-									if (++numSat == prereqGroups.length) return false;
-								}
-							}
-							
-						}
-					}
-				}
-				return course.cName;
+				return checkBackwardForMissingPrereq(toYear, toTerm, course);
 			} else {
-				// drag
-               for (var i = getYearArrayIndex(fromTermId); i < years.length; i++) {
-                   for (var j = 0; j < termNames.length; j++) {
-                   
-                       if (i == 0 && j <= getTermArrayIndex(fromTermId)) {
-                           continue;
-                       }
-                   
-                       var term = plan.getTerm(j, i);
-                       for (var k in term.courses) {
-                           var course = (term.courses)[k];
-                           
-                           // Need to check??
-                           if (course == undefined) {
-                               break;
-                           }
-                           
-                           var prereqGroups = course.prereqGroups;
-                           console.log(course.cName + " " + prereqGroups);
-                           for (var x in prereqGroups) {
-                              if ($.inArray(course.cName, prereqGroups[x])) {
-                                  if (prereqGroups[x].length == 1) {
-                                      console.log(course.cName + " in " + toTermId);
-                                      return course.cName;
-                                  } else {
-                                      // If disjunction (106B or 106X for 107)
-                                  }
-                                  
-                              }
-                            
-                            
-                               
-                           }
-                           
-                       
-                       }
-                   
-                   }
-               } 
-               
-            }
+				var fromYear = getYearArrayIndex(fromTermId);
+				var fromTerm = getTermArrayIndex(fromTermId);
+				if (toYear < fromYear || (toYear == fromYear && toTerm < fromTerm)) {
+					return checkBackwardForMissingPrereq(toYear, toTerm, course);
+				}
+				return true;
+			}
+				
+			// } else {
+			// 				// drag
+			//                for (var i = getYearArrayIndex(fromTermId); i < years.length; i++) {
+			//                    for (var j = 0; j < termNames.length; j++) {
+			//                    
+			//                        if (i == 0 && j <= getTermArrayIndex(fromTermId)) {
+			//                            continue;
+			//                        }
+			//                    
+			//                        var term = plan.getTerm(j, i);
+			//                        for (var k in term.courses) {
+			//                            var course = (term.courses)[k];
+			//                            
+			//                            // Need to check??
+			//                            if (course == undefined) {
+			//                                break;
+			//                            }
+			//                            
+			//                            var prereqGroups = course.prereqGroups;
+			//                            console.log(course.cName + " " + prereqGroups);
+			//                            for (var x in prereqGroups) {
+			//                               if ($.inArray(course.cName, prereqGroups[x])) {
+			//                                   if (prereqGroups[x].length == 1) {
+			//                                       console.log(course.cName + " in " + toTermId);
+			//                                       return course.cName;
+			//                                   } else {
+			//                                       // If disjunction (106B or 106X for 107)
+			//                                   }
+			//                                   
+			//                               }
+			//                             
+			//                             
+			//                                
+			//                            }
+			//                            
+			//                        
+			//                        }
+			//                    
+			//                    }
+			//                } 
+			//                
+			//             }
                
             // Just check backwards
                
