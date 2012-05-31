@@ -1127,7 +1127,7 @@
             //             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
             //             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
             //          
-            
+                        
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).popover('hide');
             $('#' + courseTableID).popover('disable');
@@ -1378,13 +1378,13 @@
             
             // $(classLinkItem).popover('hide');
                         
-            if ($(classLinkItem).parent().hasClass('active') || $(classLinkItem).hasClass('btn')) {
+            if ($(classLinkItem).closest('li').hasClass('active') || $(classLinkItem).hasClass('btn')) {
                 return;
             }
             
-            $(classLinkItem).parent().addClass('active');
-                        
-            var courseName = $(classLinkItem).find('.shortName').html();
+            $(classLinkItem).closest('li').addClass('active');
+                                                
+            var courseName = $(classLinkItem).closest('li').find('.shortName').html();
                           
             var courseObj = getJSONForCourse(courseName);
                                                             
@@ -1394,8 +1394,9 @@
                                                                    
                 if ($(event.target).hasClass('confirm-add-class')) {
                     
+                    var cName = $(event.target).closest('.course').find('.courseName').html();
                     var termId = $(event.target).closest('.quarter-div').attr('id');
-                    confirmAddCourse(termId + makeCondensedName(courseName));
+                    confirmAddCourse(termId + makeCondensedName(cName));
                     $(classLinkItem).parent().removeClass('active');
                     $(this).unbind('mousedownoutside');
                     $(classLinkItem).off('mouseover');                   
@@ -1858,9 +1859,9 @@
             }
             
             var options = {
-                lines: 9,
+                lines: 12,
                 length: 3,
-                width: 3,
+                width: 2,
                 radius: 5,
                 color: '#888888'
             };
