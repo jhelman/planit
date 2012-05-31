@@ -255,7 +255,7 @@
             this.units = baseUnits + units;
         }
     
-        function Course(name, offerings, offering, minUnits, maxUnits, courseObj, prereqGroups, isAdded, isWarning) {
+        function Course(name, offerings, offering, minUnits, maxUnits, units, courseObj, prereqGroups, isAdded, isWarning) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offerings = offerings; // All possible offerings in JSON
@@ -263,7 +263,7 @@
            this.eventObjects = createEventObjects(this.name, this.offering.fields, isAdded, isWarning);
            this.minUnits = minUnits;
            this.maxUnits = maxUnits;
-           this.units = maxUnits;
+           this.units = units ? units : maxUnits;
            this.courseObj = courseObj;  // This will be the JSON
 		   this.prereqGroups = prereqGroups;
            this.isAdded = isAdded; 
@@ -324,7 +324,7 @@
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
-    	    {{ course.min_units }}, {{ course.max_units }}, jQuery.parseJSON({{ course.course_json }}), 
+    	    {{ course.min_units }}, {{ course.max_units }}, {{ course.units }}, jQuery.parseJSON({{ course.course_json }}), 
     	    prereqGroups, false, false);
     	{% endautoescape %}
 		
@@ -1043,7 +1043,7 @@
                        warningStr += "Over allowed units for quarter.<br/>";
                 }
                 if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
-                       warningStr += "Course violates prerequisite: " + warningArrayOffering[j] + ".<br/>";
+                       warningStr += "Prerequisite violation: " + warningArrayOffering[j] + ".<br/>";
                 }
             }
             
@@ -1184,6 +1184,7 @@
 			data['year'] = year;
 			data['course'] = course.name;
 			data['plan'] = plan.planName;
+			data['units'] = units;
 			$.ajax({
 				type: 'POST',
 				url: '/addCourse/',
@@ -1440,7 +1441,7 @@
                 
                 addClassDisplayCount++;
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
-                        courseObj.fields.min_units, courseObj.fields.max_units, courseObj, 
+                        courseObj.fields.min_units, courseObj.fields.max_units, false, courseObj, 
 						prereqsJSON[makeCondensedName(courseName)], true, isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
                                             

@@ -56,6 +56,7 @@ def index(request):
                 setattr(course, 'start_time', e.course.start_time)
                 setattr(course, 'end_time', e.course.end_time)
                 setattr(course, 'weekdays', e.course.weekdays)
+                setattr(course, 'units', e.units)
                 prereq_groups = PrereqGroup.objects.filter(for_course=course)
                 groups = []
                 for group in prereq_groups:
@@ -76,7 +77,7 @@ def index(request):
             units = 0
             for course in terms[t]['courses']:
                 setattr(course, 'condensedID', course.identifier.replace(' ', ''))
-                units += course.max_units
+                units += course.units
                 days = []
                 start_day = 23
                 for weekday in course.weekdays:
@@ -192,6 +193,8 @@ def add_course(request):
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
+    units = params['units']
+    print params
     # These fields will be needed when dealing with multiple offerings in one term
     # start_time = params['start']
     # weekdays = params['weekdays']
@@ -201,7 +204,7 @@ def add_course(request):
         to_add = offerings[0]
         # TODO correct Plan lookup
         plan = Plan.objects.filter(student_name=plan_name)[0]
-        enrollment = Enrollment(course=to_add, plan=plan, units=to_add.course.max_units)
+        enrollment = Enrollment(course=to_add, plan=plan, units=units)
         enrollment.save()
     
     return HttpResponse()
