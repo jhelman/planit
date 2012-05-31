@@ -174,7 +174,9 @@
 			for (var t in this.terms) {
 				var term = this.terms[t];
 				for (var c in term.courses) {
-					dict[c] = term.courses[c];
+				    if ((term.courses)[c] != undefined) {
+					    dict[c] = term.courses[c];
+				    }
 				}
 			}
 			return dict;
@@ -1063,7 +1065,7 @@
         function createRolloversForAddedCourse(quarterID, courseObj, isWarning, 
                 warningArrayAll, warningArrayOffering) {
             
-            $('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
+            $('#plan-table').find('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
             
             if (isWarning) {
             
@@ -1376,7 +1378,7 @@
             
             // $(classLinkItem).popover('hide');
                         
-            if ($(classLinkItem).parent().hasClass('active')) {
+            if ($(classLinkItem).parent().hasClass('active') || $(classLinkItem).hasClass('btn')) {
                 return;
             }
             
@@ -1398,11 +1400,11 @@
                     $(this).unbind('mousedownoutside');
                     $(classLinkItem).off('mouseover');                   
                                         
-                } else if ($(event.target).hasClass('icon-move') ||
-                    $(event.target).hasClass('icon-trash') || 
-                    $(event.target).prop('tagName') == "BODY" ||
+                } else if ($(event.target).prop('tagName') == "BODY" ||
                     $(event.target).prop('tagName') == "HTML" ||
                     $(event.target).hasClass('search-result-cname') ||
+                    $(event.target).hasClass('icon-ok') ||
+                    $(event.target).hasClass('search-result-info') ||
                     (($(event.target).attr('id') != null) && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
                         ($(event.target).attr('id') == "course-search")) ||
@@ -1410,7 +1412,16 @@
                         ($(event.target).closest('li').attr('id').indexOf('blevel') != -1))
                     ) {             
                         cancelAddCourse(courseObj, offerings);
-                        $(classLinkItem).parent().removeClass('active');
+                        var liElem = $(classLinkItem).closest('li');
+                        liElem.removeClass('active');
+                        // liElem.find('icon-ok').tooltip('hide');
+                        liElem.find('.btn').tooltip('hide');
+                        var courseDict = plan.getCourseDictionary();
+                        var courseName = liElem.find('a').attr('id').substring(0, liElem.find('a').attr('id').indexOf('-search-result'));
+                        liElem.find('.search-result-info').html(
+                            (courseDict[makeCondensedName(courseName)] != undefined ? '<i class="icon-ok"></i>'
+                                : ''));
+                        liElem.find('.icon-ok').tooltip({'title': 'Course in schedule'});
                         $(this).unbind('mousedownoutside');
                         $(classLinkItem).tooltip('hide');  
                         $(classLinkItem).off('mouseover');                   
@@ -1589,6 +1600,8 @@
                 num = 1;
             }
             // $('#search-scroll-content').empty();
+                          
+            var courseDict = plan.getCourseDictionary();
                                     
             var scroller = '<div id="search-scroll-div' + num + '" class="nano"' + 
                     (isReq ? ('" style="left: ' + (num * (parseInt($('#search-scroll-div0').width()) + SPACER)) + 
@@ -1608,6 +1621,7 @@
                 return html;
             }
             
+            
             for (var i in courses) {
                 
                 var courseShortName = courses[i].fields.identifier;
@@ -1617,11 +1631,10 @@
                     makeCondensedName(courseShortName)
                     + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
                     '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
-                    '</td><td class="search-result-btn" align="right"><button style="display: none;" id="' + 
-                    makeCondensedName(courseShortName) + '-button" data-toggle="button" class="btn btn-primary" ' +
-                    'onclick="addExemption(this)">' +
-                    '<i class="icon-ok-circle icon-white" id="' + makeCondensedName(courseShortName) +
-                    '-icon"></i></button></td>' + 
+                    '</td><td class="search-result-info" align="middle">' + 
+                    (courseDict[makeCondensedName(courseShortName)] != undefined ? '<i class="icon-ok"></i>'
+                        : '')
+                    + '</td>' + 
                     '</tr></table></a></li>';
                                         
                 // newHTMLObj.find('a').click(function (event) {
@@ -1638,18 +1651,18 @@
             }
             
             html += '</ul></div></div></div>';
+                                     
             return html;      
              
         }
         
         function addExemption(elem) {
             
-            elem = $(elem);
+            elem = $(elem).closest('.btn');
             
-            elem.closest('td').tooltip('hide');
+            elem.tooltip('hide');
             
             var courseName = elem.attr('id').substring(0, elem.attr('id').indexOf('-button'));
-            
             
             
             
@@ -1687,30 +1700,29 @@
         
         function addButtonsToSearchResults() {
 
-            $('.search-result-btn').tooltip({title: 'Add course exemption', placement: 'top'});
-            
+            $('.search-result-info').find('.icon-ok').tooltip({'title': 'Course in schedule'});
+                        
             $('#content-div').find('li').on('mouseover', function () {
-                $('#content-div').find('.btn').hide();
-                var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
-                $('#' + courseName + '-button').show();
+                // $('#content-div').find('.btn').hide();
+                //  var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
+                //  $('#' + courseName + '-button').show();
             });
             
             $('#content-div').find('li').on('mouseout', function (event) {
-                // var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
-                //                 console.log($(this).find('a').attr('id') + " " + courseName);
-                //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
-                //                     ($(event.target).attr('id') == (courseName + '-button') ||
-                //                     $(event.target).attr('id') == (courseName + '-icon'))) {
-                //                         return;
-                //                 }
-                if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
-                    return;
-                }
-                $('.btn').hide();
+                // // var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
+                // //                 console.log($(this).find('a').attr('id') + " " + courseName);
+                // //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
+                // //                     ($(event.target).attr('id') == (courseName + '-button') ||
+                // //                     $(event.target).attr('id') == (courseName + '-icon'))) {
+                // //                         return;
+                // //                 }
+                // if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
+                //     return;
+                // }
+                // $('.btn').hide();
             });
 
             $('#content-div').find('a').on('click', function (event) {
-                // var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
                 //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
                 //                     ($(event.target).attr('id') == (courseName + '-button') ||
                 //                     $(event.target).attr('id') == (courseName + '-icon'))) {
@@ -1719,6 +1731,17 @@
                 if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
                     return;
                 }
+                var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
+                // alert($(event.target).prop('tagName'));
+                $(event.target).closest('li').find('.icon-ok').tooltip('hide');
+                $(event.target).closest('li').find('.search-result-info').html('<button id="' + 
+                            makeCondensedName(courseName) + '-button" data-toggle="button" '
+                            + 'class="btn btn-primary" ' +
+                            'onclick="addExemption(this)">' +
+                            '<i class="icon-ok-circle icon-white" id="' + makeCondensedName(courseName) +
+                            '-icon"></i></button>');
+                $(event.target).closest('li').find('.search-result-info').find('.btn').tooltip({title: 'Add course exemption', placement: 'top'});
+                
                 addCourse(this);
             });   
         }
@@ -2201,7 +2224,7 @@
         
         <td>
     
-	        <table style="padding: 0px; margin: -10px;">
+	        <table id="plan-table" style="padding: 0px; margin: -10px;">
                 <tr style="height: 30px">
                     <td style="border-bottom: 2px solid;">&nbsp;</td>
                     <td id="Autumn" class="quarter-label"><h4>Autumn Quarter</h4></td>
