@@ -6,6 +6,25 @@ from django.core import serializers
 from models import *
 import re
 
+def get_python_dict_for_reqs(requirement_groups):
+    req_groups = {}
+    for group in requirement_groups:
+        req_group_info = {}
+        req_group_info['num_reqs_to_fulfill'] = group.n_prereqs
+        reqs = {}
+        for req in group.requirement_set.all():
+            req_info = {}
+            req_info['num_courses_to_fulfull'] = req.n_class
+            fulfillers = []
+            for course in Course.objects.filter(tags=req.fulfillers):
+                fulfillers.append(course.identifier)
+            req_info['fulfillers'] = fulfillers
+            reqs[req.name] = req_info
+        req_group_info['requirements'] = reqs
+        req_groups[group.name] = req_group_info
+    return req_groups
+    
+
 def index(request):
     plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
     enrolled = Enrollment.objects.filter(plan=plan)
@@ -87,12 +106,18 @@ def index(request):
         for offering in course_offerings:
             offered_terms.append((offering.term.num, offering.year))
         offerings[str(course.identifier)] = course_offerings
+        
+    major_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major=plan.major))
+    general_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major__isnull=True))
             
     args['years'] = years
     args['totalUnits'] = totalUnits
     args['offerings'] = offerings
     args['term_names'] = term_names
     args['max_units'] = plan.university.max_units_per_quarter
+    args['general_reqs'] = simplejson.dumps(general_req_groups)
+    args['major_reqs'] = simplejson.dumps(major_req_groups)
+    print simplejson.dumps(major_req_groups)
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
     
 def search(request, prefix):
@@ -123,6 +148,41 @@ def search(request, prefix):
     responseData["classNames"] = classNames
     responseData["offerings"] = offerings
     responseData["prereq_groups"] = prereq_groups
+    return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
+
+def req_search(request, requirement_name):
+    responseData = {}
+    responseData["query"] = requirement_name
+    reqs = Requirement.objects.filter(name=requirement_name)
+    results = []
+    if len(reqs) == 1:
+        results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('identifier')
+        classNames = []
+        offerings = {}
+        prereq_groups = {}
+        for course in results:
+            classNames.append(course.identifier)
+            course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
+            offerings[course.identifier] = serializers.serialize('json', course_offerings)
+            course_prereqs = []
+            for group in PrereqGroup.objects.filter(for_course=course):
+                satisfiers = []
+                for c in group.satisfiers.all():
+                    satisfiers.append(c.identifier)
+                course_prereqs.append(satisfiers)
+            prereq_groups[course.identifier] = course_prereqs
+        data = serializers.serialize('json', results)
+        responseData["classes"] = data
+        responseData["classNames"] = classNames
+        responseData["offerings"] = offerings
+        responseData["prereq_groups"] = prereq_groups
+    else:
+        responseData["classes"] = []
+        responseData["classNames"] = []
+        responseData["offerings"] = []
+        responseData["prereq_groups"] = []
+        
+        
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
 

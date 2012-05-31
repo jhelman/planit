@@ -347,6 +347,11 @@
         var classesJSON = null;
         var offeringsJSON = null;
 		var prereqsJSON = null;
+		{% autoescape off %}
+		var generalReqs = {{ general_reqs }};
+        var majorReqs = {{ major_reqs }};
+        {% endautoescape %}
+        
         var dragTerm = null;
         var dropTerm = null;
         
@@ -407,7 +412,7 @@
                                 continue;
                            }
                            
-                           var warningArray = evalForWarningOffering(termStr, course, true);
+                           var warningArray = evalForWarningOffering(termStr, dragTerm, course, true);
                            
                            var warningStr = "";
                            warningStr = createWarningStringOffering(warningStr, warningArray);
@@ -446,14 +451,22 @@
                                var termStr = termNames[i] + years[j];
                                $('#' + termStr + '-drag-cover').hide();
                                if ($('#' + termStr + '-added-units').length == 0) {
+                                   returnCellToColor($('#' + termStr));
                                    $('#' + termStr + '-units-div').empty();
-                                   $('#' + termStr + '-units-div').html('<span class="units" ' + 
-                                    'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
-                                    '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
-                                    '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
-                                    '</span>' + 
-                                    '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
-                                    'style="display: none"></span>');
+                                   $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
+                                        '</span>' +
+       						            '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);">' + 
+                                        '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                        '</span>&nbsp;<span class="added-units" id="' + termStr + 
+                                        '-added-units" style="display: none"></span>');
+                                   
+                                   // $('#' + termStr + '-units-div').html('<span class="units" ' + 
+                                   //                                     'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
+                                   //                                     '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
+                                   //                                     '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                   //                                     '</span>' + 
+                                   //                                     '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
+                                   //                                     'style="display: none"></span>');
 
                                }
 
@@ -574,7 +587,7 @@
             // $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
             // $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
             
-            $('#search-scroll-div').nanoScroller({preventPageScrolling: true});
+            // $('.nano').nanoScroller({preventPageScrolling: true});
             
             
             // $('.units').on('click', function(event) { clickChangeUnits(this) });
@@ -673,6 +686,15 @@
                     return i;
                 }
             }
+            return -1;
+        }
+        
+        function getTermArrayIndex(id) {
+             for (var i in termNames) {
+                    if (id.indexOf(termNames[i]) != -1) {
+                        return i;
+                    }
+                }
             return -1;
         }
         
@@ -1020,6 +1042,9 @@
                 if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
                        warningStr += "Over allowed units for quarter.<br/>";
                 }
+                if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
+                       warningStr += "Course violates prerequisite: " + warningArrayOffering[j] + ".<br/>";
+                }
             }
             
             return warningStr;   
@@ -1215,16 +1240,85 @@
             return false;
         }
         
+        /* Take out of evalForWarningsOffering and split up into forwards and backwards...
+           only call one on adding and call both on dragging
+           Can then eliminate isDrag parameter (as well as from evalFromWarningsOffering) */
+		   
+		/*
+		   Adding: Check backwards (to -> beginning) for missing prereqs for added course
+		   Dragging Backward: Check backwards (to -> beginning) for missing prereqs for dragged course
+		   Dragging Forward: Check betweeen to/from quarters for courses with dragged course as prereq 
+		 */
+        
+        // Course is course you are moving
+        // Return what prereq course violates
+        function checkIfPrereqViolation(toTermId, fromTermId, course, isDrag) {
+       
+           // Check forwards
+           if (isDrag) {
+           
+               for (var i = getYearArrayIndex(fromTermId); i < years.length; i++) {
+                   for (var j = 0; j < termNames.length; j++) {
+                   
+                       if (i == 0 && j <= getTermArrayIndex(fromTermId)) {
+                           continue;
+                       }
+                   
+                       var term = plan.getTerm(j, i);
+                       for (var k in term.courses) {
+                           var course = (term.courses)[k];
+                           
+                           // Need to check??
+                           if (course == undefined) {
+                               break;
+                           }
+                           
+                           var prereqGroups = course.prereqGroups;
+                           console.log(course.cName + " " + prereqGroups);
+                           for (var x in prereqGroups) {
+                              if ($.inArray(course.cName, prereqGroups[x])) {
+                                  if (prereqGroups[x].length == 1) {
+                                      console.log(course.cName + " in " + toTermId);
+                                      return course.cName;
+                                  } else {
+                                      // If disjunction (106B or 106X for 107)
+                                  }
+                                  
+                              }
+                            
+                            
+                               
+                           }
+                           
+                       
+                       }
+                   
+                   }
+               } 
+               
+            }
+               
+            // Just check backwards
+               
+               
+               
+               
+               
+            return null;
+        }
+        
         
         var WARNING_OFFERING_TIME_CONFLICT = 0;
         var WARNING_OFFERING_OVER_UNITS = 1;
+        var WARNING_OFFERING_PREREQ = 2;
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
-        function evalForWarningOffering(termID, course, isDrag) {
+        function evalForWarningOffering(toTermID, fromTermID, course, isDrag) {
             var warningArray = [];
-            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(termID, course, isDrag);
-            warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(termID);
+            warningArray[WARNING_OFFERING_TIME_CONFLICT] = checkIfTimeConflict(toTermID, course, isDrag);
+            warningArray[WARNING_OFFERING_OVER_UNITS] = checkIfOverUnits(toTermID);
+            warningArray[WARNING_OFFERING_PREREQ] = checkIfPrereqViolation(toTermID, fromTermID, course, isDrag);
             return warningArray;
         }
         
@@ -1251,7 +1345,7 @@
         function addCourse(classLinkItem) {
             
             // $(classLinkItem).popover('hide');
-            
+                        
             if ($(classLinkItem).parent().hasClass('active')) {
                 return;
             }
@@ -1265,7 +1359,7 @@
             var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
             
             $(classLinkItem).bind('mousedownoutside', function (event) {
-                                                
+                                                                   
                 if ($(event.target).hasClass('confirm-add-class')) {
                     
                     var termId = $(event.target).closest('.quarter-div').attr('id');
@@ -1278,10 +1372,12 @@
                     $(event.target).hasClass('icon-trash') || 
                     $(event.target).prop('tagName') == "BODY" ||
                     $(event.target).prop('tagName') == "HTML" ||
-                    ($(event.target).attr('id') != null && 
+                    (($(event.target).attr('id') != null) && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
-                        ($(event.target).attr('id') == "course-search"))
-                    ) {                        
+                        ($(event.target).attr('id') == "course-search")) ||
+                    (($(event.target).closest('li').attr('id') != null) && 
+                        ($(event.target).closest('li').attr('id').indexOf('blevel') != -1))
+                    ) {             
                         cancelAddCourse(courseObj, offerings);
                         $(classLinkItem).parent().removeClass('active');
                         $(this).unbind('mousedownoutside');
@@ -1330,7 +1426,7 @@
                                             
                 // evaluate quarter in which you are going to place the class to validate                
                                                                                                     
-                var warningArrayOffering = evalForWarningOffering(termId, addedCourse, false);
+                var warningArrayOffering = evalForWarningOffering(termId, false, addedCourse, false);
                  
                 var isWarningOffering = false;
                 for (var i in warningArrayOffering) {
@@ -1409,7 +1505,7 @@
                         if ((offeringST >= startTime && offeringST < endTime) ||
                             (offeringET > startTime && offeringET <= endTime)) {
     
-                            course.eventObjects[k].color = '#ffc40d';
+                            courseEvents[k].color = '#ffc40d';
                             // flag = couses[i].name;
                             flag = courses[i].name;
     
@@ -1455,32 +1551,40 @@
                         
         }
         
-        function createSearchResults(courses, str) {
-            
-            $('#search-scroll-content').empty();
+        function createSearchResults(courses, isReq, reqName, num) {
                         
-            $('#search-scroll-content').append('<span style="font-weight: bold" ' + 
-            'id="requirements-toolbox-label"></span><ul id="search-results-nav" ' + 
-            'class="nav nav-pills nav-stacked"></ul>');
-            
-            // $('#search-results-nav').empty();
+                        
+            if (!isReq) {
+                num = 1;
+            }
+            // $('#search-scroll-content').empty();
+                                    
+            var scroller = '<div id="search-scroll-div' + num + '" class="nano"' + 
+                    (isReq ? ('" style="left: ' + (num * (parseInt($('#search-scroll-div0').width()) + SPACER)) + 
+                        'px; ' + 'top: 0px">') : '>') + 
+                    '<div id="search-scroll-content' + num +'" class="content">';
+                        
+            var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
+                        '<div class="requirement-heading">' +
+                        (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
+                            : ('Courses satisfying ' + reqName + ' (' + courses.length + '):')) +
+                        '</div>' +
+                        '<ul class="nav nav-pills nav-stacked">';
+
             
             if (courses.length == 0) {
-                $('#requirements-toolbox-label').html('No results found.');
-                $('#search-scroll-div').nanoScroller();            
-                return;
+                html += '</ul></div></div></div>';
+                return html;
             }
-            
-            $('#requirements-toolbox-label').html('Search results (' + courses.length + '): ');
             
             for (var i in courses) {
                 
                 var courseShortName = courses[i].fields.identifier;
                 var courseLongName = courses[i].fields.title;
                 
-                $('#search-results-nav').append('<li><a href="#" id="' + makeCondensedName(courseShortName)
+                html += '<li class="search-result"><a href="#" id="' + makeCondensedName(courseShortName)
                     + '-search-result" onclick="addCourse(this)"><span class="shortName">' + 
-                    courseShortName  + '</span>: ' + courseLongName +  '</a></li>');
+                    courseShortName  + '</span>: ' + courseLongName +  '</a></li>';
                     
                 // $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
                 //     title: courseShortName,
@@ -1490,11 +1594,39 @@
                 
             }
             
-            $('.slider').animate({'top': 0});
-            // $('.content').animate({'top': 0});
-            $('#search-scroll-div').nanoScroller({scroll: 'top'});
-            $('#search-scroll-div').nanoScroller();            
+            html += '</ul></div></div></div>';
+            
+            return html;      
              
+        }
+        
+        
+        function refreshScroll(num) {
+            $('.slider').animate({'top': 0});
+            $('#search-scroll-div' + num).nanoScroller({preventPageScrolling: true});
+            $('#search-scroll-div' + num).nanoScroller({scroll: 'top'});
+        }
+        
+        function returnHome() {
+            var html = '<div id="search-scroll-div0" class="nano">' +
+                '<div id="search-scroll-content0" class="content">' +
+                    '<div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">' +
+                        '<div class="requirement-heading">Select a requirement group:</div>' +
+                        '<div class="nav nav-tabs nav-stacked">' +
+                            '<li class="req-link"><a href="#" onclick="getUniversityRequirements();">University Requirements</a></li>' +
+                            '<li class="req-link"><a href="#" onclick="getMajorRequirements();">Major Requirements</a></li>' +                                            
+                        '</div>' + 
+                    '</div>' +
+                '</div>' +
+            '</div>';
+            
+            $('#blevel1').remove();
+            $('#blevel0').html('Home');
+            $('#blevel0').addClass('active');
+            
+            $('#course-search').attr('value', '');
+            $('#content-div').html(html); 
+            refreshScroll(0);
         }
         
         var currentSearch;
@@ -1511,11 +1643,17 @@
             var searchValue = $('#course-search').attr('value');
             
             if (searchValue.length == 0) {
-                $('#search-scroll-content').empty();
-                $('#search-scroll-div').nanoScroller();
+                returnHome();
+                // $('#search-scroll-div').nanoScroller();
                 removeSpinner();
                 return;
             }
+            
+            $('#breadcrumb-div').find('.breadcrumb').empty();
+            $('#breadcrumb-div').find('.breadcrumb').html('<li class="active" id="blevel0">' + 
+                '<a href="#" onclick="returnHome();">Home</a></li>');
+                
+            moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue);
                         
             $.ajax({
 				url: '/search/' + searchValue,
@@ -1527,7 +1665,10 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
-                    createSearchResults(classesJSON);
+                    var html = createSearchResults(classesJSON, false, false, 0);
+                    $('#content-div').css('left', '0px');
+                    $('#content-div').html(html);
+                    refreshScroll(1);
                     removeSpinner();
                 }
             });
@@ -1611,6 +1752,188 @@
             $('#search-spinner').empty();
             hasSpinner = false;
         }
+        
+        function moveToNextBreadcrumbLevel(num, name) {
+            var oldNum = num-1;
+            $('#blevel' + oldNum).removeClass('active');
+            $('#blevel' + oldNum).html('<a href="#">' + 
+                $('#blevel' + oldNum).html() + '</a><span class="divider">/</span>');
+            $('#breadcrumb-div').find('.breadcrumb').append('<li class="active" id="blevel' + num +
+                '">' + name + '</li>');
+        } 
+        
+        var SPACER = 40;
+        
+        
+        function getUniversityRequirements() {
+
+            
+        }
+        
+        
+        function getMajorRequirements() {
+            
+            var cDiv = $('#search-scroll-div0');
+              
+            var scroller = '<div id="search-scroll-div1" class="nano" style="left: ' + 
+                (parseInt(cDiv.width()) + SPACER) + 'px; ' +
+                'top: 0px">' + 
+                '<div id="search-scroll-content1" class="content">';          
+            var html = scroller + '<div class="cdiv" id="cdiv1">' + 
+                '<div class="requirement-heading">Select major requirement group:</div>' +
+                '<div class="nav nav-tabs nav-stacked">'
+            
+            for (var i in majorReqs) {
+                html += '<li class="req-link"><a href="#" onclick="getNextLevelOfReqs(this);">' + 
+                    i + '</a></li>';
+            }
+            
+            html += '</div></div></div></div>';
+            $('#content-div').append(html);
+            
+            moveToNextBreadcrumbLevel(1, 'Major');
+                        
+            $('#search-scroll-div0').find('.pane').hide();
+            
+            $('#content-div').animate(
+                {'left': -cDiv.width() - SPACER}, 750, function () {
+                    $('#blevel0').html('<a href="#" onclick="moveBackNLevels(this)">' + 
+                            $('#blevel0').find('a').html() + '</a><span class="divider">/</span>');
+                    refreshScroll(1);         
+            });
+            
+            
+        }
+        
+        function moveBackNLevels(elem) {
+            elem = $(elem);
+            var liElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var num = parseInt(elem.closest('li').attr('id').substring(6));
+            var cDiv = $('#search-scroll-div0');
+
+            for (var i = liElems.length - 1; i > num; i--) {
+                $('#blevel' + i).remove();
+            }
+            $('#blevel' + num).find('.divider').remove();                
+            $('#blevel' + num).addClass('active');
+            $('#blevel' + num).html($('#blevel' + num).find('a').html());
+
+            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
+                    
+                var cDivs = $('#content-div').find('.nano');
+                for (var j = cDivs.length; j > num; j--) {
+                    $('#search-scroll-div' + j).remove();
+                }
+                
+                $('#search-scroll-div' + num).find('.pane').show();
+                refreshScroll(num);            
+            });
+        }
+        
+        
+        function getReqClasses(elem) {
+            elem = $(elem);
+            
+            makeNewSpinner();
+            
+            
+            $.ajax({
+				url: '/req_search/' + elem.html(),
+                success: function (data, textStatus, jqXHR) {                    
+                    classesJSON = jQuery.parseJSON(data.classes);
+                    offeringsJSON = data.offerings;
+					prereqsJSON = data.prereq_groups;
+					var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+                    var html = createSearchResults(classesJSON, true, elem.html(), bElems.length);
+                    addClassesCDiv(html, 3, elem.html());
+                    refreshScroll(3);
+                    removeSpinner();
+                }
+            });
+            
+        }
+        
+
+        function addClassesCDiv(html, level, reqName) {
+            
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            
+            var count = $(html).find('li').length;
+            
+            var cDiv = $('#search-scroll-div0');
+                
+            moveToNextBreadcrumbLevel(bElems.length, reqName);
+            
+            $('#search-scroll-div' + (level - 1)).find('.pane').hide();
+                
+            $('#content-div').append(html);
+            $('#content-div').animate(
+                {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
+                    var cur = $('#blevel' + (bElems.length - 1));
+                    cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
+                          cur.find('a').html() + '</a><span class="divider">/</span>');
+                    
+                    refreshScroll(bElems.length);          
+
+            });     
+
+        }
+        
+        
+        function getNextLevelOfReqs(elem) {
+            elem = $(elem);
+            
+            var reqName = elem.html();            
+            
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var reqJSON = ($(bElems[1]).html() == "University" ? reqJSON = universityReqs : reqJSON = majorReqs);
+            reqJSON = reqJSON[reqName];
+            
+            // For higher level trees - is this right?
+            // for (var i = 3; i < bElems.length; i++) {
+            //     reqJSON = (reqJSON.requirements)[$(bElems[i]).html()];
+            // }
+            
+            
+            
+            var count = 0;
+            var liHTML = "";
+            for (var i in reqJSON.requirements) {
+                 liHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
+                    i  + '</a></li>';
+                count++;
+             }
+                        
+             var cDiv = $('#search-scroll-div0');
+                
+             var scroller = '<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
+                 (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
+                 'top: 0px">' + 
+                 '<div id="search-scroll-content' + bElems.length +'" class="content">';
+                     
+             var html = scroller + '<div class="cdiv" id="cdiv' + bElems.length +'">' +
+                 '<div class="requirement-heading">Select requirement:</div>' +
+                 '<div class="nav nav-tabs nav-stacked">' + liHTML + 
+                 '</div></div>';
+                      
+             $('#content-div').append(html);
+             
+             moveToNextBreadcrumbLevel(bElems.length, reqName);
+             
+             $('#search-scroll-div' + (bElems.length - 1)).find('.pane').hide();
+             
+             $('#content-div').animate(
+                 {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
+                        var cur = $('#blevel' + (bElems.length - 1));
+                        cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
+                              cur.find('a').html() + '</a><span class="divider">/</span>');
+                        refreshScroll(bElems.length);        
+                        
+             });
+         
+        }
+        
+        
         
     </script>    
     
@@ -1913,12 +2236,26 @@
                                     <!-- <button class="btn" onclick="runSearch()">Search</button> -->
                                 </div>
                             </div>
-                            
-                            <div id="search-scroll-div" class="nano">
-                                <div id="search-scroll-content" class="content">
-                                    
-                                </div>
+                            <div id="breadcrumb-div">
+                                <ul class="breadcrumb">
+                                    <li id="blevel0" class="active">Home</li>
+                                </ul>
                             </div>
+                            
+                            
+                           <div id="content-div">
+                                <div id="search-scroll-div0" class="nano">
+                                    <div id="search-scroll-content0" class="content">
+                                        <div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">
+                                            <div class="requirement-heading">Select a requirement group:</div>
+                                            <div class="nav nav-tabs nav-stacked">
+                                                <li class="req-link"><a href="#" onclick="getUniversityRequirements();">University Requirements</a></li>
+                                                <li class="req-link"><a href="#" onclick="getMajorRequirements();">Major Requirements</a></li>                                            
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                             </div>
                             
                         </div>
   
