@@ -1618,7 +1618,8 @@
                     + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
                     '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
                     '</td><td class="search-result-btn" align="right"><button style="display: none;" id="' + 
-                    makeCondensedName(courseShortName) + '-button" class="btn btn-primary">' +
+                    makeCondensedName(courseShortName) + '-button" data-toggle="button" class="btn btn-primary" ' +
+                    'onclick="addExemption(this)">' +
                     '<i class="icon-ok-circle icon-white" id="' + makeCondensedName(courseShortName) +
                     '-icon"></i></button></td>' + 
                     '</tr></table></a></li>';
@@ -1639,6 +1640,19 @@
             html += '</ul></div></div></div>';
             return html;      
              
+        }
+        
+        function addExemption(elem) {
+            
+            elem = $(elem);
+            
+            elem.closest('td').tooltip('hide');
+            
+            var courseName = elem.attr('id').substring(0, elem.attr('id').indexOf('-button'));
+            
+            
+            
+            
         }
         
         
@@ -1676,7 +1690,7 @@
             $('.search-result-btn').tooltip({title: 'Add course exemption', placement: 'top'});
             
             $('#content-div').find('li').on('mouseover', function () {
-                $('.btn').hide();
+                $('#content-div').find('.btn').hide();
                 var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
                 $('#' + courseName + '-button').show();
             });
@@ -1717,15 +1731,17 @@
             if (event.keyCode == 13) {
                 return;
             }
-            
+                   
+            $('#content-div').empty();
+                        
             makeNewSpinner();
             
             var searchValue = $('#course-search').attr('value');
             
             if (searchValue.length == 0) {
+                removeSpinner();
                 returnHome();
                 // $('#search-scroll-div').nanoScroller();
-                removeSpinner();
                 return;
             }
             
@@ -1741,6 +1757,7 @@
                     if (data.query != $('#course-search').attr('value') || data.query == currentSearch) {
                         return;
                     }
+                    removeSpinner();
                     currentSearch = data.query;
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
@@ -1750,7 +1767,6 @@
                     $('#content-div').html(html);
                     addButtonsToSearchResults();
                     refreshScroll(1);
-                    removeSpinner();
                 }
             });
         }
@@ -1817,15 +1833,16 @@
             }
             
             var options = {
-                lines: 10,
+                lines: 9,
                 length: 3,
-                width: 2,
-                radius: 4,
+                width: 3,
+                radius: 5,
                 color: '#888888'
             };
             
             var spin = new Spinner(options).spin();
             $('#search-spinner').append(spin.el);
+            
             hasSpinner = true;
         }
         
@@ -1949,9 +1966,6 @@
             $('#search-scroll-div' + (level - 1)).find('.pane').hide();
                 
             $('#content-div').append(html);
-            $('#content-div').find('a').on('click', function () {
-                addCourse(this);
-            });
             
             $('#content-div').animate(
                 {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
@@ -2318,8 +2332,8 @@
                             <div id="search-div">
                                 <div id="course-search-form">
                                     <input type="text" id="course-search" onkeyup="runSearch(event);" placeholder="Search for classes" class="input-medium search-query"/>
-                                    <div id="search-spinner-over"><span id="search-spinner"></span></div>
                                     <!-- <button class="btn" onclick="runSearch()">Search</button> -->
+                                    <div id="search-spinner-over"><span id="search-spinner"></span></div>
                                 </div>
                             </div>
                             <div id="breadcrumb-div">
