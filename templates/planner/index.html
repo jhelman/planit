@@ -1240,7 +1240,7 @@
             return false;
         }
         
-		function checkBackwardForMissingPrereq(toYear, toTerm, course) {
+		function checkBackwardForMissingPrereq(toYear, toTerm, course, exclude) {
 			var prereqGroups = course.prereqGroups;
 			if (prereqGroups.length == 0) return false;
 			var sat = new Array(prereqGroups.length);
@@ -1257,6 +1257,7 @@
 					var term = plan.getTerm(j, i);
 					for (var key in term.courses) {
 						var c = (term.courses)[key];
+						if (c == exclude) continue;
 						if (c == undefined) continue; // something else?
 						for (var k = 0; k < prereqGroups.length; k++) {
 							if (sat[k]) continue;
@@ -1290,18 +1291,38 @@
 			var toYear = getYearArrayIndex(toTermId);
 			var toTerm = getTermArrayIndex(toTermId);
 			if (fromTermId == false) {
-				return checkBackwardForMissingPrereq(toYear, toTerm, course);
+				return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
 			} else {
 				var fromYear = getYearArrayIndex(fromTermId);
 				var fromTerm = getTermArrayIndex(fromTermId);
 				if (toYear < fromYear || (toYear == fromYear && toTerm < fromTerm)) {
-					return checkBackwardForMissingPrereq(toYear, toTerm, course);
+					return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
 				} else {
 					/*
 					  loop from fromTerm + 1 to toTerm and call the backward prereq check
 					  for every course encountered that contains 'course' in its prereq groups
 					*/
-					return true;
+					for (var i = fromYear; i <= toYear; i++) {
+						for (var j = 0; j < termNames.length; j++) {
+							if ((i == fromYear && j <= fromTerm) || (i == toYear && j > toTerm)) continue;
+							var term = plan.getTerm(j, i);
+							for (var key in term.courses) {
+								var c = (term.courses)[key];
+								if (c == undefined) continue;
+								for (var k = 0; k < c.prereqGroups.length; k++) {
+									var group = c.prereqGroups[k];
+									if ($.inArray(course.cName, group) != -1) {
+										var result = checkBackwardForMissingPrereq(i, j, c, course);
+										if (result) {
+											console.log(result);
+											return result;
+										}
+									}
+								}
+							}
+						}
+					}
+					return false;
 				}
 			}
         }
