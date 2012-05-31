@@ -75,7 +75,6 @@ class Course(models.Model):
     max_units = models.IntegerField()
     min_units = models.IntegerField()
     tags = models.ManyToManyField(Tag, through='TagMapping')
-    APskip = models.BooleanField(default=False)
     #prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
     #grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
     #repeatable_for_credit = models.BooleanField()
@@ -115,6 +114,7 @@ class Plan(models.Model):
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
+    aps = models.ManyToManyField(Course)
     
     def __unicode__(self):
         return self.student_name
