@@ -1046,7 +1046,7 @@
         function createWarningStringOffering(warningStr, warningArrayOffering) {
             for (var j in warningArrayOffering) {
                 if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
-                       warningStr += "Course conflicts with " + warningArrayOffering[j] + ".<br/>";
+                       warningStr += "Course conflict: " + warningArrayOffering[j] + ".<br/>";
                 }
                 if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
                        warningStr += "Over allowed units for quarter.<br/>";
@@ -1402,6 +1402,7 @@
                     $(event.target).hasClass('icon-trash') || 
                     $(event.target).prop('tagName') == "BODY" ||
                     $(event.target).prop('tagName') == "HTML" ||
+                    $(event.target).hasClass('search-result-cname') ||
                     (($(event.target).attr('id') != null) && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
                         ($(event.target).attr('id') == "course-search")) ||
@@ -1597,11 +1598,11 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
                         '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                            : ('Courses satisfying ' + reqName + ' (' + courses.length + '):')) +
+                            : ('Courses satisfying ' + reqName + ':')) +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
-            
+        
             if (courses.length == 0) {
                 html += '</ul></div></div></div>';
                 return html;
@@ -1612,9 +1613,20 @@
                 var courseShortName = courses[i].fields.identifier;
                 var courseLongName = courses[i].fields.title;
                 
-                html += '<li class="search-result"><a href="#" id="' + makeCondensedName(courseShortName)
-                    + '-search-result" onclick="addCourse(this)"><span class="shortName">' + 
-                    courseShortName  + '</span>: ' + courseLongName +  '</a></li>';
+                html += '<li class="search-result"><a href="#" id="' + 
+                    makeCondensedName(courseShortName)
+                    + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
+                    '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
+                    '</td><td class="search-result-btn" align="right"><button style="display: none;" id="' + 
+                    makeCondensedName(courseShortName) + '-button" class="btn btn-primary">' +
+                    '<i class="icon-ok-circle icon-white" id="' + makeCondensedName(courseShortName) +
+                    '-icon"></i></button></td>' + 
+                    '</tr></table></a></li>';
+                                        
+                // newHTMLObj.find('a').click(function (event) {
+                //                     alert('hi');
+                //                     addCourse(this);
+                //                 });
                     
                 // $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
                 //     title: courseShortName,
@@ -1625,7 +1637,6 @@
             }
             
             html += '</ul></div></div></div>';
-            
             return html;      
              
         }
@@ -1657,6 +1668,45 @@
             $('#course-search').attr('value', '');
             $('#content-div').html(html); 
             refreshScroll(0);
+        }
+        
+        
+        function addButtonsToSearchResults() {
+
+            $('.search-result-btn').tooltip({title: 'Add course exemption', placement: 'top'});
+            
+            $('#content-div').find('li').on('mouseover', function () {
+                $('.btn').hide();
+                var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
+                $('#' + courseName + '-button').show();
+            });
+            
+            $('#content-div').find('li').on('mouseout', function (event) {
+                // var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
+                //                 console.log($(this).find('a').attr('id') + " " + courseName);
+                //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
+                //                     ($(event.target).attr('id') == (courseName + '-button') ||
+                //                     $(event.target).attr('id') == (courseName + '-icon'))) {
+                //                         return;
+                //                 }
+                if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
+                    return;
+                }
+                $('.btn').hide();
+            });
+
+            $('#content-div').find('a').on('click', function (event) {
+                // var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
+                //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
+                //                     ($(event.target).attr('id') == (courseName + '-button') ||
+                //                     $(event.target).attr('id') == (courseName + '-icon'))) {
+                //                         return;
+                //                 }
+                if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
+                    return;
+                }
+                addCourse(this);
+            });   
         }
         
         var currentSearch;
@@ -1698,6 +1748,7 @@
                     var html = createSearchResults(classesJSON, false, false, 0);
                     $('#content-div').css('left', '0px');
                     $('#content-div').html(html);
+                    addButtonsToSearchResults();
                     refreshScroll(1);
                     removeSpinner();
                 }
@@ -1876,6 +1927,7 @@
 					var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
                     var html = createSearchResults(classesJSON, true, elem.html(), bElems.length);
                     addClassesCDiv(html, 3, elem.html());
+                    addButtonsToSearchResults()
                     refreshScroll(3);
                     removeSpinner();
                 }
@@ -1897,6 +1949,10 @@
             $('#search-scroll-div' + (level - 1)).find('.pane').hide();
                 
             $('#content-div').append(html);
+            $('#content-div').find('a').on('click', function () {
+                addCourse(this);
+            });
+            
             $('#content-div').animate(
                 {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
                     var cur = $('#blevel' + (bElems.length - 1));
