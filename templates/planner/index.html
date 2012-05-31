@@ -161,13 +161,24 @@
             }
         }
     
-        FourYearPlan.prototype.getTerm = function (termNumber, yearNumber) {
+        FourYearPlan.prototype.getTerm = function(termNumber, yearNumber) {
             return this.terms[termNames[termNumber] + years[yearNumber]];
         }
         
-        FourYearPlan.prototype.getTermById = function (termID) {
+        FourYearPlan.prototype.getTermById = function(termID) {
             return this.terms[termID];
         }
+		
+		FourYearPlan.prototype.getCourseDictionary = function() {
+			var dict = new Object();
+			for (var t in this.terms) {
+				var term = this.terms[t];
+				for (var c in term.courses) {
+					dict[c] = term.courses[c];
+				}
+			}
+			return dict;
+		}
     
         function Term(termID, plan) {
             this.termID = termID;
@@ -341,8 +352,6 @@
     	{% endfor %}
 	
         /* End Javascript Object representing the model */
-
-
         
         var classesJSON = null;
         var offeringsJSON = null;
