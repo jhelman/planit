@@ -199,7 +199,6 @@ def add_course(request):
     # start_time = params['start']
     # weekdays = params['weekdays']
     offerings = CourseOffering.objects.filter(course__identifier=course_name, year=year_num, term=term_num)
-    
     if len(offerings) > 0:
         to_add = offerings[0]
         # TODO correct Plan lookup
@@ -215,6 +214,7 @@ def delete_course(request):
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
+    # TODO correct plan lookup
     enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__student_name=plan_name)
     if len(enrollments) == 1:
         to_delete = enrollments[0]
@@ -225,26 +225,40 @@ def delete_course(request):
 
 def move_course(request):
     params = request.POST.dict()
-    print params
     course_name = params['course']
     old_year = params['old_year']
     old_term = params['old_term']
     new_year = params['new_year']
     new_term = params['new_term']
     plan_name = params['plan']
-    
-    # TODO find the enrollment and switch the offering
     enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__student_name=plan_name)
     if len(enrollments) == 1:
         to_switch = enrollments[0]
         offerings = CourseOffering.objects.filter(course__identifier=course_name, year=new_year, term=new_term)
         if len(offerings) > 0:
-            print "ASDFSDF"
             offering = offerings[0]
             # TODO correct Plan lookup
             plan = Plan.objects.filter(student_name=plan_name)[0]
             to_switch.course = offering
             to_switch.save()
+        
+    return HttpResponse()
+
+def set_exemption(request):
+    params = request.POST.dict()
+    identifier = params['course']
+    plan_name = params['plan']
+    add = params['add']
+    courses = Course.objects.filter(identifier=identifier)
+    if len(courses) == 1:
+        course = courses[0]
+        # TODO correct Plan lookup
+        plan = Plan.objects.filter(student_name=plan_name)[0]
+        if add:
+            plan.aps.add(course)
+        else:
+            plan.aps.remove(course)
+        plan.save()
         
     return HttpResponse()
     
