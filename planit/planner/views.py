@@ -3,6 +3,7 @@ from django.template import RequestContext
 from django.utils import simplejson
 from django.http import HttpResponse
 from django.core import serializers
+from django.views.decorators.csrf import ensure_csrf_cookie
 from models import *
 import re
 
@@ -24,7 +25,7 @@ def get_python_dict_for_reqs(requirement_groups):
         req_groups[group.name] = req_group_info
     return req_groups
     
-
+@ensure_csrf_cookie
 def index(request):
     plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
     enrolled = Enrollment.objects.filter(plan=plan)
