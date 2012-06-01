@@ -153,6 +153,16 @@ def search(request, prefix):
         prefix = prefix.replace(' ', '')
         results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
     return fill_response_info_for_courses(results, responseData)
+    
+def course_info(request):
+    params = request.POST.dict()
+    course_names = params["courseNames"]
+    responseData = {}
+    responseData["query"] = course_names
+    results = []
+    for identifier in course_names:
+        results.append(Course.objects.filter(identifier=identifier))
+    return fill_response_info_for_courses(results, responseData)
 
 def req_search(request, requirement_name):
     responseData = {}
@@ -161,7 +171,6 @@ def req_search(request, requirement_name):
     results = []
     if len(reqs) == 1:
         results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('identifier')
-
     return fill_response_info_for_courses(results, responseData) 
     
 

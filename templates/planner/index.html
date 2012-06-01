@@ -2180,7 +2180,7 @@
             
             
             $.ajax({
-				url: '/req_search/' + elem.find('.req-name').html(),
+				url: '/reqSearch/' + elem.find('.req-name').html(),
                 success: function (data, textStatus, jqXHR) {                    
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
