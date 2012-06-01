@@ -147,6 +147,10 @@ div.highlight-course {
 		background-color: #5bc0de;
 }
 
+div.course-missing-prereq {
+		background-color: #ff9933;
+}
+
 .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
     cursor: pointer;
 }

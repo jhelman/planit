@@ -435,6 +435,7 @@
                 },
 
                 start: function (event, ui) {
+					prereqViolations = new Object();
                     var courseName = ui.helper.find('.courseName').html();
                     dragTerm = $(this).closest('.quarter-div').attr('id');
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
@@ -569,17 +570,31 @@
 				    if ($(this).find('.added-units').length > 0) { 
 				        $(this).css('background-color', '#dff0d8');
                     }
+					var violations = prereqViolations['{{ term.condensedName }}'];
+					if (violations) {
+						for (var k in violations) {
+							var courseName = violations[k];
+							highlightCourse(courseName, 'course-missing-prereq');
+						}
+					}
 			    },
 			    
-			    out: function (event, ui) {  
+			    out: function (event, ui) {
                     if ($(this).find('.added-units').length > 0) { 
 			            returnCellToColor($(this));
                     }
+					var violations = prereqViolations['{{ term.condensedName }}'];
+					if (violations) {
+						for (var k in violations) {
+							var courseName = violations[k];
+							unhighlightCourse(courseName, 'course-missing-prereq');
+						}
+					}
+					
                 },
 				
 				
 				drop: function (event, ui) {
-                                     
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
@@ -1126,7 +1141,7 @@
 						warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
 					} else {
 						warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
-						prereqViolations = warningArrayOffering[j];
+						//prereqViolations = warningArrayOffering[j];
 					}
                 }
             }
@@ -1347,7 +1362,6 @@
 			for (var i = 0; i < prereqGroups.length; i++) {
 				for (var j = 0; j < exempt.length; j++) {
 					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
-						console.log("ASDFADSF");
 						sat[k] = true;
 						if (++numSat == prereqGroups.length) return false;
 					}
@@ -1427,7 +1441,8 @@
 							}
 						}
 					}
-					return violations ? violations : false;
+					prereqViolations[toTermId] = violations;
+					return violations;
 				}
 			}
         }
@@ -1838,9 +1853,7 @@
 		    } else {
 		        plan.removeExemption(courseName);
 	        }
-	        
-	        console.log(plan.exemptCourseNames);
-			
+	        			
 			$.ajax({
 				type: 'POST',
 				url: '/setExemption/',
