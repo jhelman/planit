@@ -1080,7 +1080,7 @@
                        warningStr += "Over allowed units for quarter.<br/>";
                 }
                 if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
-                       warningStr += "Prerequisite violation: " + warningArrayOffering[j] + ".<br/>";
+                       warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
                 }
             }
             
