@@ -441,6 +441,11 @@ div.highlight-course {
 	font-weight: bold;
 }
 
+.badge {
+	font-size: 12px;
+	margin-left: 4px;
+}
+
 .req-link {
 	text-align: center;
 }
