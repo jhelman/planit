@@ -38,6 +38,7 @@ class Instructor(models.Model):
 class University(models.Model):
     name = models.CharField(max_length=256)
     max_units_per_quarter = models.IntegerField(default=20)
+    min_units_per_quarter = models.IntegerField(default=9)
     quarter_type = models.IntegerField(default=TRIMESTER)
     
     def __unicode__(self):
@@ -86,7 +87,10 @@ class RequirementGroup(models.Model):
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
     n_prereqs = models.IntegerField() #gonna change the name of this
-
+     
+    def __unicode__(self):
+        return  self.name # i forget if python auto converts to string
+ 
 #add type field to avoid try catch when
 #working with "upcasted" pointers
 class Requirement(models.Model):

@@ -130,8 +130,10 @@ def add_tag(tag_str, arr):
     t=Tag(name=tag_str)
     t.save()
     for cname in arr:
-        tm = TagMapping(tag=t, course=Course.objects.filter(identifier=cname)[0])
-        tm.save()
+        c = course=Course.objects.filter(identifier=cname)
+        if c:
+            tm = TagMapping(tag=t, course=Course.objects.filter(identifier=cname)[0])
+            tm.save()
     return t
     
 def add_tags(arr):
@@ -139,7 +141,7 @@ def add_tags(arr):
         tag = Tag(name=cname+"_tag")
         tag.save()
         c = course=Course.objects.filter(identifier=cname)
-        if(c):
+        if c:
             print cname
             tm = TagMapping(tag=tag,course=c[0])
             tm.save()
@@ -170,24 +172,26 @@ def filldb():
      
                 e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
-
-    rg = RequirementGroup(major=m, name='math', n_prereqs=7)
-    rg.save()
-    maths = add_tag('basic_math', ['MATH41', 'MATH42', 'CS103', 'CS109'])
-    fifties = add_tag('fifties', ['MATH52', 'MATH53'])
-    basic_math = Requirement(name='basic_math', fulfillers=maths, n_class=4, group=rg)
-    basic_math.save()
-    fifties = Requirement(name='advanced fifties', fulfillers=fifties, n_class=2, group=rg)
-    basic_math.save()
-    fifties.save()
-    others = ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 'MATH110', 'MATH113', 'CS157', 'CS205A'] 
-    add_tags(others)
-    for o in others:
-        selftag = Tag.objects.get(name__startswith=o+"_tag")
-        req = Requirement(name=o + "_req", fulfillers=selftag, 
-            n_class=1,  group=rg)
-        req.save()
     
+    arbrs = [ (RequirementGroup(major=m, name='MATH 41', n_prereqs=1), add_tag('Math_41', ['MATH41'])),
+              (RequirementGroup(major=m, name='MATH 42', n_prereqs=1), add_tag('Math_42', ['MATH42'])),
+              (RequirementGroup(major=m, name='CS 103', n_prereqs=1), add_tag('CS_103', ['CS103'])),
+              (RequirementGroup(major=m, name='CS 109', n_prereqs=1), add_tag('CS_109', ['CS109']))]
+
+    for rg, rtag in arbrs:
+        rg.save()
+        req = Requirement(name=rtag.name, fulfillers=rtag, n_class=1,  group=rg)
+        req.save()
+        
+    electives = RequirementGroup(major=m, name='Math Electives', n_prereqs=1)
+    electives.save()
+
+    fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])
+    fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=electives)
+    fiftiesr.save()
+    others = add_tag('MATH_elective', ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 'MATH110', 'MATH113', 'CS157', 'CS205A'])
+    req = Requirement(name="Math Electives", fulfillers=others, n_class=4,  group=electives)
+    req.save()
 
     econ1a = Course.objects.filter(identifier__startswith="ECON1A")[0]
     econ1b = Course.objects.filter(identifier__startswith="ECON1B")[0]
