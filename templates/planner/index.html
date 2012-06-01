@@ -1762,7 +1762,8 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
                         '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                            : ('Courses satisfying ' + reqName + ':')) +
+                            : ('Courses satisfying ' + reqName + ':' + 
+                                '<span class="badge badge-important" id="' + reqName + '-classes-badge"></span>')) +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
@@ -1869,8 +1870,12 @@
                     '<div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">' +
                         '<div class="requirement-heading">Select a requirement group:</div>' +
                         '<div class="nav nav-tabs nav-stacked">' +
-                            '<li class="req-link"><a href="#" onclick="getUniversityRequirements();">University Requirements</a></li>' +
-                            '<li class="req-link"><a href="#" onclick="getMajorRequirements();">Major Requirements</a></li>' +                                            
+                            '<li class="req-link"><a href="#" onclick="getUniversityRequirements();">' + 
+                                '<span class="req-name">University Requirements</span>' + 
+                                '<span class="badge badge-important" id="university-req-badge"></span></a></li>' + 
+                            '<li class="req-link"><a href="#" onclick="getMajorRequirements();">' + 
+                                '<span class="req-name">Major Requirements</span>' + 
+                                '<span class="badge badge-important" id="major-req-badge"></span></a></li>' +                           
                         '</div>' + 
                     '</div>' +
                 '</div>' +
@@ -2108,7 +2113,8 @@
             
             for (var i in majorReqs) {
                 html += '<li class="req-link"><a href="#" onclick="getNextLevelOfReqs(this);">' + 
-                    i + '</a></li>';
+                    '<span class="req-name">' + i + '</span>' +  
+                    '<span class="badge badge-important" id="' + i + '-req-badge"></span></a></li>';
             }
             
             html += '</div></div></div></div>';
@@ -2161,14 +2167,14 @@
             
             
             $.ajax({
-				url: '/req_search/' + elem.html(),
+				url: '/req_search/' + elem.find('.req-name').html(),
                 success: function (data, textStatus, jqXHR) {                    
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
 					var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-                    var html = createSearchResults(classesJSON, true, elem.html(), bElems.length);
-                    addClassesCDiv(html, 3, elem.html());
+                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length);
+                    addClassesCDiv(html, 3, elem.find('req-name').html());
                     addButtonsToSearchResults()
                     refreshScroll(3);
                     removeSpinner();
@@ -2208,7 +2214,7 @@
         function getNextLevelOfReqs(elem) {
             elem = $(elem);
             
-            var reqName = elem.html();            
+            var reqName = elem.find('.req-name').html();            
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var reqJSON = ($(bElems[1]).html() == "University" ? reqJSON = universityReqs : reqJSON = majorReqs);
@@ -2225,8 +2231,9 @@
             var liHTML = "";
             for (var i in reqJSON.requirements) {
                  liHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
-                    i  + '</a></li>';
-                count++;
+                    '<span class="req-name">' + i + '</span>' + 
+                    '<span class="badge badge-important" id="' + i + '-req-badge"></span></a></li>';
+                 count++;
              }
                         
              var cDiv = $('#search-scroll-div0');
@@ -2574,8 +2581,8 @@
                                         <div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">
                                             <div class="requirement-heading">Select a requirement group:</div>
                                             <div class="nav nav-tabs nav-stacked">
-                                                <li class="req-link"><a href="#" onclick="getUniversityRequirements();">University Requirements</a></li>
-                                                <li class="req-link"><a href="#" onclick="getMajorRequirements();">Major Requirements</a></li>                                            
+                                                <li class="req-link"><a href="#" onclick="getUniversityRequirements();"><span class="req-name">University Requirements</span><span class="badge badge-important" id="university-req-badge"></span></a></li>
+                                                <li class="req-link"><a href="#" onclick="getMajorRequirements();"><span class="req-name">Major Requirements</span><span class="badge badge-important" id="major-req-badge"></span></a></li>                                            
                                             </div>
                                         </div>
                                     </div>
