@@ -1290,7 +1290,16 @@
 			for (var i = 0; i < sat.length; i++) {
 				sat[i] = false;
 			}
-			// add
+			var exempt = plan.exemptCourseNames;
+			for (var i = 0; i < prereqGroups.length; i++) {
+				for (var j = 0; j < exempt.length; j++) {
+					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
+						console.log("ASDFADSF");
+						sat[k] = true;
+						if (++numSat == prereqGroups.length) return false;
+					}
+				}
+			}
 			for (var i = toYear; i >= 0; i--) {
 				for (var j = termNames.length - 1; j >=0; j--) {
 					if (i == toYear && j >= toTerm) {
