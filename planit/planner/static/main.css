@@ -143,6 +143,10 @@ div.possible-course-warning {
 		background-color: #ffc40d;
 }
 
+div.highlight-course {
+		background-color: #5bc0de;
+}
+
 .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
     cursor: pointer;
 }
@@ -183,7 +187,7 @@ div.possible-course-warning {
 #search-spinner {
 	position: absolute;
 	top: -15px;
-	left: 265px;
+	left: 270px;
 }
 
 
@@ -451,6 +455,24 @@ div.possible-course-warning {
 	padding: 5px 14px;
 	margin: 0 0 10px;
 	height: 18px;
+}
+
+.search-result {
+}
+
+.search-result-cname {
+	width: 265px;
+}
+
+.search-result-info {
+	width: 25px;
+	vertical-align: middle;
+}
+
+.search-result-info .btn {
+  padding: 3px 5px 3px;
+	margin-top: -5px;
+	margin-bottom: -5px;
 }
 
 .ajax-alert {
