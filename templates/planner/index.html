@@ -153,6 +153,7 @@
             this.major = major;
             this.units = 0;
             this.terms = new Array();
+			this.exemptCourseNames = new Array();
             for (var i in termNames) {
                 for (var j in years) {
                     var termID = termNames[i] + years[j];
@@ -180,6 +181,19 @@
 				}
 			}
 			return dict;
+		}
+		
+		FourYearPlan.prototype.addExemption = function(courseName) {
+			if ($.inArray(courseName, this.exemptCourseNames) == -1) {
+				this.exemptCourseNames.push(courseName);
+			}
+		}
+		
+		FourYearPlan.prototype.removeExemption = function(courseName) {
+			var pos = $.inArray(courseName, this.exemptCourseNames);
+			if (pos != -1) {
+				this.exemptCourseNames.splice(pos, 1);
+			}
 		}
     
         function Term(termID, plan) {
@@ -350,6 +364,11 @@
     	{% endfor %}
     	{% endfor %}
     	{% endfor %}
+		
+		/* Add exemptions to plan */
+		{% for course in plan.aps.all %}
+		plan.addExemption('{{ course.identifier }}');
+		{% endfor %}
 	
         /* End Javascript Object representing the model */
         
@@ -1689,6 +1708,8 @@
 			data['course'] = courseName;
 			data['plan'] = plan.planName;
 			data['add'] = adding;
+			
+			plan.addExemption(courseName);
 			
 			$.ajax({
 				type: 'POST',
