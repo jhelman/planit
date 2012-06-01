@@ -861,10 +861,10 @@
 					ajaxMessage(courseName +  " Deleted", SUCCESS);
 				},
 				
-				error: function(jqXHR, textStatus, errorThrown) {
-					ajaxMessage("An error occurred deleting "
-						+ courseName, ERROR);
-				}
+                error: function(jqXHR, textStatus, errorThrown) {
+                 ajaxMessage("An error occurred deleting "
+                     + courseName, ERROR);
+                }
 				
 			});
 			
@@ -1835,7 +1835,7 @@
 				},
 				
 				error: function(jqXHR, textStatus, errorThrown) {
-					ajaxMessage("An error occurred " + adding ? "adding" : "removing"
+					ajaxMessage("An error occurred " + (adding ? "adding" : "removing")
 						+ " the exemption for " + courseName, ERROR);
 				}
 			});
