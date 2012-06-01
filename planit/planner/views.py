@@ -120,14 +120,8 @@ def index(request):
     args['general_reqs'] = simplejson.dumps(general_req_groups)
     args['major_reqs'] = simplejson.dumps(major_req_groups)
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
-    
-def search(request, prefix):
-    responseData = {}
-    responseData["query"] = prefix
-    results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
-    if len(results) == 0:
-        prefix = prefix.replace(' ', '')
-        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+
+def fill_response_info_for_courses(results, responseData):
     classNames = []
     offerings = {}
     prereq_groups = {}
@@ -142,7 +136,6 @@ def search(request, prefix):
                 satisfiers.append(c.identifier)
             course_prereqs.append(satisfiers)
         prereq_groups[course.identifier] = course_prereqs
-            
         
     data = serializers.serialize('json', results)
     responseData["classes"] = data
@@ -150,6 +143,16 @@ def search(request, prefix):
     responseData["offerings"] = offerings
     responseData["prereq_groups"] = prereq_groups
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
+    
+    
+def search(request, prefix):
+    responseData = {}
+    responseData["query"] = prefix
+    results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+    if len(results) == 0:
+        prefix = prefix.replace(' ', '')
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+    return fill_response_info_for_courses(results, responseData)
 
 def req_search(request, requirement_name):
     responseData = {}
@@ -158,32 +161,8 @@ def req_search(request, requirement_name):
     results = []
     if len(reqs) == 1:
         results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('identifier')
-        classNames = []
-        offerings = {}
-        prereq_groups = {}
-        for course in results:
-            classNames.append(course.identifier)
-            course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
-            offerings[course.identifier] = serializers.serialize('json', course_offerings)
-            course_prereqs = []
-            for group in PrereqGroup.objects.filter(for_course=course):
-                satisfiers = []
-                for c in group.satisfiers.all():
-                    satisfiers.append(c.identifier)
-                course_prereqs.append(satisfiers)
-            prereq_groups[course.identifier] = course_prereqs
-        data = serializers.serialize('json', results)
-        responseData["classes"] = data
-        responseData["classNames"] = classNames
-        responseData["offerings"] = offerings
-        responseData["prereq_groups"] = prereq_groups
-    else:
-        responseData["classes"] = []
-        responseData["classNames"] = []
-        responseData["offerings"] = []
-        responseData["prereq_groups"] = []
-        
-    return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
+
+    return fill_response_info_for_courses(results, responseData) 
     
 
 def add_course(request):
