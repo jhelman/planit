@@ -1080,7 +1080,7 @@
                        warningStr += "Over allowed units for quarter.<br/>";
                 }
                 if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
-                       warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
+                       warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
                 }
             }
             
@@ -1333,17 +1333,20 @@
 			var toYear = getYearArrayIndex(toTermId);
 			var toTerm = getTermArrayIndex(toTermId);
 			if (fromTermId == false) {
-				return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+				var result = checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+				return result ? [result] : false;
 			} else {
 				var fromYear = getYearArrayIndex(fromTermId);
 				var fromTerm = getTermArrayIndex(fromTermId);
 				if (toYear < fromYear || (toYear == fromYear && toTerm < fromTerm)) {
-					return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+					var result = checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+					return result ? [result] : false;
 				} else {
 					/*
 					  loop from fromTerm + 1 to toTerm and call the backward prereq check
 					  for every course encountered that contains 'course' in its prereq groups
 					*/
+					var violations = false;
 					for (var i = fromYear; i <= toYear; i++) {
 						for (var j = 0; j < termNames.length; j++) {
 							if ((i == fromYear && j <= fromTerm) || (i == toYear && j > toTerm)) continue;
@@ -1356,15 +1359,15 @@
 									if ($.inArray(course.cName, group) != -1) {
 										var result = checkBackwardForMissingPrereq(i, j, c, course);
 										if (result) {
-											console.log(result);
-											return result;
+											if (!violations) violations = new Array();
+											violations.push(result);
 										}
 									}
 								}
 							}
 						}
 					}
-					return false;
+					return violations ? violations : false;
 				}
 			}
         }
