@@ -1434,16 +1434,16 @@
         
         function turnOnCourseHighlight(courseName) {
             if (courseName != false) {
-                unhighlightCourse(courseName);
+                unhighlightCourse(courseName, 'highlight-course');
             }
             $('#content-div').find('a').on('mouseover', function (event) {
                 var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
-                highlightCourse(courseName);
+                highlightCourse(courseName, 'highlight-course');
             });
 
             $('#content-div').find('a').on('mouseout', function (event) {
                 var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
-                unhighlightCourse(courseName);
+                unhighlightCourse(courseName, 'highlight-course');
             });
         }
         
@@ -1674,7 +1674,7 @@
                         
         }
         
-        function highlightCourse(courseName) {
+        function highlightCourse(courseName, cssClassName) {
             var courseArr = (plan.getCourseDictionary())[courseName];
             
             for (var x in courseArr) {
@@ -1686,14 +1686,14 @@
                 var offering = course.offering.fields;
                 var termStr = termNames[offering.term] + offering.year + '-' + (parseInt(offering.year) + 1);
             
-                $('#' + termStr + course.cName).addClass('highlight-course');
+                $('#' + termStr + course.cName).addClass(cssClassName);
            
             }           
             
         }
         
         
-        function unhighlightCourse(courseName) {
+        function unhighlightCourse(courseName, cssClassName) {
             
             var courseArr = (plan.getCourseDictionary())[courseName];
             
@@ -1705,7 +1705,7 @@
                 var offering = course.offering.fields;
                 var termStr = termNames[offering.term] + offering.year + '-' + (parseInt(offering.year) + 1);
             
-                $('#' + termStr + course.cName).removeClass('highlight-course');
+                $('#' + termStr + course.cName).removeClass(cssClassName);
            
             }
             
