@@ -433,6 +433,8 @@
                                continue;
                            }
                            
+                           
+                           // Display for warnings
                            var pos = warningStr.indexOf('<br/>');
                            if (pos != -1) {
                                warningStr = warningStr.substring(0, pos);
@@ -792,6 +794,11 @@
                         
             // resetAddedUnits(quarterID);
             
+            var liElem = $('#' + makeCondensedName(courseName) + '-search-result');
+            if (liElem.length > 0) {
+                liElem.find('.search-result-info').empty();
+            }
+            
             cancelDeleteCourse(quarterID);
 			
 			var termYear = convertFromCondensedName(quarterID).split(" ");
@@ -1048,7 +1055,7 @@
         function createWarningStringOffering(warningStr, warningArrayOffering) {
             for (var j in warningArrayOffering) {
                 if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
-                       warningStr += "Course conflict: " + warningArrayOffering[j] + ".<br/>";
+                       warningStr += "Time conflict: " + warningArrayOffering[j] + ".<br/>";
                 }
                 if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
                        warningStr += "Over allowed units for quarter.<br/>";
@@ -1180,8 +1187,13 @@
             // $('#' + courseTableID).css('background-color', 'none');
                         
             var liElem = $('#' + makeCondensedName(courseName) + '-search-result');
-                        
+                        // td class="search-result-info" align="middle">' + 
+                        // (courseDict[makeCondensedName(courseShortName)] != undefined ? '<i class="icon-ok"></i>'
+                        //     : '')
+                        // + '</td>'
             liElem.parent().removeClass('active');
+            liElem.find('.search-result-info').html('<i class="icon-ok"></i>');
+            liElem.find('.search-result-info i').tooltip({title: 'Course in schedule'});
             
             liElem.unbind('mousedownoutside');
 
@@ -1393,7 +1405,6 @@
             $(classLinkItem).bind('mousedownoutside', function (event) {
                                                                    
                 if ($(event.target).hasClass('confirm-add-class')) {
-                    
                     var cName = $(event.target).closest('.course').find('.courseName').html();
                     var termId = $(event.target).closest('.quarter-div').attr('id');
                     confirmAddCourse(termId + makeCondensedName(cName));
@@ -1737,9 +1748,9 @@
                 $(event.target).closest('li').find('.icon-ok').tooltip('hide');
                 $(event.target).closest('li').find('.search-result-info').html('<button id="' + 
                             makeCondensedName(courseName) + '-button" data-toggle="button" '
-                            + 'class="btn btn-primary" ' +
+                            + 'class="btn btn-default" ' +
                             'onclick="addExemption(this)">' +
-                            '<i class="icon-ok-circle icon-white" id="' + makeCondensedName(courseName) +
+                            '<i class="icon-check" id="' + makeCondensedName(courseName) +
                             '-icon"></i></button>');
                 $(event.target).closest('li').find('.search-result-info').find('.btn').tooltip({title: 'Add course exemption', placement: 'top'});
                 
