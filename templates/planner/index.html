@@ -607,7 +607,13 @@
 						data: data,
 						success: function(data, textStatus, jqXHR) {
 							ajaxMessage(courseName +  " Moved", SUCCESS);
+						},
+						
+						error: function(jqXHR, textStatus, errorThrown) {
+							ajaxMessage("An error occurred moving "
+								+ courseName, ERROR);
 						}
+						
 					});
 					
 				}
@@ -853,7 +859,13 @@
 				data: data,
 				success: function(data, textStatus, jqXHR) {
 					ajaxMessage(courseName +  " Deleted", SUCCESS);
+				},
+				
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("An error occurred deleting "
+						+ courseName, ERROR);
 				}
+				
 			});
 			
         }
@@ -1250,7 +1262,13 @@
 				data: data,
 				success: function(data, textStatus, jqXHR) {
 					ajaxMessage(courseName +  " Added", SUCCESS);
+				},
+				
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("An error occurred adding "
+						+ courseName, ERROR);
 				}
+				
 				
 			});
 				
@@ -1814,6 +1832,11 @@
 				success: function(data, textStatus, jqXHR) {
 					ajaxMessage((adding ? "Added exemption for " : "Removed exemption for ")
 					    + courseName, SUCCESS);
+				},
+				
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("An error occurred " + adding ? "adding" : "removing"
+						+ " the exemption for " + courseName, ERROR);
 				}
 			});
         }
