@@ -1668,24 +1668,38 @@
              
         }
         
+        
         function addExemption(elem) {
             
-            elem = $(elem).closest('.btn');
+            var btn = $(elem).closest('.btn');            
+            var td = btn.closest('.search-result-info');
+            var courseName = btn.attr('id').substring(0, btn.attr('id').indexOf('-button'));
+                        
+            var adding = false;
+            if (btn.find('.icon-check').length > 0) {
+                adding = true;
+            } 
+                                    
+            btn.tooltip('hide');  
+                                                
+            td.html('<button class="btn btn-default ' +
+                (adding ? 'remove-exemption' : 'add-exemption') + '" id="' + 
+                makeCondensedName(courseName) + '-button" onclick="addExemption(this);"><i class="icon-' + 
+                (adding ? 'remove-circle' : 'check') + '" id="' + makeCondensedName(courseName) +
+                '-icon"></i></button>');
             
-            elem.tooltip('hide');
-            
-            var courseName = elem.attr('id').substring(0, elem.attr('id').indexOf('-button'));
             var data = new Object();
 			data['course'] = courseName;
 			data['plan'] = plan.planName;
-			data['add'] = true;
+			data['add'] = adding;
 			
 			$.ajax({
 				type: 'POST',
 				url: '/setExemption/',
 				data: data,
 				success: function(data, textStatus, jqXHR) {
-					ajaxMessage("Added Exemption for " + courseName, SUCCESS);
+					ajaxMessage((adding ? "Added exemption for " : "Removed exemption for ")
+					    + courseName, SUCCESS);
 				}
 			});
         }
@@ -1753,16 +1767,20 @@
                 if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
                     return;
                 }
+                var noExemption = true;
                 var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
                 // alert($(event.target).prop('tagName'));
                 $(event.target).closest('li').find('.icon-ok').tooltip('hide');
-                $(event.target).closest('li').find('.search-result-info').html('<button id="' + 
-                            makeCondensedName(courseName) + '-button" data-toggle="button" '
-                            + 'class="btn btn-default" ' +
-                            'onclick="addExemption(this)">' +
-                            '<i class="icon-check" id="' + makeCondensedName(courseName) +
-                            '-icon"></i></button>');
-                $(event.target).closest('li').find('.search-result-info').find('.btn').tooltip({title: 'Add course exemption', placement: 'top'});
+                $(event.target).closest('li').find('.search-result-info').html('<button class="btn btn-default ' +
+                    (noExemption ? 'add-exemption' : 'remove-exemption') +
+                    '" onclick="addExemption(this)" id="' +
+                    makeCondensedName(courseName) + '-button">' +
+                    '<i class="icon-' + 
+                    (noExemption ? 'check' : 'remove-circle') +
+                    '" id="' + makeCondensedName(courseName) +
+                    '-icon"></i></button>');
+                $('.add-exemption').tooltip({title: 'Add course exemption', placement: 'top'});
+                $('.remove-exemption').tooltip({title: 'Remove course exemption', placement: 'top'});
                 
                 addCourse(this);
             });   
