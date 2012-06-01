@@ -307,8 +307,6 @@
         }
         
         
-    
-		// TODO make this account for multiple offerings within term
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
                 if (parseInt(offerings[i].fields.term) == termNum && 
@@ -1197,7 +1195,6 @@
             
             liElem.unbind('mousedownoutside');
 
-			// TODO time, weekdays, etc. for multiple offerings within term
 			var termYear = convertFromCondensedName(termId).split(" ");
 			var termName = termYear[0];
 			var term = termNames.indexOf(termName);
