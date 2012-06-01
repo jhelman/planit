@@ -435,6 +435,7 @@
                 },
 
                 start: function (event, ui) {
+					prereqViolations = new Object();
                     var courseName = ui.helper.find('.courseName').html();
                     dragTerm = $(this).closest('.quarter-div').attr('id');
                     var course = plan.getTermById(dragTerm).getCourse(courseName);
@@ -569,17 +570,31 @@
 				    if ($(this).find('.added-units').length > 0) { 
 				        $(this).css('background-color', '#dff0d8');
                     }
+					var violations = prereqViolations['{{ term.condensedName }}'];
+					if (violations) {
+						for (var k in violations) {
+							var courseName = violations[k];
+							highlightCourse(courseName, 'course-missing-prereq');
+						}
+					}
 			    },
 			    
-			    out: function (event, ui) {  
+			    out: function (event, ui) {
                     if ($(this).find('.added-units').length > 0) { 
 			            returnCellToColor($(this));
                     }
+					var violations = prereqViolations['{{ term.condensedName }}'];
+					if (violations) {
+						for (var k in violations) {
+							var courseName = violations[k];
+							unhighlightCourse(courseName, 'course-missing-prereq');
+						}
+					}
+					
                 },
 				
 				
 				drop: function (event, ui) {
-                                     
 				    var courseName = ui.draggable.find('.courseName').html();
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
@@ -1131,7 +1146,7 @@
 						warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
 					} else {
 						warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
-						prereqViolations = warningArrayOffering[j];
+						//prereqViolations = warningArrayOffering[j];
 					}
                 }
             }
@@ -1352,7 +1367,6 @@
 			for (var i = 0; i < prereqGroups.length; i++) {
 				for (var j = 0; j < exempt.length; j++) {
 					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
-						console.log("ASDFADSF");
 						sat[k] = true;
 						if (++numSat == prereqGroups.length) return false;
 					}
@@ -1432,7 +1446,8 @@
 							}
 						}
 					}
-					return violations ? violations : false;
+					prereqViolations[toTermId] = violations;
+					return violations;
 				}
 			}
         }
@@ -1778,7 +1793,8 @@
                 return html;
             }
             
-            
+            var courseNames = new Array();
+			
             for (var i in courses) {
                 
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
@@ -1804,10 +1820,25 @@
                 //     content: courseLongName,
                 //     placement: 'left'
                 // });
+				courseNames.push(courseShortName);
                 
             }
             
             html += '</ul></div></div></div>';
+			
+			var data = new Object();
+			data['courseNames'] = courseNames;
+			$.ajax({
+				type: 'POST',
+				url: '/courseInfo/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					console.log(data);
+				},
+				
+			});
+			
+			
                                      
             return html;      
              
@@ -2242,7 +2273,7 @@
             
             
             $.ajax({
-				url: '/req_search/' + elem.find('.req-name').html(),
+				url: '/reqSearch/' + elem.find('.req-name').html(),
                 success: function (data, textStatus, jqXHR) {                    
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
