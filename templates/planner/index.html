@@ -1104,13 +1104,17 @@
         function createWarningStringOffering(warningStr, warningArrayOffering) {
             for (var j in warningArrayOffering) {
                 if (j == WARNING_OFFERING_TIME_CONFLICT && warningArrayOffering[j] != false) {
-                       warningStr += "Time conflict: " + warningArrayOffering[j] + ".<br/>";
+                	warningStr += "Time conflict: " + warningArrayOffering[j] + ".<br/>";
                 }
                 if (j == WARNING_OFFERING_OVER_UNITS && warningArrayOffering[j] != false) {
-                       warningStr += "Over allowed units for quarter.<br/>";
+					warningStr += "Over allowed units for quarter.<br/>";
                 }
                 if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
-                       warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
+					if (typeof(warningArrayOffering[j]) == "string") {
+						warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
+					} else {
+						warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
+					}
                 }
             }
             
@@ -1378,14 +1382,12 @@
 			var toYear = getYearArrayIndex(toTermId);
 			var toTerm = getTermArrayIndex(toTermId);
 			if (fromTermId == false) {
-				var result = checkBackwardForMissingPrereq(toYear, toTerm, course, false);
-				return result ? [result] : false;
+				return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
 			} else {
 				var fromYear = getYearArrayIndex(fromTermId);
 				var fromTerm = getTermArrayIndex(fromTermId);
 				if (toYear < fromYear || (toYear == fromYear && toTerm < fromTerm)) {
-					var result = checkBackwardForMissingPrereq(toYear, toTerm, course, false);
-					return result ? [result] : false;
+					return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
 				} else {
 					/*
 					  loop from fromTerm + 1 to toTerm and call the backward prereq check
