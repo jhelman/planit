@@ -155,13 +155,12 @@ def search(request, prefix):
     return fill_response_info_for_courses(results, responseData)
     
 def course_info(request):
-    params = request.POST.dict()
-    course_names = params["courseNames"]
+    course_names = request.POST.getlist('courseNames[]')
     responseData = {}
     responseData["query"] = course_names
     results = []
     for identifier in course_names:
-        results.append(Course.objects.filter(identifier=identifier))
+        results.extend(Course.objects.filter(identifier=identifier))
     return fill_response_info_for_courses(results, responseData)
 
 def req_search(request, requirement_name):

@@ -1788,7 +1788,8 @@
                 return html;
             }
             
-            
+            var courseNames = new Array();
+			
             for (var i in courses) {
                 
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
@@ -1814,10 +1815,25 @@
                 //     content: courseLongName,
                 //     placement: 'left'
                 // });
+				courseNames.push(courseShortName);
                 
             }
             
             html += '</ul></div></div></div>';
+			
+			var data = new Object();
+			data['courseNames'] = courseNames;
+			$.ajax({
+				type: 'POST',
+				url: '/courseInfo/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					console.log(data);
+				},
+				
+			});
+			
+			
                                      
             return html;      
              
