@@ -171,15 +171,15 @@ def filldb():
      
                 e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
-    
-    arbrs = [ (RequirementGroup(major=m, name='MATH 41', n_prereqs=1), add_tag('Math_41', ['MATH41'])),
-              (RequirementGroup(major=m, name='MATH 42', n_prereqs=1), add_tag('Math_42', ['MATH42'])),
-              (RequirementGroup(major=m, name='CS 103', n_prereqs=1), add_tag('CS_103', ['CS103'])),
-              (RequirementGroup(major=m, name='CS 109', n_prereqs=1), add_tag('CS_109', ['CS109']))]
+    corerg = RequirementGroup(major=m, name='Math Core', n_prereqs=4)
+    corerg.save()
+    coretags = [add_tag('Math 41', ['MATH41']),
+             add_tag('Math 42', ['MATH42']),
+             add_tag('CS 103', ['CS103']),
+             add_tag('CS 109', ['CS109'])]
 
-    for rg, rtag in arbrs:
-        rg.save()
-        req = Requirement(name=rtag.name, fulfillers=rtag, n_class=1,  group=rg)
+    for ct in coretags:
+        req = Requirement(name=ct.name, fulfillers=ct, n_class=1,  group=corerg)
         req.save()
         
     electives = RequirementGroup(major=m, name='Math Electives', n_prereqs=4)
@@ -188,15 +188,15 @@ def filldb():
     fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])
     fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=electives)
     fiftiesr.save()
-    others = [add_tag('MATH_51', ['MATH51']), 
-              add_tag('MATH_103', ['MATH103']),
-              add_tag('MATH_104', ['MATH104']),
-              add_tag('MATH_108', ['MATH108']),
-              add_tag('MATH_109', ['MATH109']),
-              add_tag('MATH_110', ['MATH110']),
-              add_tag('MATH_113', ['MATH113']),
-              add_tag('CS_157', ['CS157']),
-              add_tag('CS_205A', ['CSS05A'])]
+    others = [add_tag('MATH 51', ['MATH51']), 
+              add_tag('MATH 103', ['MATH103']),
+              add_tag('MATH 104', ['MATH104']),
+              add_tag('MATH 108', ['MATH108']),
+              add_tag('MATH 109', ['MATH109']),
+              add_tag('MATH 110', ['MATH110']),
+              add_tag('MATH 113', ['MATH113']),
+              add_tag('CS 157', ['CS157']),
+              add_tag('CS 205A', ['CSS05A'])]
 
     for tag in others:
         req = Requirement(name=tag.name, fulfillers=tag, n_class=1,  group=electives)
