@@ -91,8 +91,6 @@ class RequirementGroup(models.Model):
     def __unicode__(self):
         return  self.name # i forget if python auto converts to string
  
-#add type field to avoid try catch when
-#working with "upcasted" pointers
 class Requirement(models.Model):
     name = models.CharField(max_length=64)
     fulfillers = models.ForeignKey(Tag)
