@@ -463,12 +463,11 @@
                            for (var j in years) {
                                var termStr = termNames[i] + years[j];
                                $('#' + termStr + '-drag-cover').hide();
-                               if ($('#' + termStr + '-added-units').length == 0) {
+                               // if ($('#' + termStr + '-added-units').length == 0 || dragTerm == termStr) {
                                    returnCellToColor($('#' + termStr));
-                                   $('#' + termStr + '-units-div').empty();
                                    $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
                                         '</span>' +
-       						            '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);">' + 
+       						            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
                                         '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
                                         '</span>&nbsp;<span class="added-units" id="' + termStr + 
                                         '-added-units" style="display: none"></span>');
@@ -481,11 +480,12 @@
                                    //                                     '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
                                    //                                     'style="display: none"></span>');
 
-                               }
+                               // }
 
                            }
                        }
                     
+                    // console.log("__________");
 
                     turnOnQDivMouse();
                     doQDivMouseOut($('#' + dragTerm));
@@ -545,7 +545,9 @@
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
-					updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
+                    // $('#{{ term.condensedName }}')., course.units, false);
+                    
+                    updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
 					updateQuarterUnitsUI(dragTerm, -course.units, false);
 					
 						
@@ -769,11 +771,11 @@
             // resetAddedUnits(quarterID);
         }
         
-        function updateQuarterUnitsUI(quarterID, unitChange, updateTotal) {
-            
-            $('#' + quarterID + '-units').html(parseInt($('#' + quarterID + '-units').html()) + unitChange);        
+        function updateQuarterUnitsUI(quarterID, unitsChange, updateTotal) {
+            // console.log(quarterID + ' ' + plan.getTermById(quarterID).units);
+            $('#' + quarterID + '-units').html(plan.getTermById(quarterID).units);        
             if (updateTotal) {
-                $('#total-units').html(parseInt($('#total-units').html()) + unitChange);
+                $('#total-units').html(plan.units);
             }
         }
          
