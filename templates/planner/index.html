@@ -1675,9 +1675,19 @@
             elem.tooltip('hide');
             
             var courseName = elem.attr('id').substring(0, elem.attr('id').indexOf('-button'));
-            
-            
-            
+            var data = new Object();
+			data['course'] = courseName;
+			data['plan'] = plan.planName;
+			data['add'] = true;
+			
+			$.ajax({
+				type: 'POST',
+				url: '/setExemption/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					ajaxMessage("Added Exemption for " + courseName, SUCCESS);
+				}
+			});
         }
         
         
