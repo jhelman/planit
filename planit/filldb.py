@@ -147,7 +147,6 @@ def add_tags(arr):
             tm.save()
 
 def filldb():
-    
     for i in range(3):
         t=Term(i)
         t.save()
@@ -183,16 +182,41 @@ def filldb():
         req = Requirement(name=rtag.name, fulfillers=rtag, n_class=1,  group=rg)
         req.save()
         
-    electives = RequirementGroup(major=m, name='Math Electives', n_prereqs=1)
+    electives = RequirementGroup(major=m, name='Math Electives', n_prereqs=4)
     electives.save()
 
     fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])
     fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=electives)
     fiftiesr.save()
-    others = add_tag('MATH_elective', ['MATH51', 'MATH103', 'MATH104', 'MATH108', 'MATH109', 'MATH110', 'MATH113', 'CS157', 'CS205A'])
-    req = Requirement(name="Math Electives", fulfillers=others, n_class=4,  group=electives)
-    req.save()
+    others = [add_tag('MATH_51', ['MATH51']), 
+              add_tag('MATH_103', ['MATH103']),
+              add_tag('MATH_104', ['MATH104']),
+              add_tag('MATH_108', ['MATH108']),
+              add_tag('MATH_109', ['MATH109']),
+              add_tag('MATH_110', ['MATH110']),
+              add_tag('MATH_113', ['MATH113']),
+              add_tag('CS_157', ['CS157']),
+              add_tag('CS_205A', ['CSS05A'])]
 
+    for tag in others:
+        req = Requirement(name=tag.name, fulfillers=tag, n_class=1,  group=electives)
+        req.save()
+    
+    ecs = Tag.objects.filter(name__startswith='GER:EC')
+    ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
+    ecrg.save()
+    for ec in ecs:
+        r = Requirement(name=ec.name, fulfillers=ec, n_class=1, group=ecrg)
+        r.save()
+
+    other_gers = (set(Tag.objects.filter(name__startswith='GER:')) | set(Tag.objects.filter(name__startswith='Writing'))) - set(ecs)
+    for ger in other_gers:
+        gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
+        gerg.save()
+        r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg)
+        r.save()
+
+    
     econ1a = Course.objects.filter(identifier__startswith="ECON1A")[0]
     econ1b = Course.objects.filter(identifier__startswith="ECON1B")[0]
     econ50 = Course.objects.filter(identifier__startswith="ECON50")[0]
