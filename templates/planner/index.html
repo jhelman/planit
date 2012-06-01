@@ -1098,7 +1098,7 @@
                        warningStr += "Over allowed units for quarter.<br/>";
                 }
                 if (j == WARNING_OFFERING_PREREQ && warningArrayOffering[j] != false) {
-                       warningStr += "Prerequisite violation: " + warningArrayOffering[j] + ".<br/>";
+                       warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
                 }
             }
             
@@ -1308,7 +1308,16 @@
 			for (var i = 0; i < sat.length; i++) {
 				sat[i] = false;
 			}
-			// add
+			var exempt = plan.exemptCourseNames;
+			for (var i = 0; i < prereqGroups.length; i++) {
+				for (var j = 0; j < exempt.length; j++) {
+					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
+						console.log("ASDFADSF");
+						sat[k] = true;
+						if (++numSat == prereqGroups.length) return false;
+					}
+				}
+			}
 			for (var i = toYear; i >= 0; i--) {
 				for (var j = termNames.length - 1; j >=0; j--) {
 					if (i == toYear && j >= toTerm) {
@@ -1351,17 +1360,20 @@
 			var toYear = getYearArrayIndex(toTermId);
 			var toTerm = getTermArrayIndex(toTermId);
 			if (fromTermId == false) {
-				return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+				var result = checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+				return result ? [result] : false;
 			} else {
 				var fromYear = getYearArrayIndex(fromTermId);
 				var fromTerm = getTermArrayIndex(fromTermId);
 				if (toYear < fromYear || (toYear == fromYear && toTerm < fromTerm)) {
-					return checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+					var result = checkBackwardForMissingPrereq(toYear, toTerm, course, false);
+					return result ? [result] : false;
 				} else {
 					/*
 					  loop from fromTerm + 1 to toTerm and call the backward prereq check
 					  for every course encountered that contains 'course' in its prereq groups
 					*/
+					var violations = false;
 					for (var i = fromYear; i <= toYear; i++) {
 						for (var j = 0; j < termNames.length; j++) {
 							if ((i == fromYear && j <= fromTerm) || (i == toYear && j > toTerm)) continue;
@@ -1374,15 +1386,15 @@
 									if ($.inArray(course.cName, group) != -1) {
 										var result = checkBackwardForMissingPrereq(i, j, c, course);
 										if (result) {
-											console.log(result);
-											return result;
+											if (!violations) violations = new Array();
+											violations.push(result);
 										}
 									}
 								}
 							}
 						}
 					}
-					return false;
+					return violations ? violations : false;
 				}
 			}
         }
