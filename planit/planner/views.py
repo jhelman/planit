@@ -92,7 +92,7 @@ def index(request):
                     if weekday == 'F':
                         days.append(start_day + 4)
                 setattr(course, 'days', days)
-                course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3)
+                course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3) #kludge to exclude summer
                 setattr(course, 'offering_json', simplejson.dumps(serializers.serialize('json', course_offerings)))
                 setattr(course, 'course_json', simplejson.dumps(serializers.serialize('json', [course])))
             terms[t]['units'] = units
@@ -183,7 +183,6 @@ def req_search(request, requirement_name):
         responseData["offerings"] = []
         responseData["prereq_groups"] = []
         
-        
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
 
@@ -194,10 +193,6 @@ def add_course(request):
     term_num = params['term']
     plan_name = params['plan']
     units = params['units']
-    print params
-    # These fields will be needed when dealing with multiple offerings in one term
-    # start_time = params['start']
-    # weekdays = params['weekdays']
     offerings = CourseOffering.objects.filter(course__identifier=course_name, year=year_num, term=term_num)
     if len(offerings) > 0:
         to_add = offerings[0]
