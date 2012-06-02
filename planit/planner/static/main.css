@@ -369,7 +369,7 @@ div.course-missing-prereq {
 
 #requirements-toolbox {
 	border-radius: 5px;
-	-mox-border-radius: 5px;
+	-moz-border-radius: 5px;
 	border: 1px solid #dddddd;
 	width: 300px;
 	height: 455px;
@@ -378,6 +378,24 @@ div.course-missing-prereq {
 	padding-right: 10px;
 	margin-top: 20px;
 	overflow: hidden;
+}
+
+#plan-info-div {
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  border: 1px solid #dddddd;
+  width: 300px;
+  margin-top: 5px;
+  padding: 5px 10px 5px;
+/*  height: 0px;
+*/}
+
+#plan-info-div .plan-info-div-inner {
+  padding-left: 20px;
+  margin-top: 3px;
+}
+
+#plan-info-div .plan-info-div-title {
 }
 
 #search-div {
