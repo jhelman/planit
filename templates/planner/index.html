@@ -171,8 +171,51 @@
                     this.terms[termID] = new Term(termID, this);
                 }
             }
+            this.generalReqs = new Array();
+            this.majorReqs = new Array();
         }
-    
+        
+        FourYearPlan.prototype.makeTotalReqGroups = function() {
+            var totalReqGroups = [];
+            $.merge(totalReqGroups, this.generalReqs);
+            $.merge(totalReqGroups, this.majorReqs);
+            
+            return totalReqGroups;
+        }
+        
+        
+        FourYearPlan.prototype.getRequirementGroup = function(reqGroupName) {
+            var totalReqGroups = this.makeTotalReqGroups();
+            for (var i in totalReqGroups) {
+                if (totalReqGroups[i].name == reqGroupName) {
+                    return totalReqGroups[i];
+                }
+            }
+            
+            return false;
+        }
+        
+        
+        FourYearPlan.prototype.getRequirement = function(reqName, reqGroupNames) {
+            var totalReqGroups = this.makeTotalReqGroups();
+            
+            for (var i in totalReqGroups) {
+                if ($.inArray(totalReqGroups[i].name, reqGroupNames) == -1) {
+                    continue;
+                }
+                var reqs = totalReqGroups[i].reqs;
+                for (var j in reqs) {
+                    if (reqs[j].name == reqName) {
+                        return reqs[j];
+                    }
+                }   
+                
+            }
+            
+            return false;
+        }
+        
+        
         FourYearPlan.prototype.getTerm = function(termNumber, yearNumber) {
             return this.terms[termNames[termNumber] + years[yearNumber]];
         }
@@ -220,6 +263,7 @@
 	        }
 	        return false;
 	    }
+	    
     
         function Term(termID, plan) {
             this.termID = termID;
@@ -250,11 +294,39 @@
         }
         
     
+        Term.prototype.removeCourseReqs = function(course) {
+            
+            // Course already in schedule
+            var courseDict = plan.getCourseDictionary();
+            if (courseDict[course.cName] != undefined || plan.hasExemption(course.cName)) {
+                return;
+            }
+            
+            // Check for reqs and reqGroups
+            for (var i in course.reqGroups) {
+                var rg = course.reqGroups[i];
+                for (var j in rg.reqs) {
+                    var req = rg.reqs[j];
+                    if ($.inArray(req.name, course.reqNames) == -1) {
+                        continue;
+                    }
+                    req.numFulfilled++;
+                    if (req.isFulfilled()) {
+                        rg.numFulfilled++;
+                    }
+                }
+            }
+        }
+    
         Term.prototype.removeCourse = function(course) {
             this.courses[course.cName] = undefined;
             this.units -= course.units;
             this.plan.units -= course.units;
+            
+            this.removeCourseReqs(course);
+            
         }
+        
         
         Term.prototype.removeDraggable = function(courseName) {
             var pos = -1;
@@ -307,7 +379,8 @@
             this.units = baseUnits + units;
         }
     
-        function Course(name, offerings, offering, minUnits, maxUnits, units, courseObj, prereqGroups, isAdded, isWarning) {
+        function Course(name, offerings, offering, minUnits, maxUnits, units, courseObj, prereqGroups, reqGroups,
+                reqs, isAdded, isWarning) {
            this.name = name;
            this.cName = name.replace(" ", "");
            this.offerings = offerings; // All possible offerings in JSON
@@ -318,11 +391,44 @@
            this.units = units ? units : maxUnits;
            this.courseObj = courseObj;  // This will be the JSON
 		   this.prereqGroups = prereqGroups;
+		   this.reqGroups = [];
+		   var reqGroupNames = [];
+		   for (var i in reqGroups) {
+		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
+		       reqGroupNames.push(reqGroups[i].fields.name);
+	       }
+		   this.reqNames = [];
+		   for (var i in reqs) {
+		       this.reqNames.push(reqs[i].fields.name);
+		   } 
            this.isAdded = isAdded; 
         }
         
-        Course.prototype.getTerm = function() {
-            console.log(offering);
+        // Course.prototype.getTerm = function() {
+        //     console.log(offering);
+        // }
+
+        Course.prototype.addCourseReqs = function() {
+            // Course already in schedule
+            var courseDict = plan.getCourseDictionary();
+            if (courseDict[this.name].length > 1 || plan.hasExemption(this.cName)) {
+                return;
+            }
+                        
+            // Check for reqs and reqGroups
+            for (var i in this.reqGroups) {
+                var rg = this.reqGroups[i];
+                for (var j in rg.reqs) {
+                    var req = rg.reqs[j];
+                    if ($.inArray(req.name, this.reqNames) == -1) {
+                        continue;
+                    }
+                    req.numFulfilled++;
+                    if (req.isFulfilled()) {
+                        rg.numFulfilled++;
+                    }
+                }
+            }   
         }
 
         Course.prototype.confirmCourse = function() {
@@ -330,7 +436,10 @@
             for (var i in this.eventObjects) {
                 (this.eventObjects)[i].color = 'none';
             }
+            
+            this.addCourseReqs();
         }
+        
         
         Course.prototype.getEventsForTermId = function(termId) {
             var expandedStr = convertFromCondensedName(termId);
@@ -350,6 +459,45 @@
         }
         
         
+        function ReqGroup(name, reqGroup) {
+            this.name = name;
+            this.numReqsToFulfill = parseInt(reqGroup.num_reqs_to_fulfill);
+            this.reqs = new Array();
+            this.numFulfilled = 0;
+        }
+        
+        ReqGroup.prototype.isFulfilled = function() {
+            if (this.numFulfilled >= this.numReqsToFulfill) {
+                return true;
+            }
+            return false;
+        }
+        
+        ReqGroup.prototype.addReq = function(req) {
+            if ($.inArray(req, this.reqs) == -1) {
+                this.reqs.push(req);
+            }
+        }
+        
+        function Req(name, req, reqGroup) {
+            this.name = name;
+            this.fulfillers = new Array();
+            for (var i in req.fulfillers) {
+                this.fulfillers = req.fulfillers[i];
+            }
+            this.numCoursesToFulfill = parseInt(req.num_courses_to_fulfill);
+            this.numFulfilled = 0;
+            this.reqGroup = reqGroup;
+        }
+        
+        Req.prototype.isFulfilled = function() {
+            if (this.numFulfilled >= this.numCoursesToFulfill) {
+                return true;
+            }
+            return false;
+        }
+        
+        
         function getOffering(offerings, termNum, yearNum) {
             for (var i in offerings) {
                 if (parseInt(offerings[i].fields.term) == termNum && 
@@ -360,7 +508,28 @@
             return false;
         }
     
-        plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}')
+        plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}');
+        
+        {% autoescape off %}
+		var generalReqs = {{ general_reqs }};
+		for (var i in generalReqs) {
+		    var rg = new ReqGroup(i, generalReqs[i]);
+		    for (var j in generalReqs[i].requirements) {
+		        var r = new Req(j, generalReqs[i].requirements[j], rg);
+		        rg.addReq(r);
+	        }
+	        plan.generalReqs.push(rg);
+	    }
+        var majorReqs = {{ major_reqs }};
+        for (var i in majorReqs) {
+		    var rg = new ReqGroup(i, majorReqs[i]);
+		    for (var j in majorReqs[i].requirements) {
+		        var r = new Req(j, majorReqs[i].requirements[j], rg);
+		        rg.addReq(r);
+	        }
+	        plan.majorReqs.push(rg);
+	    }
+        {% endautoescape %}
 	
     	{% for year in years %}
     	{% for term in year.terms %}
@@ -379,7 +548,7 @@
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
     	    {{ course.min_units }}, {{ course.max_units }}, {{ course.units }}, jQuery.parseJSON({{ course.course_json }}), 
-    	    prereqGroups, false, false);
+    	    prereqGroups, {{ course.req_groups }}, {{ course.reqs }}, false, false);
     	{% endautoescape %}
 		
 		// add draggable information
@@ -390,6 +559,7 @@
         {% endif %}
 		{% endfor %}
     	t.addCourse(c);
+    	c.addCourseReqs();
     	{% endfor %}
     	{% endfor %}
     	{% endfor %}
@@ -398,16 +568,15 @@
 		{% for course in plan.aps.all %}
 		plan.addExemption('{{ course.identifier }}');
 		{% endfor %}
-	
-        /* End Javascript Object representing the model */
-        
+	        
         var classesJSON = null;
         var offeringsJSON = null;
 		var prereqsJSON = null;
-		{% autoescape off %}
-		var generalReqs = {{ general_reqs }};
-        var majorReqs = {{ major_reqs }};
-        {% endautoescape %}
+		var reqsJSON = null;
+		var reqGroupsJSON = null;
+        
+        /* End Javascript Object representing the model */
+        
         
         var dragTerm = null;
         var dropTerm = null;
@@ -663,10 +832,7 @@
 			{% endfor %}
 			
             returnHome(true);
-            
-            countReqGroups();
-            
-            
+                        
             
             // Static
             // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
@@ -873,6 +1039,12 @@
             if (liElem.length > 0) {
                 liElem.find('.search-result-info').empty();
             }
+
+            var courseDict = plan.getCourseDictionary();
+            liElem.find('.search-result-info').html(
+                (courseDict[makeCondensedName(courseName)] != undefined ? '<i class="icon-ok"></i>'
+                    : (plan.hasExemption(courseName) ? '<i class="icon-check"></i>' : '')));
+            liElem.find('.icon-check').tooltip({title: 'Exempt from course', placement: 'top'});
             
             cancelDeleteCourse(quarterID);
 			
@@ -1198,8 +1370,7 @@
             plan.getTermById(courseTermId).removeDraggable(course.cName);
             
         }
-                
-        
+            
         function confirmAddCourse(courseTableID) {
             
             var courseName = $('#' + courseTableID).find('.courseName').html();
@@ -1257,7 +1428,9 @@
                 
             // resetAddedUnits(termId);
             
-            course.confirmCourse();            
+            course.confirmCourse();
+            
+            // console.log(course);            
             
             cancelAddCourse(course.courseObj, course.offerings);
             
@@ -1453,9 +1626,9 @@
         }
         
         
-        var WARNING_OFFERING_TIME_CONFLICT = 0;
+        var WARNING_OFFERING_TIME_CONFLICT = 2;
         var WARNING_OFFERING_OVER_UNITS = 1;
-        var WARNING_OFFERING_PREREQ = 2;
+        var WARNING_OFFERING_PREREQ = 0;
         var WARNING_ALL_DOUBLE_COURSE = 0;
         
         
@@ -1489,13 +1662,13 @@
             if (courseName != false) {
                 unhighlightCourse(courseName, 'highlight-course');
             }
-            $('#content-div').find('a').on('mouseover', function (event) {
-                var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
+            $('.search-result').find('a').on('mouseover', function (event) {
+                var courseName = $(this).find('.shortName').html();
                 highlightCourse(courseName, 'highlight-course');
             });
 
-            $('#content-div').find('a').on('mouseout', function (event) {
-                var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
+            $('.search-result').find('a').on('mouseout', function (event) {
+                var courseName = $(this).find('.shortName').html();
                 unhighlightCourse(courseName, 'highlight-course');
             });
         }
@@ -1530,7 +1703,6 @@
                     $(classLinkItem).parent().removeClass('active');
                     $(this).unbind('mousedownoutside');
                     $(classLinkItem).off('mouseover');   
-                    
                     turnOnCourseHighlight(cName);            
                                         
                 } else if ($(event.target).prop('tagName') == "BODY" ||
@@ -1554,12 +1726,14 @@
                         liElem.find('.search-result-info').html(
                             (courseDict[makeCondensedName(courseName)] != undefined ? '<i class="icon-ok"></i>'
                                 : (plan.hasExemption(courseName) ? '<i class="icon-check"></i>' : '')));
+                        liElem.find('.icon-check').tooltip({title: 'Exempt from course', placement: 'top'});
                         // liElem.find('.icon-ok').tooltip({'title': 'Course in schedule'});
                         $(this).unbind('mousedownoutside');
                         $(classLinkItem).tooltip('hide');  
                         $(classLinkItem).off('mouseover');
                         turnOnCourseHighlight(courseName);          
                 }
+                
                 
                                 
             });
@@ -1597,7 +1771,8 @@
                 addClassDisplayCount++;
                 var addedCourse = new Course(courseName, offerings, offerings[i], 
                         courseObj.fields.min_units, courseObj.fields.max_units, false, courseObj, 
-						prereqsJSON[makeCondensedName(courseName)], true, isWarningAll);
+						prereqsJSON[makeCondensedName(courseName)], jQuery.parseJSON(reqGroupsJSON[courseName]), 
+						jQuery.parseJSON(reqsJSON[courseName]), true, isWarningAll);
                 plan.getTermById(termId).addCourse(addedCourse);
                                             
                 // evaluate quarter in which you are going to place the class to validate                
@@ -1782,8 +1957,7 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
                         '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                            : ('Courses satisfying ' + reqName + ':' + 
-                                '<span class="badge badge-important" id="' + reqName + '-classes-badge"></span>')) +
+                            : 'Select all of the following:') +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
@@ -1792,9 +1966,7 @@
                 html += '</ul></div></div></div>';
                 return html;
             }
-            
-            var courseNames = new Array();
-			
+            			
             for (var i in courses) {
                 
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
@@ -1820,23 +1992,10 @@
                 //     content: courseLongName,
                 //     placement: 'left'
                 // });
-				courseNames.push(courseShortName);
                 
             }
             
             html += '</ul></div></div></div>';
-			
-			var data = new Object();
-			data['courseNames'] = courseNames;
-			$.ajax({
-				type: 'POST',
-				url: '/courseInfo/',
-				data: data,
-				success: function(data, textStatus, jqXHR) {
-					console.log(data);
-				},
-				
-			});
 			
 			
                                      
@@ -1899,17 +2058,25 @@
         }
         
         function returnHome(isSetUp) {
+            var numGen = countReqGroups('general');
+            var numMaj = countReqGroups('major');
             var html = '<div id="search-scroll-div0" class="nano">' +
                 '<div id="search-scroll-content0" class="content">' +
                     '<div class="cdiv" id="cdiv0" style="position: relative; top: 0px; left: 0px;">' +
-                        '<div class="requirement-heading">Select a requirement group:</div>' +
+                        '<div class="requirement-heading">Select a requirement type:</div>' +
                         '<div class="nav nav-tabs nav-stacked">' +
-                            '<li class="req-link"><a href="#" onclick="getUniversityRequirements();">' + 
-                                '<span class="req-name">University Requirements</span>' + 
-                                '<span class="badge badge-important" id="university-req-badge"></span></a></li>' + 
-                            '<li class="req-link"><a href="#" onclick="getMajorRequirements();">' + 
+                            '<li class="req-link"><a href="#" onclick="getReqGroups(\'General\');">' + 
+                                '<span class="req-name">General Requirements</span>' + 
+                                '<span class="req-info">' + 
+                                (numGen == 0 ? '<i class="icon-ok"></i>' : 
+                                ('<span class="badge badge-important" id="general-req-badge">' + 
+                                 numGen + '</span>')) + '</span></a></li>' + 
+                            '<li class="req-link"><a href="#" onclick="getReqGroups(\'Major\');">' + 
                                 '<span class="req-name">Major Requirements</span>' + 
-                                '<span class="badge badge-important" id="major-req-badge"></span></a></li>' +                           
+                                '<span class="req-info">' + 
+                                (numMaj == 0 ? '<i class="icon-ok"></i>' : 
+                                ('<span class="badge badge-important" id="general-req-badge">' + 
+                                 numMaj + '</span>')) + '</span></a></li>' +                  
                         '</div>' + 
                     '</div>' +
                 '</div>' +
@@ -1933,41 +2100,15 @@
 
             $('.search-result-info').find('.icon-ok').tooltip({'title': 'Course in schedule', placement: 'top'});
             $('.search-result-info').find('.icon-check').tooltip({title: 'Exempt from course', placement: 'top'});
-            
                         
-            $('#content-div').find('li').on('mouseover', function () {
-                // $('#content-div').find('.btn').hide();
-                //  var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
-                //  $('#' + courseName + '-button').show();
-            });
-            
-            $('#content-div').find('li').on('mouseout', function (event) {
-                // // var courseName = $(this).find('a').attr('id').substring(0, $(this).find('a').attr('id').indexOf('-search-result'));
-                // //                 console.log($(this).find('a').attr('id') + " " + courseName);
-                // //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
-                // //                     ($(event.target).attr('id') == (courseName + '-button') ||
-                // //                     $(event.target).attr('id') == (courseName + '-icon'))) {
-                // //                         return;
-                // //                 }
-                // if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
-                //     return;
-                // }
-                // $('.btn').hide();
-            });
-
             turnOnCourseHighlight(false);
 
-            $('#content-div').find('a').on('click', function (event) {
-                //                 if ($(event.target).attr('id') != null && $(event.target).attr('id') != undefined && 
-                //                     ($(event.target).attr('id') == (courseName + '-button') ||
-                //                     $(event.target).attr('id') == (courseName + '-icon'))) {
-                //                         return;
-                //                 }
+            $('.search-result').find('a').on('click', function (event) {
                 if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
                     return;
                 }
                 
-                var courseName = $(this).attr('id').substring(0, $(this).attr('id').indexOf('-search-result'));
+                var courseName = $(this).find('.shortName').html();
                 var exemption = plan.hasExemption(courseName);
                 // alert($(event.target).prop('tagName'));
                 $(event.target).closest('li').find('.search-result-info .icon-ok').tooltip('hide');
@@ -2030,6 +2171,8 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
+					reqsJSON = data.reqs;
+					reqGroupsJSON = data.req_groups;
                     var html = createSearchResults(classesJSON, false, false, 0);
                     $('#content-div').css('left', '0px');
                     $('#content-div').html(html);
@@ -2130,103 +2273,73 @@
         
         var SPACER = 40;
         
-        
-        function getUniversityRequirements() {
-
-            
+        function getTopLevel(tlName) {
+			tlName = tlName.toLowerCase();
+			if (tlName == "general") {
+               return generalReqs;
+            } else if (tlName == "major") {
+                return majorReqs;
+            }
         }
         
-        
-        function countReqGroups() {
+        function countReqGroups(tlName) {
             
+            tlName = tlName.toLowerCase();
+            var tl = getTopLevel(tlName);
             
             var count = 0;
-            for (var i in majorReqs) {
-                count++;
+            for (var i in tl) {
+                count += countReqs(tlName, i);
             }
-            $('#major-req-badge').html(count);
             
-            // count = 0;
-            // for (var j in universityReqs) {
-            //     count++;
-            // }
-            
-            
+            return count;
         }
         
         
-        function countReqs(tlName) { 
-            var liElems = $('#cdiv1').find('li');
-			var tl = {};
-			if (tlName == "University") {
-               tl = universityReqs;
-            } else if (tlName == "Major") {
-                tl = majorReqs;
-            }
-            
-            var len = liElems.length;
-            for (var i = 0; i < len; i++) {
-                var reqGroupName = $(liElems[i]).find('.req-name').html();
-                $(liElems[i]).find('.badge').html(tl[reqGroupName].num_reqs_to_fulfill);
-            }       
-        }
-        
-        function getIndividualClasses(tlName, reqGroupName, reqName) {
-            var tl = {};
-			if (tlName == "University") {
-               tl = universityReqs;
-            } else if (tlName == "Major") {
-                tl = majorReqs;
-            }
-            return tl[reqGroupName].requirements[reqName].num_courses_to_fulfull;   
-            
+        function countReqs(tlName, reqGroupName) { 
+            var rg = plan.getRequirementGroup(reqGroupName);
+            var total = rg.numReqsToFulfill - rg.numFulfilled;
+            return (total >= 0 ? total : 0);
         }
         
         
-        function countClasses(tlName, reqGroupName) {
-            var liElems = $('#cdiv2').find('li');
-			var tl = {};
-			if (tlName == "University") {
-               tl = universityReqs;
-            } else if (tlName == "Major") {
-                tl = majorReqs;
-            }
-            
-            var len = liElems.length;
-            for (var i = 0; i < len; i++) {
-                var reqName = $(liElems[i]).find('.req-name').html();
-                $(liElems[i]).find('.badge').html(getIndividualClasses(tlName, reqGroupName, reqName));
-            }
-            
-            
+        function countClasses(tlName, reqGroupName, reqName) {
+            var r = plan.getRequirement(reqName, [reqGroupName]);
+            var total = r.numCoursesToFulfill - r.numFulfilled;
+            return (total >= 0 ? total : 0);           
         }
         
         
         
-        function getMajorRequirements() {
-                        
+        function getReqGroups(tlName) {
             var cDiv = $('#search-scroll-div0');
+            var tl = getTopLevel(tlName);
               
             var scroller = '<div id="search-scroll-div1" class="nano" style="left: ' + 
                 (parseInt(cDiv.width()) + SPACER) + 'px; ' +
                 'top: 0px">' + 
                 '<div id="search-scroll-content1" class="content">';          
             var html = scroller + '<div class="cdiv" id="cdiv1">' + 
-                '<div class="requirement-heading">Select major requirement group:</div>' +
-                '<div class="nav nav-tabs nav-stacked">'
-            
-            for (var i in majorReqs) {
+                '<div class="requirement-heading">Select ' + tlName.toLowerCase() + 
+                ' requirement group:</div>' +
+                '<div class="nav nav-tabs nav-stacked">';
+                            
+            for (var i in tl) {
+                var numReqs = countReqs(tlName, i);
                 html += '<li class="req-link"><a href="#" onclick="getNextLevelOfReqs(this);">' + 
                     '<span class="req-name">' + i + '</span>' +  
-                    '<span class="badge badge-important" id="' + i + '-req-badge"></span></a></li>';
+                    '<span class="req-info">' + 
+                    (numReqs == 0 ? '<i class="icon-ok"></i>' : 
+                    ('<span class="badge badge-important" id="general-req-badge">' + 
+                     numReqs + '</span>')) + '</span></a></li>';
             }
             
             html += '</div></div></div></div>';
             $('#content-div').append(html);
             
-            moveToNextBreadcrumbLevel(1, 'Major');
+            moveToNextBreadcrumbLevel(1, tlName);
             
-            countReqs('Major');
+            // countReqs(reqGroup);
                         
             $('#search-scroll-div0').find('.pane').hide();
             
@@ -2240,30 +2353,6 @@
             
         }
         
-        function moveBackNLevels(elem) {
-            elem = $(elem);
-            var liElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var num = parseInt(elem.closest('li').attr('id').substring(6));
-            var cDiv = $('#search-scroll-div0');
-
-            for (var i = liElems.length - 1; i > num; i--) {
-                $('#blevel' + i).remove();
-            }
-            $('#blevel' + num).find('.divider').remove();                
-            $('#blevel' + num).addClass('active');
-            $('#blevel' + num).html($('#blevel' + num).find('a').html());
-
-            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
-                    
-                var cDivs = $('#content-div').find('.nano');
-                for (var j = cDivs.length; j > num; j--) {
-                    $('#search-scroll-div' + j).remove();
-                }
-                
-                $('#search-scroll-div' + num).find('.pane').show();
-                refreshScroll(num);            
-            });
-        }
         
         
         function getReqClasses(elem) {
@@ -2278,10 +2367,12 @@
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
+					reqsJSON = data.reqs;
+					reqGroupsJSON = data.req_groups;
 					var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
                     var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length);
                     addClassesCDiv(html, 3, elem.find('.req-name').html());
-                    addButtonsToSearchResults()
+                    addButtonsToSearchResults();
                     refreshScroll(3);
                     removeSpinner();
                 }
@@ -2316,31 +2407,42 @@
 
         }
         
-        function getReqsAndClasses(reqJSON, classJSON) {
+        function getReqsAndClasses(liName, reqJSON, reqName, classJSON) {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             
-                var count = 0;
                 var liGroupHTML = "";
                 var liClassHTML = "";
                 
+                for (var i in classJSON) {
+                    var courseShortName = classJSON[i].fields.identifier;
+                    var courseLongName = classJSON[i].fields.title;
+                    var courseDict = plan.getCourseDictionary();
+                    liClassHTML += '<li class="search-result"><a href="#" id="' + 
+                        makeCondensedName(courseShortName)
+                        + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
+                        '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
+                        '</td><td class="search-result-info" align="middle">' + 
+                        (courseDict[courseShortName] != undefined ? '<i class="icon-ok"></i>'
+                            : (plan.hasExemption(courseShortName) ? '<i class="icon-check"></i>' : ''))
+                        + '</td>' + 
+                        '</tr></table></a></li>';
+                 }
+                                
+                var reqCount = 0;
                 for (var i in reqJSON.requirements) {
-                    if ((reqJSON.requirements[i]).num_courses_to_fulfull == 1) {
-                        
-                        // Loop through fulfillers
-                        liClassHTML += '<li class="search-result"><a href="#" id="' + 
-                            makeCondensedName(courseShortName)
-                            + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
-                            '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
-                            '</td><td class="search-result-info" align="middle">' + 
-                            (courseDict[courseShortName] != undefined ? '<i class="icon-ok"></i>'
-                                : (plan.hasExemption(courseShortName) ? '<i class="icon-check"></i>' : ''))
-                            + '</td>' + 
-                            '</tr></table></a></li>';
+                    reqCount += reqJSON.requirements[i].fulfillers.length;
+                    if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1) {
+                        continue;
+ 
+                    } else {
+                        var numClasses = countClasses(liName, reqName, i);
+                         liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
+                            '<span class="req-name">' + i + '</span>' + 
+                            '<span class="req-info">' + 
+                            (numClasses == 0 ? '<i class="icon-ok"></i>' : 
+                            ('<span class="badge badge-important" id="general-req-badge">' + 
+                             numClasses + '</span>')) + '</span></a></li>';
                     }
-                     liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
-                        '<span class="req-name">' + i + '</span>' + 
-                        '<span class="badge badge-important" id="' + i + '-req-badge"></span></a></li>';
-                     count++;
                  }
 
                  var cDiv = $('#search-scroll-div0');
@@ -2350,16 +2452,31 @@
                      'top: 0px">' + 
                      '<div id="search-scroll-content' + bElems.length +'" class="content">';
 
-                 var html = scroller + '<div class="cdiv" id="cdiv' + bElems.length +'">' +
-                     '<div class="requirement-heading">Select requirement:</div>' +
-                     '<div class="nav nav-tabs nav-stacked">' + liHTML + 
-                     '</div></div>';
+                 var html = scroller + '<div class="cdiv" id="cdiv' + bElems.length +'">';
+                                            
+                 if (liGroupHTML != "") {
+                     html += '<div class="requirement-heading">Select ' + 
+                        (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
+                            : reqJSON.num_reqs_to_fulfill) + 
+                        ' of the following:</div>' +
+                        '<div class="requirement-subheading">Course groups:</div>' + 
+                        '<div class="nav nav-tabs nav-stacked">' + liGroupHTML + '</div>';
+                }
+                                     
+                 html += '<div class="requirement-' + (liGroupHTML != "" ? 'sub' : '') + 
+                    'heading">' + 
+                    (liGroupHTML != "" ? 'Courses:' : 'Select ' + 
+                    (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
+                            : reqJSON.num_reqs_to_fulfill) + ' of the following courses:') + '</div>';
+                     
+                 html += '<ul class="nav nav-pills nav-stacked">' + liClassHTML + 
+                    '</ul></div></div></div>';
 
                  $('#content-div').append(html);
 
                  moveToNextBreadcrumbLevel(bElems.length, reqName);
 
-                 countClasses('Major', reqName);
+                 // countClasses('Major', reqName);
 
                  $('#search-scroll-div' + (bElems.length - 1)).find('.pane').hide();
 
@@ -2368,7 +2485,8 @@
                             var cur = $('#blevel' + (bElems.length - 1));
                             cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                                   cur.find('a').html() + '</a><span class="divider">/</span>');
-                            refreshScroll(bElems.length);        
+                            refreshScroll(bElems.length);
+                            addButtonsToSearchResults();        
 
                  });
 
@@ -2383,16 +2501,16 @@
             var reqName = elem.find('.req-name').html();            
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var reqJSON = ($(bElems[1]).html() == "University" ? reqJSON = universityReqs : reqJSON = majorReqs);
+            var reqJSON = ($(bElems[1]).html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
             reqJSON = reqJSON[reqName];
             
             var courseArr = []
             for (var i in reqJSON.requirements) {
                 var req = (reqJSON.requirements[i]);
-                if ((reqJSON.requirements[i]).num_courses_to_fulfull == 1) {
+                if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1) {
                     for (var i in req.fulfillers) {
                        var cName = req.fulfillers[i];
-                       if ($.inArray(cName, courseArry) == -1) {
+                       if ($.inArray(cName, courseArr) == -1) {
                            courseArr.push(cName);
                        }
                     }
@@ -2406,10 +2524,50 @@
             //     reqJSON = (reqJSON.requirements)[$(bElems[i]).html()];
             // }
             
-            getReqsAndClasses(reqJSON);
+            var data = new Object();
+			data['courseNames'] = courseArr;
+			$.ajax({
+				type: 'POST',
+				url: '/courseInfo/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+                    classesJSON = jQuery.parseJSON(data.classes);
+                    offeringsJSON = data.offerings;
+					prereqsJSON = data.prereq_groups;
+					reqsJSON = data.reqs;
+					reqGroupsJSON = data.req_groups;
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqName, classesJSON);
+				},
+				
+			}); 
             
         }
         
+        
+        function moveBackNLevels(elem) {
+            elem = $(elem);
+            var liElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var num = parseInt(elem.closest('li').attr('id').substring(6));
+            var cDiv = $('#search-scroll-div0');
+
+            for (var i = liElems.length - 1; i > num; i--) {
+                $('#blevel' + i).remove();
+            }
+            $('#blevel' + num).find('.divider').remove();                
+            $('#blevel' + num).addClass('active');
+            $('#blevel' + num).html($('#blevel' + num).find('a').html());
+
+            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
+                    
+                var cDivs = $('#content-div').find('.nano');
+                for (var j = cDivs.length; j > num; j--) {
+                    $('#search-scroll-div' + j).remove();
+                }
+                
+                $('#search-scroll-div' + num).find('.pane').show();
+                refreshScroll(num);            
+            });
+        }
         
         
     </script>    

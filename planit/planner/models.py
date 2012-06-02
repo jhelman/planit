@@ -38,7 +38,7 @@ class Instructor(models.Model):
 class University(models.Model):
     name = models.CharField(max_length=256)
     max_units_per_quarter = models.IntegerField(default=20)
-    min_units_per_quarter = models.IntegerField(default=9)
+    min_units = models.IntegerField(default=180)
     quarter_type = models.IntegerField(default=TRIMESTER)
     
     def __unicode__(self):

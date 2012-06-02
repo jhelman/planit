@@ -442,12 +442,24 @@ div.course-missing-prereq {
 
 .requirement-heading {
 	margin-top: 5px;
+	margin-bottom: 10px;
+	font-weight: bold;
+	font-size: 13px;
+}
+
+.requirement-subheading {
+	margin-top: 5px;
+	margin-bottom: -2px;
+	font-size: 12px;
 	font-weight: bold;
 }
 
 .badge {
 	font-size: 12px;
-	margin-left: 4px;
+}
+
+.req-info {
+  margin-left: 5px;
 }
 
 .req-link {

@@ -15,7 +15,7 @@ def get_python_dict_for_reqs(requirement_groups):
         reqs = {}
         for req in group.requirement_set.all():
             req_info = {}
-            req_info['num_courses_to_fulfull'] = req.n_class
+            req_info['num_courses_to_fulfill'] = req.n_class
             fulfillers = []
             for course in Course.objects.filter(tags=req.fulfillers):
                 fulfillers.append(course.identifier)
@@ -54,10 +54,14 @@ def index(request):
             terms[t]['courses'] = []
             for e in term_enrolled:
                 course = e.course.course
+                requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()) 
+                requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
                 setattr(course, 'start_time', e.course.start_time)
                 setattr(course, 'end_time', e.course.end_time)
                 setattr(course, 'weekdays', e.course.weekdays)
                 setattr(course, 'units', e.units)
+                setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
+                setattr(course, 'reqs', serializers.serialize('json', requirements))
                 prereq_groups = PrereqGroup.objects.filter(for_course=course)
                 groups = []
                 for group in prereq_groups:
@@ -125,10 +129,16 @@ def fill_response_info_for_courses(results, responseData):
     classNames = []
     offerings = {}
     prereq_groups = {}
+    requirement_groups = {}
+    requirements = {}
     for course in results:
         classNames.append(course.identifier)
         course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
         offerings[course.identifier] = serializers.serialize('json', course_offerings)
+        req_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all())
+        requirement_groups[course.identifier] = serializers.serialize('json', req_groups)
+        reqs = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
+        requirements[course.identifier] = serializers.serialize('json', reqs)
         course_prereqs = []
         for group in PrereqGroup.objects.filter(for_course=course):
             satisfiers = []
@@ -142,6 +152,8 @@ def fill_response_info_for_courses(results, responseData):
     responseData["classNames"] = classNames
     responseData["offerings"] = offerings
     responseData["prereq_groups"] = prereq_groups
+    responseData["req_groups"] = requirement_groups
+    responseData["reqs"] = requirements
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
     
