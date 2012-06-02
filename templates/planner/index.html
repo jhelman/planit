@@ -310,8 +310,12 @@
                     if ($.inArray(req.name, course.reqNames) == -1) {
                         continue;
                     }
+                    
+                    var oldF = req.isFulfilled();
+                    
                     req.numFulfilled--;
-                    if (!req.isFulfilled()) {
+                    
+                    if (!req.isFulfilled() && oldF) {
                         rg.numFulfilled--;
                     }
                 }
