@@ -151,7 +151,8 @@ div.course-missing-prereq {
 		background-color: #ff9933;
 }
 
-.icon-trash, .icon-ok, .icon-calendar, .icon-info-sign {
+.icon-trash, .icon-ok, .icon-calendar, .icon-info-sign,
+  .icon-exclamation-sign {
     cursor: pointer;
 }
 
@@ -386,16 +387,21 @@ div.course-missing-prereq {
   border: 1px solid #dddddd;
   width: 300px;
   margin-top: 5px;
-  padding: 5px 10px 5px;
-/*  height: 0px;
+  padding: 10px 10px 10px;
+/*  height: 50px;
+*//*  height: 0px;
 */}
 
-#plan-info-div .plan-info-div-inner {
-  padding-left: 20px;
+/*#plan-info-div .plan-info-div-inner {
+  padding-left: 0px;
   margin-top: 3px;
-}
+}*/
 
 #plan-info-div .plan-info-div-title {
+}
+
+.warning-text {
+  color: red;
 }
 
 #search-div {

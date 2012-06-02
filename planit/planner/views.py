@@ -118,6 +118,7 @@ def index(request):
             
     args['years'] = years
     args['totalUnits'] = totalUnits
+    args['minUnits'] = plan.university.min_units
     args['offerings'] = offerings
     args['term_names'] = term_names
     args['max_units'] = plan.university.max_units_per_quarter

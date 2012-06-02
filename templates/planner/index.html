@@ -593,6 +593,8 @@
 		{% for course in plan.aps.all %}
 		plan.addExemption('{{ course.identifier }}');
 		{% endfor %}
+		
+		var minTotalUnits = {{ minUnits }};
 	        
         var classesJSON = null;
         var offeringsJSON = null;
@@ -857,7 +859,8 @@
 			{% endfor %}
 			
             returnHome(true);
-                        
+                  
+            updateTotalUnits(plan.units);      
             
             // Static
             // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
@@ -1035,11 +1038,22 @@
             // resetAddedUnits(quarterID);
         }
         
+        function updateTotalUnits(unitsChange) {
+            $('#total-units').html(plan.units);
+            if (plan.units < minTotalUnits) {
+                $('#total-units-icon').html('<i class="icon-exclamation-sign"></i>');
+                $('#total-units-icon').find('i').tooltip({title: 'Need ' + minTotalUnits + ' units in plan', 
+                    placement: 'right'});
+            } else {
+                $('#total-units-icon').html();
+            }   
+        }
+        
         function updateQuarterUnitsUI(quarterID, unitsChange, updateTotal) {
             // console.log(quarterID + ' ' + plan.getTermById(quarterID).units);
             $('#' + quarterID + '-units').html(plan.getTermById(quarterID).units);        
             if (updateTotal) {
-                $('#total-units').html(plan.units);
+                updateTotalUnits(unitsChange);
             }
         }
          
@@ -3000,13 +3014,14 @@
                 <tr>
                     <td>
                         <div id="plan-info-div">
-                            <div class="plan-info-div-title">
-                                <h4><u>Plan information:</u></h4>
-                            </div>
+                            <!-- <div class="plan-info-div-title">
+                                 <h4><u>Plan information:</u></h4>
+                             </div> -->
                             <div class="plan-info-div-inner">
                                 <b>Major</b>: Computer Science
                                 <br/>
-                                <b>Total Units</b>: <span id="total-units">{{ totalUnits }}</span>
+                                <b>Total Units</b>: <span id="total-units"></span>
+                                    <span id="total-units-icon"></span>
                                 <br/>
                             </div>
                         </div>
