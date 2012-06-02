@@ -465,6 +465,21 @@
         }
         
         
+        function Exemption(courseName, reqGroups, reqs) {
+            this.name = courseName;
+            this.reqGroups = [];
+    		var reqGroupNames = [];
+		    for (var i in reqGroups) {
+		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
+		       reqGroupNames.push(reqGroups[i].fields.name);
+	        }
+		    this.reqNames = [];
+		    for (var i in reqs) {
+		       this.reqNames.push(reqs[i].fields.name);
+    		}            
+        }
+        
+        
         function ReqGroup(name, reqGroup) {
             this.name = name;
             this.numReqsToFulfill = parseInt(reqGroup.num_reqs_to_fulfill);
@@ -1762,6 +1777,8 @@
                     $(event.target).prop('tagName') == "HTML" ||
                     $(event.target).hasClass('search-result-cname') ||
                     $(event.target).hasClass('icon-ok') ||
+                    $(event.target).hasClass('icon-remove') ||
+                    $(event.target).hasClass('info') ||
                     $(event.target).hasClass('search-result-info') ||
                     (($(event.target).attr('id') != null) && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
@@ -2379,7 +2396,7 @@
                             
             for (var i in tl) {
                 var numReqs = countReqs(tlName, i);
-                html += '<li class="req-link"><a href="#" onclick="getNextLevelOfReqs(this);">' + 
+                html += '<li class="req-link"><a href="#" onclick="getNextLevelOfReqs(this, true);">' + 
                     '<span class="req-name">' + i + '</span>' +  
                     '<span class="req-info">' + 
                     (numReqs == 0 ? '<i class="icon-ok"></i>' : 
@@ -2460,7 +2477,7 @@
 
         }
         
-        function getReqsAndClasses(liName, reqJSON, reqName, classJSON) {
+        function getReqsAndClasses(liName, reqJSON, reqName, classJSON, isForward) {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             
                 var liGroupHTML = "";
@@ -2500,12 +2517,13 @@
 
                  var cDiv = $('#search-scroll-div0');
 
-                 var scroller = '<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
+                 var scroller = (isForward ? ('<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
                      (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
                      'top: 0px">' + 
-                     '<div id="search-scroll-content' + bElems.length +'" class="content">';
+                     '<div id="search-scroll-content' + bElems.length +'" class="content">') : '');
 
-                 var html = scroller + '<div class="cdiv" id="cdiv' + bElems.length +'">';
+                 var html = scroller + '<div class="cdiv" id="cdiv' + 
+                    (isForward ? bElems.length : (bElems.length - 1)) +'">';
                                             
                  if (liGroupHTML != "") {
                      html += '<div class="requirement-heading">Select ' + 
@@ -2525,33 +2543,45 @@
                  html += '<ul class="nav nav-pills nav-stacked">' + liClassHTML + 
                     '</ul></div></div></div>';
 
-                 $('#content-div').append(html);
+                 if (isForward) {
+                     $('#content-div').append(html);
+                 } else {
+                     $('#search-scroll-content' + (bElems.length - 1)).html(html);
+                 }
 
-                 moveToNextBreadcrumbLevel(bElems.length, reqName);
-
-                 // countClasses('Major', reqName);
-
-                 $('#search-scroll-div' + (bElems.length - 1)).find('.pane').hide();
-
-                 $('#content-div').animate(
-                     {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
-                            var cur = $('#blevel' + (bElems.length - 1));
-                            cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
-                                  cur.find('a').html() + '</a><span class="divider">/</span>');
-                            refreshScroll(bElems.length);
-                            addButtonsToSearchResults();        
-
-                 });
-
+                 
             
             
         }
         
+        function animateForward(num) {
+            var cDiv = $('#search-scroll-div0');
+             $('#search-scroll-div' + (num - 1)).find('.pane').hide();
+
+             $('#content-div').animate(
+                 {'left': -num * (cDiv.width() + SPACER)}, 750, function () {
+                        var cur = $('#blevel' + (num - 1));
+                        cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
+                              cur.find('a').html() + '</a><span class="divider">/</span>');
+                        refreshScroll(num);
+                        addButtonsToSearchResults();        
+
+             });
+        }
         
-        function getNextLevelOfReqs(elem) {
-            elem = $(elem);
+        
+        function getNextLevelOfReqs(elemOrReqName, isForward) {
             
-            var reqName = elem.find('.req-name').html();            
+            var reqName = "";
+            if (isForward) {
+                reqName = $(elemOrReqName).find('.req-name').html();  
+            } else {
+                reqName = elemOrReqName;
+            }
+            
+            // elem = $(elem);
+            // 
+            // var reqName = elem.find('.req-name').html();            
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var reqJSON = ($(bElems[1]).html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
@@ -2589,11 +2619,35 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqName, classesJSON);
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqName, classesJSON, isForward);
+                    if (isForward) {
+                        moveToNextBreadcrumbLevel(bElems.length, reqName);
+                        animateForward(bElems.length);
+                    } else {
+                        animateBackward(bElems.length - 1);
+                    }
 				},
 				
 			}); 
             
+        }
+        
+        function animateBackward(num) {
+            
+            var cDiv = $('#search-scroll-div0');
+            
+            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
+                    
+                var cDivs = $('#content-div').find('.nano');
+                for (var j = cDivs.length; j > num; j--) {
+                    $('#search-scroll-div' + j).remove();
+                }
+                
+                $('#search-scroll-div' + num).find('.pane').show();                
+                
+                refreshScroll(num); 
+                
+            });
         }
         
         
@@ -2610,16 +2664,16 @@
             $('#blevel' + num).addClass('active');
             $('#blevel' + num).html($('#blevel' + num).find('a').html());
 
-            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
-                    
-                var cDivs = $('#content-div').find('.nano');
-                for (var j = cDivs.length; j > num; j--) {
-                    $('#search-scroll-div' + j).remove();
-                }
-                
-                $('#search-scroll-div' + num).find('.pane').show();
-                refreshScroll(num);            
-            });
+            // Need to reload the frame
+            if (num == 2) {
+                getNextLevelOfReqs($('#blevel' + num).html(), false);
+            } else {
+                animateBackward(num);
+            }
+            
+
+
+            
         }
         
         

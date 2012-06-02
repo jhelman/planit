@@ -372,7 +372,7 @@ div.course-missing-prereq {
 	-mox-border-radius: 5px;
 	border: 1px solid #dddddd;
 	width: 300px;
-	height: 450px;
+	height: 455px;
 	padding-bottom: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -414,7 +414,7 @@ div.course-missing-prereq {
 
 #content-div .nano {
 	position: absolute;
-	height: 360px;
+	height: 370px;
 	margin-left: 5px;
 }
 
