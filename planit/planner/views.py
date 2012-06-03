@@ -29,9 +29,17 @@ def get_python_dict_for_reqs(requirement_groups):
 def index(request):
     plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
     enrolled = Enrollment.objects.filter(plan=plan)
+    exempt = []
+    for course in plan.aps.all():
+        requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()) 
+        requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
+        setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
+        setattr(course, 'reqs', serializers.serialize('json', requirements))
+        exempt.append(course)
     
     args = {}
     args['plan'] = plan
+    args['exempt'] = exempt
     years = [{}, {}, {}, {}]
     years[0]['name'] = 'Freshman'
     years[1]['name'] = 'Sophomore'
