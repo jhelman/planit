@@ -78,7 +78,10 @@ def make_tags(tag_strs, course):
         tm.save()
 
 def parse_course(course_elem):
-    idstr = course_elem.find('subject').text + course_elem.find('code').text
+    dept = course_elem.find('subject').text
+    code = course_elem.find('code').text
+    int_code = int(filter(lambda x: x.isdigit(), code)) # for courses like MATH51H, CS106A, etc, just want the int part
+    idstr = dept + code
     idnum = int(course_elem.find('administrativeInformation').find('courseId').text)
     title = course_elem.find('title').text
     year = 2008 + random.randint(0, 4)  #int(course_elem.find('year').text.split('-')[1])
@@ -87,10 +90,10 @@ def parse_course(course_elem):
         desc = ""
     max_u = int(course_elem.find('unitsMax').text)
     min_u = int(course_elem.find('unitsMin').text)
-    c = Course.objects.filter(identifier=idstr, title=title, description=desc, class_number=idnum,
+    c = Course.objects.filter(identifier=idstr, dept=dept, code=int_code, title=title, description=desc, class_number=idnum,
         max_units=max_u, min_units=min_u)
     if not c:
-        c = Course(identifier=idstr, title=title, description=desc, class_number=idnum,
+        c = Course(identifier=idstr, dept=dept, code=int_code, title=title, description=desc, class_number=idnum,
             max_units=max_u, min_units=min_u)
         catch_save(c)
     else:

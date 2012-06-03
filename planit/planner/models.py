@@ -70,6 +70,8 @@ class Tag(models.Model):
 #underscore case for vars, as per python style guide
 class Course(models.Model):
     identifier = models.CharField(max_length=100)
+    dept = models.CharField(max_length=100)
+    code = models.IntegerField()
     title = models.CharField(max_length=64)
     description = models.CharField(max_length=1000)
     class_number = models.IntegerField()
