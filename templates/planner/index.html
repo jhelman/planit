@@ -1440,9 +1440,9 @@
         function makePopoverForCourse(termId, course) {
             
             $('#' + termId + makeCondensedName(course.cName)).popover({
-               title: course.cName,
-               content: course.courseObj.fields.title,
-               placement: 'right'
+               title: course.cName + ": " + course.courseObj.fields.title,
+               content: course.courseObj.fields.description,
+               placement: 'bottom'
             });
             
         }

@@ -175,10 +175,10 @@ def fill_response_info_for_courses(results, responseData):
 def search(request, prefix):
     responseData = {}
     responseData["query"] = prefix
-    results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+    results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
     if len(results) == 0:
         prefix = prefix.replace(' ', '')
-        results = Course.objects.filter(identifier__startswith=prefix).order_by('identifier')
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
     return fill_response_info_for_courses(results, responseData)
     
 def course_info(request):
@@ -196,7 +196,7 @@ def req_search(request, requirement_name):
     reqs = Requirement.objects.filter(name=requirement_name)
     results = []
     if len(reqs) == 1:
-        results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('identifier')
+        results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')
     return fill_response_info_for_courses(results, responseData) 
     
 
