@@ -275,9 +275,11 @@
     
         Term.prototype.addCourse = function(course) {
             this.courses[course.cName] = course;
-            this.units += course.units;
-            this.plan.units += course.units;
             this.removeDraggable(course.cName);
+            if (!course.isAdded) {
+                this.units += course.units;
+                this.plan.units += course.units;
+            }
         }
             
         Term.prototype.addDraggable = function(course) {             
@@ -441,12 +443,19 @@
             }   
         }
 
+        Course.prototype.getTermId = function() {
+            var offeringF = this.offering.fields
+            return termNames[offeringF.term] + offeringF.year + '-' + (parseInt(offeringF.year) + 1);
+        }
+
         Course.prototype.confirmCourse = function() {
             this.isAdded = false;
             for (var i in this.eventObjects) {
                 (this.eventObjects)[i].color = 'none';
             }
-            
+            plan.getTermById(this.getTermId()).units += this.units;
+            // console.log(plan.units);
+            plan.units += this.units;
             this.addCourseReqs();
         }
         
@@ -1038,7 +1047,7 @@
             // resetAddedUnits(quarterID);
         }
         
-        function updateTotalUnits(unitsChange) {
+        function updateTotalUnits() {
             $('#total-units').html(plan.units);
             if (plan.units < minTotalUnits) {
                 $('#total-units-icon').html('<i class="icon-exclamation-sign"></i>');
@@ -1053,7 +1062,7 @@
             // console.log(quarterID + ' ' + plan.getTermById(quarterID).units);
             $('#' + quarterID + '-units').html(plan.getTermById(quarterID).units);        
             if (updateTotal) {
-                updateTotalUnits(unitsChange);
+                updateTotalUnits();
             }
         }
          
@@ -1107,13 +1116,14 @@
             var numUnits = course.units;
                         
             courseElem.remove();
-            
-            updateQuarterUnitsUI(quarterID, parseInt("-" + numUnits), true);
-            
+                        
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
             
             plan.getTermById(quarterID).removeCourse(course);
+            
+            updateQuarterUnitsUI(quarterID, parseInt("-" + numUnits), true);
+            
                         
             // resetAddedUnits(quarterID);
             
@@ -1507,14 +1517,14 @@
                content: course.courseObj.fields.title,
                placement: 'right'
             });
-                                              
-            updateQuarterUnitsUI(termId, units, true);
-                
+                                                                           
             // resetAddedUnits(termId);
                         
             // console.log(course);            
             
             course.confirmCourse();
+            
+            updateQuarterUnitsUI(termId, units, true);
             
             updateRequirementsUI(course);
             
