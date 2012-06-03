@@ -603,11 +603,12 @@
 		plan.addExemption('{{ course.identifier }}');
 		{% endfor %}
 		
+		{% autoescape off %}
 		{% for course in exempt %}
-		var e = new Exemption('{{ course.identifier }}', '{{ course.reqGroups }}', '{{ course.reqs }}');
+		var e = new Exemption('{{ course.identifier }}', {{ course.req_groups }}, {{ course.reqs }});
 		// TODO do something with this exemption
-		console.log(e);
 		{% endfor %}
+		{% endautoescape %}
 		
 		var minTotalUnits = {{ minUnits }};
 	        

@@ -34,7 +34,13 @@ def index(request):
         requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()) 
         requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
         setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
+        print 'req_groups:'
+        print course.req_groups
+        print '----------------'
         setattr(course, 'reqs', serializers.serialize('json', requirements))
+        print 'reqs:'
+        print course.reqs
+        print '----------------'
         exempt.append(course)
     
     args = {}
