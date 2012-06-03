@@ -165,6 +165,7 @@
             this.units = 0;
             this.terms = new Array();
 			this.exemptCourseNames = new Array();
+			this.exemptions = new Object();
             for (var i in termNames) {
                 for (var j in years) {
                     var termID = termNames[i] + years[j];
@@ -241,27 +242,21 @@
 			return dict;
 		}
 		
-		FourYearPlan.prototype.addExemption = function(courseName) {
+		FourYearPlan.prototype.addExemption = function(courseName, exemption) {
 		    courseName = makeCondensedName(courseName);
-			if ($.inArray(courseName, this.exemptCourseNames) == -1) {
-				this.exemptCourseNames.push(courseName);
-			}
+			this.exemptions[courseName] = exemption;
 		}
 		
 		FourYearPlan.prototype.removeExemption = function(courseName) {
 		    courseName = makeCondensedName(courseName);
-			var pos = $.inArray(courseName, this.exemptCourseNames);
-			if (pos != -1) {
-				this.exemptCourseNames.splice(pos, 1);
+			if (this.exemptions[courseName] != undefined) {
+				delete this.exemptions[courseName];
 			}
 		}
 		
 		FourYearPlan.prototype.hasExemption = function(courseName) {
 		    courseName = makeCondensedName(courseName);
-		    if ($.inArray(courseName, this.exemptCourseNames) > -1) {
-		        return true;
-	        }
-	        return false;
+		    return (this.exemptions[courseName] != undefined)
 	    }
 	    
     
@@ -598,15 +593,10 @@
     	{% endfor %}
     	{% endfor %}
 		
-		/* Add exemptions to plan */
-		{% for course in plan.aps.all %}
-		plan.addExemption('{{ course.identifier }}');
-		{% endfor %}
-		
 		{% autoescape off %}
 		{% for course in exempt %}
 		var e = new Exemption('{{ course.identifier }}', {{ course.req_groups }}, {{ course.reqs }});
-		// TODO do something with this exemption
+		plan.addExemption('{{ course.identifier }}', e);
 		{% endfor %}
 		{% endautoescape %}
 		
@@ -2137,7 +2127,8 @@
 			data['add'] = adding;
 			
 			if (adding) {
-			    plan.addExemption(courseName);
+				var e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 													jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
+				plan.addExemption(makeCondensedName(courseName), e);
 		    } else {
 		        plan.removeExemption(courseName);
 	        }
