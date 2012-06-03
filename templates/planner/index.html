@@ -230,7 +230,7 @@
 			for (var t in this.terms) {
 				var term = this.terms[t];
 				for (var c in term.courses) {
-				    if ((term.courses)[c] != undefined) {
+				    if ((term.courses)[c] != undefined && !(term.courses)[c].isAdded) {
 					    if (dict[c] == undefined) {
 					        dict[c] = [term.courses[c]];
 				        } else {
@@ -244,14 +244,18 @@
 		
 		FourYearPlan.prototype.addExemption = function(courseName, exemption) {
 		    courseName = makeCondensedName(courseName);
+		    addCourseReqs(exemption, false);			
 			this.exemptions[courseName] = exemption;
 		}
 		
 		FourYearPlan.prototype.removeExemption = function(courseName) {
 		    courseName = makeCondensedName(courseName);
-			if (this.exemptions[courseName] != undefined) {
-				delete this.exemptions[courseName];
-			}
+            if (this.exemptions[courseName] != undefined) {
+                var e = this.exemptions[courseName];
+                this.exemptions[courseName] = undefined;
+                removeCourseReqs(e);
+            }
+            
 		}
 		
 		FourYearPlan.prototype.hasExemption = function(courseName) {
@@ -291,14 +295,16 @@
         }
         
     
-        Term.prototype.removeCourseReqs = function(course) {
+        function removeCourseReqs(course) {
+            
+            var cName = makeCondensedName(course.name);
             
             // Course already in schedule
             var courseDict = plan.getCourseDictionary();
-            if (courseDict[course.cName] != undefined || plan.hasExemption(course.cName)) {
+            if (courseDict[cName] != undefined || plan.hasExemption(cName)) {
                 return;
             }
-                        
+                                                  
             // Check for reqs and reqGroups
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
@@ -309,9 +315,9 @@
                     }
                     
                     var oldF = req.isFulfilled();
-                    
+                                        
                     req.numFulfilled--;
-                    
+                                        
                     if (!req.isFulfilled() && oldF) {
                         rg.numFulfilled--;
                     }
@@ -324,7 +330,7 @@
             this.units -= course.units;
             this.plan.units -= course.units;
             
-            this.removeCourseReqs(course);
+            removeCourseReqs(course);
             
         }
         
@@ -409,25 +415,34 @@
         //     console.log(offering);
         // }
 
-        Course.prototype.addCourseReqs = function() {
+        function addCourseReqs(course, isCourse) {
+         			   
+         	var cName = makeCondensedName(course.name);
+         			   
             // Course already in schedule
-            var courses = plan.getCourseDictionary()[this.cName];
+            var courses = plan.getCourseDictionary()[cName];
             var courseCount = 0;
             for (var c in courses) {
                 if (!(courses[c].isAdded)) {
                     courseCount++;
                 }
             }
-            if (courseCount > 1 || plan.hasExemption(this.cName)) {
+            
+            var maxCourses = 0; 
+            if (isCourse) {
+                maxCourses = 1;
+            }
+            
+            if (courseCount > maxCourses || plan.hasExemption(cName)) {
                 return;
             }
-                        
+                                    
             // Check for reqs and reqGroups
-            for (var i in this.reqGroups) {
-                var rg = this.reqGroups[i];
+            for (var i in course.reqGroups) {
+                var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
                     var req = rg.reqs[j];
-                    if ($.inArray(req.name, this.reqNames) == -1) {
+                    if ($.inArray(req.name, course.reqNames) == -1) {
                         continue;
                     }
                     req.numFulfilled++;
@@ -435,7 +450,9 @@
                         rg.numFulfilled++;
                     }
                 }
-            }   
+            }  
+            
+             
         }
 
         Course.prototype.getTermId = function() {
@@ -451,7 +468,7 @@
             plan.getTermById(this.getTermId()).units += this.units;
             // console.log(plan.units);
             plan.units += this.units;
-            this.addCourseReqs();
+            addCourseReqs(this, true);
         }
         
         
@@ -588,7 +605,7 @@
         {% endif %}
 		{% endfor %}
     	t.addCourse(c);
-    	c.addCourseReqs();
+    	addCourseReqs(c, true);
     	{% endfor %}
     	{% endfor %}
     	{% endfor %}
@@ -1064,21 +1081,22 @@
             }
         }
          
-		function updateRequirementsUI(course) {
+		function updateRequirementsUI() {
 		    
 			var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             for (var i = bElems.length - 1; i >= 0; i--) {
                 var liElems = $('#cdiv' + i).find('.nav-tabs li');
                 var len = liElems.length;
                 
+                // console.log(i);
+                
                 for (var j = 0; j < len; j++) {
                     
                     var num = 0;
                     if (i == 2) {
-                        num = countClasses($(bElems[1]).find('a').html(), $(bElems[2]).find('a').html(),
-                            $(liElems[j]).find('.shortName').html());
-                        
-                        
+                        num = countClasses($(bElems[1]).find('a').html(), $(bElems[2]).html(),
+                                $(liElems[j]).find('.req-name').html());
+                            
                     } else if (i == 1) {
                         num = countReqs($(bElems[1]).find('a').html(), $(liElems[j]).find('.req-name').html());
                         
@@ -1138,7 +1156,7 @@
             
             cancelDeleteCourse(quarterID);
             
-            updateRequirementsUI(course);
+            updateRequirementsUI();
 			
 			var termYear = convertFromCondensedName(quarterID).split(" ");
 			var termName = termYear[0];
@@ -1526,7 +1544,7 @@
             
             updateQuarterUnitsUI(termId, units, true);
             
-            updateRequirementsUI(course);
+            updateRequirementsUI();
             
             cancelAddCourse(course.courseObj, course.offerings);
                         
@@ -1791,7 +1809,7 @@
             var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
             
             $(classLinkItem).bind('mousedownoutside', function (event) {
-                                                                   
+                                                                                                
                 if ($(event.target).hasClass('confirm-add-class')) {
                     var cName = $(event.target).closest('.course').find('.courseName').html();
                     var termId = $(event.target).closest('.quarter-div').attr('id');
@@ -1807,6 +1825,8 @@
                     $(event.target).hasClass('icon-ok') ||
                     $(event.target).hasClass('icon-remove') ||
                     $(event.target).hasClass('info') ||
+                    (($(event.target).closest('li').length > 0) &&
+                        $(event.target).closest('li').hasClass('req-link')) ||
                     $(event.target).hasClass('search-result-info') ||
                     (($(event.target).attr('id') != null) && 
                         ($(event.target).attr('id').indexOf("-search-result") != -1) ||
@@ -2127,11 +2147,14 @@
 			data['add'] = adding;
 			
 			if (adding) {
-				var e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 													jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
-				plan.addExemption(makeCondensedName(courseName), e);
+			    var e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
+				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
+                plan.addExemption(makeCondensedName(courseName), e);
 		    } else {
 		        plan.removeExemption(courseName);
 	        }
+	        	
+	        updateRequirementsUI();
 	        			
 			$.ajax({
 				type: 'POST',
@@ -2654,6 +2677,7 @@
                         animateForward(bElems.length);
                     } else {
                         animateBackward(bElems.length - 1);
+                        console.log($('#content-div').html());
                     }
 				},
 				
@@ -2673,8 +2697,9 @@
                 }
                 
                 $('#search-scroll-div' + num).find('.pane').show();                
-                
                 refreshScroll(num); 
+                addButtonsToSearchResults();        
+                
                 
             });
         }
