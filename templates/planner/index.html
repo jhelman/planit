@@ -604,8 +604,9 @@
 		{% endfor %}
 		
 		{% for course in exempt %}
-		var e = new Exemption(course.identifier, course.reqGroups, course.reqs);
+		var e = new Exemption('{{ course.identifier }}', '{{ course.reqGroups }}', '{{ course.reqs }}');
 		// TODO do something with this exemption
+		console.log(e);
 		{% endfor %}
 		
 		var minTotalUnits = {{ minUnits }};
