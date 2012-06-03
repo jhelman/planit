@@ -581,7 +581,7 @@
     	var offerings = jQuery.parseJSON({{ course.offering_json }});
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
-    	    {{ course.min_units }}, {{ course.max_units }}, {{ course.units }}, jQuery.parseJSON({{ course.course_json }}), 
+    	    {{ course.min_units }}, {{ course.max_units }}, {{ course.units }}, jQuery.parseJSON({{ course.course_json }})[0], 
     	    prereqGroups, {{ course.req_groups }}, {{ course.reqs }}, false, false);
     	{% endautoescape %}
 		
@@ -869,7 +869,8 @@
             {% for year in years %}
 			{% for term in year.terms %}
 			{% for course in term.courses%}
-			$('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.title }}', 'placement': 'right'});
+			makePopoverForCourse('{{ term.condensedName }}', plan.getTermById('{{ term.condensedName }}').getCourse('{{ course.condensedID }}'));
+            // $('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.title }}', 'placement': 'right'});
 			{% endfor %}
 			{% endfor %}
 			{% endfor %}
@@ -1428,8 +1429,18 @@
         }
         
         
+        function makePopoverForCourse(termId, course) {
+            
+            $('#' + termId + makeCondensedName(course.cName)).popover({
+               title: course.cName,
+               content: course.courseObj.fields.title,
+               placement: 'right'
+            });
+            
+        }
+        
         function createRolloversForAddedCourse(quarterID, courseObj, isWarning, 
-                warningArrayAll, warningArrayOffering) {
+                warningArrayAll, warningArrayOffering, course) {
             
             $('#plan-table').find('.icon-ok').tooltip({'title': 'Add Course', 'placement': 'top'});
             
@@ -1443,11 +1454,7 @@
                 
             }
             
-            $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover({
-               title: courseObj.identifier,
-               content: courseObj.title,
-               placement: 'right'
-            });
+            makePopoverForCourse(quarterID, course);
             
         }
         
@@ -1519,11 +1526,7 @@
                 $(this).find('.grab-over').hide();
             });
             
-            $('#' + termId + makeCondensedName(courseName)).popover({
-               title: course.name,
-               content: course.courseObj.fields.title,
-               placement: 'right'
-            });
+            makePopoverForCourse(termId, course);
                                                                            
             // resetAddedUnits(termId);
                         
@@ -1902,7 +1905,7 @@
                 makeAddedCourseHTML($('#' + termId + '-courses'), termId, courseObj.fields, isWarning);
                                 
                 createRolloversForAddedCourse(termId, courseObj.fields, isWarning, 
-                    warningArrayAll, warningArrayOffering);
+                    warningArrayAll, warningArrayOffering, addedCourse);
                         
             }
             

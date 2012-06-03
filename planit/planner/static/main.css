@@ -532,4 +532,7 @@ div.course-missing-prereq {
 	font-weight: bold;
 }
 
+.popover {
+  z-index: 5000;
+}
 
