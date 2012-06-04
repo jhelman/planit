@@ -55,6 +55,8 @@ def parse_section(section, course, year):
         end_t =  schedule.find('endTime').text
         start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
         end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
+       # start_t = datetime.datetime(*strptime(start_t, "%H:%M:%S")[0:6]).time()
+       # end_t = datetime.datetime(*strptime(end_t, "%H:%M:%S")[0:6]).time()
         days_list = schedule.find('days').text.split()
         daystr = "".join([word[0] if word[0:2] != 'Th' else 'R' for word in days_list])
         for year in range(4):
@@ -80,8 +82,12 @@ def make_tags(tag_strs, course):
 def parse_course(course_elem):
     dept = course_elem.find('subject').text
     code = course_elem.find('code').text
-    int_code = int(filter(lambda x: x.isdigit(), code)) # for courses like MATH51H, CS106A, etc, just want the int part
     idstr = dept + code
+    #print idstr
+    int_code = filter(lambda x: x.isdigit(), code) # for courses like MATH51H, CS106A, etc, just want the int part
+    if int_code == '':
+        return
+    int_code = int(int_code)
     idnum = int(course_elem.find('administrativeInformation').find('courseId').text)
     title = course_elem.find('title').text
     year = 2008 + random.randint(0, 4)  #int(course_elem.find('year').text.split('-')[1])
@@ -148,6 +154,15 @@ def add_tags(arr):
             print cname
             tm = TagMapping(tag=tag,course=c[0])
             tm.save()
+def add_requirement_group(m, rg_name, n, classes):
+    rg = RequirementGroup(major=m, name=rg_name, n_prereqs=n)
+    rg.save()
+
+    tags = [add_tag(c, [c]) for c in classes]
+    reqs = [Requirement(name=t.name, fulfillers=t,n_class=1, group=rg) for t in tags]
+    for r in reqs:
+        r.save()
+    return rg
 
 def filldb():
     for i in range(3):
@@ -174,37 +189,38 @@ def filldb():
      
                 e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
-    corerg = RequirementGroup(major=m, name='Math Core', n_prereqs=4)
-    corerg.save()
-    coretags = [add_tag('MATH41', ['MATH41']),
-             add_tag('MATH42', ['MATH42']),
-             add_tag('CS103', ['CS103']),
-             add_tag('CS109', ['CS109'])]
-
-    for ct in coretags:
-        req = Requirement(name=ct.name, fulfillers=ct, n_class=1,  group=corerg)
-        req.save()
-        
-    electives = RequirementGroup(major=m, name='Math Electives', n_prereqs=4)
-    electives.save()
+    
+    math_corerg = add_requirement_group(m, "Math core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
+    math_electives = ['MATH51', 'MATH103','MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
+    math_electives = add_requirement_group(m, "Math Electives", 2, math_electives) 
 
     fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])
-    fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=electives)
+    fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=math_electives)
     fiftiesr.save()
-    others = [add_tag('MATH51', ['MATH51']), 
-              add_tag('MATH103', ['MATH103']),
-              add_tag('MATH104', ['MATH104']),
-              add_tag('MATH108', ['MATH108']),
-              add_tag('MATH109', ['MATH109']),
-              add_tag('MATH110', ['MATH110']),
-              add_tag('MATH113', ['MATH113']),
-              add_tag('CS157', ['CS157']),
-              add_tag('CS205A', ['CSS05A'])]
+########################
+    sci_corerg = add_requirement_group(m, "Science core", 2, ['PHYSICS41','PHYSICS43']) 
+    sci_electives = ['BIO41', 'BIO42', 'BIO43', 'CEE63', 'CEE64', 'CEE70', 'CHEM31A', 'CHEM31B', 'CHEM33', 'CHEM35',
+                     'CHEM36', 'CHEM131', 'CHEM135', 'EARTHSYS10', 'ENGR31', 'GES1A', 'GES1B', 'GES1C', 'PHYSICS21',
+                     'PHYSICS23', 'PHYSICS25', 'PHYSICS45', 'PHYSICS61', 'PHYSICS63', 'PHYSICS65']
+    sci_electives = add_requirement_group(m, "Science Electives", 1, sci_electives) 
+########################
+    tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['CS191W','CS194W', 'CS210B', 'CS294W']) 
+######################
+    ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"]) 
 
-    for tag in others:
-        req = Requirement(name=tag.name, fulfillers=tag, n_class=1,  group=electives)
-        req.save()
-    
+    cs_intro = add_tag('CS106', ['CS106A', 'CS106B', 'CS106X'])
+    cs_intro = Requirement(name='CS106', fulfillers=cs_intro, n_class=1, group=ef_core)
+    cs_intro.save()
+
+    ef_electives = ['ENGR10', 'ENGR14','ENGR15', 'ENGR20','ENGR25B','ENGR25E','ENGR30','ENGR40','ENGR40N','ENGR40P',
+                    'ENGR50','ENGR50E','ENGR50M','ENGR60','ENGR62','ENGR80', 'ENGR90']
+    ef_electives = add_requirement_group(m, "Engineering Electives", 1, ef_electives) 
+##########################
+    cs_core = add_requirement_group(m, "CS core", 3, ["CS107", "CS110", "CS161"]) 
+##########################
+
+    # we'll have to add a note saying only cs106b or 106x can count not both. we cant do xor.
+        
     ecs = Tag.objects.filter(name__startswith='GER:EC')
     ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
     ecrg.save()
