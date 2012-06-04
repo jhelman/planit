@@ -176,10 +176,10 @@ def filldb():
                 e.save()
     corerg = RequirementGroup(major=m, name='Math Core', n_prereqs=4)
     corerg.save()
-    coretags = [add_tag('Math 41', ['MATH41']),
-             add_tag('Math 42', ['MATH42']),
-             add_tag('CS 103', ['CS103']),
-             add_tag('CS 109', ['CS109'])]
+    coretags = [add_tag('MATH41', ['MATH41']),
+             add_tag('MATH42', ['MATH42']),
+             add_tag('CS103', ['CS103']),
+             add_tag('CS109', ['CS109'])]
 
     for ct in coretags:
         req = Requirement(name=ct.name, fulfillers=ct, n_class=1,  group=corerg)
@@ -191,15 +191,15 @@ def filldb():
     fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])
     fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=electives)
     fiftiesr.save()
-    others = [add_tag('MATH 51', ['MATH51']), 
-              add_tag('MATH 103', ['MATH103']),
-              add_tag('MATH 104', ['MATH104']),
-              add_tag('MATH 108', ['MATH108']),
-              add_tag('MATH 109', ['MATH109']),
-              add_tag('MATH 110', ['MATH110']),
-              add_tag('MATH 113', ['MATH113']),
-              add_tag('CS 157', ['CS157']),
-              add_tag('CS 205A', ['CSS05A'])]
+    others = [add_tag('MATH51', ['MATH51']), 
+              add_tag('MATH103', ['MATH103']),
+              add_tag('MATH104', ['MATH104']),
+              add_tag('MATH108', ['MATH108']),
+              add_tag('MATH109', ['MATH109']),
+              add_tag('MATH110', ['MATH110']),
+              add_tag('MATH113', ['MATH113']),
+              add_tag('CS157', ['CS157']),
+              add_tag('CS205A', ['CSS05A'])]
 
     for tag in others:
         req = Requirement(name=tag.name, fulfillers=tag, n_class=1,  group=electives)

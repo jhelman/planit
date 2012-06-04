@@ -206,7 +206,7 @@
                 }
                 var reqs = totalReqGroups[i].reqs;
                 for (var j in reqs) {
-                    if (reqs[j].name == reqName) {
+                    if (reqs[j].cName == makeCondensedName(reqName)) {
                         return reqs[j];
                     }
                 }   
@@ -253,7 +253,7 @@
             if (this.exemptions[courseName] != undefined) {
                 var e = this.exemptions[courseName];
                 this.exemptions[courseName] = undefined;
-                removeCourseReqs(e);
+                removeCourseReqs(e, true);
             }
             
 		}
@@ -295,7 +295,7 @@
         }
         
     
-        function removeCourseReqs(course) {
+        function removeCourseReqs(course, isExemption) {
             
             var cName = makeCondensedName(course.name);
             
@@ -310,7 +310,8 @@
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
                     var req = rg.reqs[j];
-                    if ($.inArray(req.name, course.reqNames) == -1) {
+                    if ($.inArray(req.name, course.reqNames) == -1 ||
+                        (isExemption && !course.bypassable)) {
                         continue;
                     }
                     
@@ -330,7 +331,7 @@
             this.units -= course.units;
             this.plan.units -= course.units;
             
-            removeCourseReqs(course);
+            removeCourseReqs(course, false);
             
         }
         
@@ -415,7 +416,7 @@
         //     console.log(offering);
         // }
 
-        function addCourseReqs(course, isCourse) {
+        function addCourseReqs(course, isExemption) {
          			   
          	var cName = makeCondensedName(course.name);
          			   
@@ -429,7 +430,7 @@
             }
             
             var maxCourses = 0; 
-            if (isCourse) {
+            if (!isExemption) {
                 maxCourses = 1;
             }
             
@@ -442,7 +443,8 @@
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
                     var req = rg.reqs[j];
-                    if ($.inArray(req.name, course.reqNames) == -1) {
+                    if ($.inArray(req.name, course.reqNames) == -1 ||
+                        (isExemption && !course.bypassable)) {
                         continue;
                     }
                     req.numFulfilled++;
@@ -526,7 +528,9 @@
         }
         
         function Req(name, req, reqGroup) {
+            console.log(name);
             this.name = name;
+            this.cName = makeCondensedName(name);
             this.fulfillers = new Array();
             for (var i in req.fulfillers) {
                 this.fulfillers = req.fulfillers[i];
@@ -534,6 +538,7 @@
             this.numCoursesToFulfill = parseInt(req.num_courses_to_fulfill);
             this.numFulfilled = 0;
             this.reqGroup = reqGroup;
+            this.bypassable = req.bypassable;
         }
         
         Req.prototype.isFulfilled = function() {
@@ -2134,7 +2139,7 @@
             } 
                                     
             btn.tooltip('hide');  
-                                                
+            
             td.html('<button class="btn btn-default ' +
                 (adding ? 'remove-exemption' : 'add-exemption') + '" id="' + 
                 makeCondensedName(courseName) + '-button" onclick="addExemption(this);"><i class="icon-' + 
@@ -2216,7 +2221,7 @@
             $('#content-div').html(html); 
             refreshScroll(0);
         }
-        
+                
         
         function addButtonsToSearchResults() {
 
@@ -2229,22 +2234,42 @@
                 if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
                     return;
                 }
-                
                 var courseName = $(this).find('.shortName').html();
                 var exemption = plan.hasExemption(courseName);
                 // alert($(event.target).prop('tagName'));
-                $(event.target).closest('li').find('.search-result-info .icon-ok').tooltip('hide');
-                $(event.target).closest('li').find('.search-result-info .icon-check').tooltip('hide');
-                $(event.target).closest('li').find('.search-result-info').html('<button class="btn btn-default ' +
-                    (!exemption ? 'add-exemption' : 'remove-exemption') +
-                    '" onclick="addExemption(this)" id="' +
-                    makeCondensedName(courseName) + '-button">' +
-                    '<i class="icon-' + 
-                    (!exemption ? 'check' : 'remove-circle') +
-                    '" id="' + makeCondensedName(courseName) +
-                    '-icon"></i></button>');
-                $(this).find('.add-exemption').tooltip({title: 'Add course exemption', placement: 'top'});
-                $(this).find('.remove-exemption').tooltip({title: 'Remove course exemption', placement: 'top'});
+				var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+                var reqName = $(bElems[bElems.length - 1]).html();
+                var byButton = true;
+                if (reqName.indexOf("Search: ") == -1) {
+                    var req;
+                    if (bElems.length == 3) {
+                        req = plan.getRequirement(makeCondensedName(courseName), [$(bElems[2]).html()]);
+                        if (req == false) {
+                            req = plan.getRequirement($(bElems[2]).html(), [$(bElems[2]).html()]);
+                        }
+                    } else if (bElems.length == 4) {
+                        req = plan.getRequirement(reqName, [$(bElems[2]).find('a').html()]);
+                    }
+                    console.log(req);
+                    if (!req.bypassable) {
+                        byButton = false;
+                    }
+                }
+                
+                if (byButton == true) {
+                    $(event.target).closest('li').find('.search-result-info .icon-ok').tooltip('hide');
+                    $(event.target).closest('li').find('.search-result-info .icon-check').tooltip('hide');
+                    $(event.target).closest('li').find('.search-result-info').html('<button class="btn btn-default ' +
+                        (!exemption ? 'add-exemption' : 'remove-exemption') +
+                        '" onclick="addExemption(this)" id="' +
+                        makeCondensedName(courseName) + '-button">' +
+                        '<i class="icon-' + 
+                        (!exemption ? 'check' : 'remove-circle') +
+                        '" id="' + makeCondensedName(courseName) +
+                        '-icon"></i></button>');
+                    $(this).find('.add-exemption').tooltip({title: 'Add course exemption', placement: 'top'});
+                    $(this).find('.remove-exemption').tooltip({title: 'Remove course exemption', placement: 'top'});
+                }
                 
                 turnOffCourseHighlight();
                 
