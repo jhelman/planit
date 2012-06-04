@@ -558,7 +558,7 @@
             return false;
         }
     
-        plan = new FourYearPlan('{{ plan.student_name }}', '{{ plan.major.name }}');
+        plan = new FourYearPlan('{{ plan.name }}', '{{ plan.major.name }}');
         
         {% autoescape off %}
 		var generalReqs = {{ general_reqs }};

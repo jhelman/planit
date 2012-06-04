@@ -213,7 +213,7 @@ def add_course(request):
     if len(offerings) > 0:
         to_add = offerings[0]
         # TODO correct Plan lookup
-        plan = Plan.objects.filter(student_name=plan_name)[0]
+        plan = Plan.objects.filter(name=plan_name)[0]
         enrollment = Enrollment(course=to_add, plan=plan, units=units)
         enrollment.save()
     
@@ -226,7 +226,7 @@ def delete_course(request):
     term_num = params['term']
     plan_name = params['plan']
     # TODO correct plan lookup
-    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__student_name=plan_name)
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__name=plan_name)
     if len(enrollments) == 1:
         to_delete = enrollments[0]
         to_delete.delete()
@@ -242,14 +242,14 @@ def move_course(request):
     new_year = params['new_year']
     new_term = params['new_term']
     plan_name = params['plan']
-    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__student_name=plan_name)
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__name=plan_name)
     if len(enrollments) == 1:
         to_switch = enrollments[0]
         offerings = CourseOffering.objects.filter(course__identifier=course_name, year=new_year, term=new_term)
         if len(offerings) > 0:
             offering = offerings[0]
             # TODO correct Plan lookup
-            plan = Plan.objects.filter(student_name=plan_name)[0]
+            plan = Plan.objects.filter(name=plan_name)[0]
             to_switch.course = offering
             to_switch.save()
         
@@ -264,7 +264,7 @@ def set_exemption(request):
     if len(courses) == 1:
         course = courses[0]
         # TODO correct Plan lookup
-        plan = Plan.objects.filter(student_name=plan_name)[0]
+        plan = Plan.objects.filter(name=plan_name)[0]
         if add == 'true':
             plan.aps.add(course)
         else:
