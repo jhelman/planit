@@ -1443,7 +1443,26 @@
 		function formatTime(time) {
 			return time.substr(0, time.length - 3);
 		}
-        
+		
+		function formatPrereqGroup(group) {
+			if (group.length == 1) {
+				return group[0];
+			} else if (group.length == 2) {
+				return '[' + group.join(' or ') + ']';
+			} else {
+				var str = group.join(', ');
+				var lastComma = str.lastIndexOf(',');
+				return '[' + str.substr(0, lastComma) + ', or' + str.substr(lastComma + 1) + ']'
+			}
+		}
+		
+		function makePrereqString(prereqGroups) {
+			var arr = new Array()
+			for (var i in prereqGroups) {
+				arr.push(formatPrereqGroup(prereqGroups[i]));
+			}
+			return arr.join(', ');
+		}
         
         function makePopoverForCourse(termId, course) {
             
@@ -1451,9 +1470,14 @@
 				'<br /><br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
 				formatTime(course.offering.fields.start_time) + '-' + formatTime(course.offering.fields.end_time) +
 				'<br /><b>Instructor:</b> ' + course.offering.fields.instructor;
+				
+				if (course.prereqGroups.length > 0) {
+					content += '<br /><b>Prerequisites:</b> ' + makePrereqString(course.prereqGroups);
+				}
 				if (course.reqNames.length > 0) {
 					content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
 				}
+				
 			
             $('#' + termId + makeCondensedName(course.cName)).popover({
                title: course.cName + ": " + course.courseObj.fields.title,
