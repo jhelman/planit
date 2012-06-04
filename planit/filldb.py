@@ -209,14 +209,14 @@ def filldb():
     ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
     ecrg.save()
     for ec in ecs:
-        r = Requirement(name=ec.name, fulfillers=ec, n_class=1, group=ecrg)
+        r = Requirement(name=ec.name, fulfillers=ec, n_class=1, group=ecrg, bypassable=False)
         r.save()
 
     other_gers = (set(Tag.objects.filter(name__startswith='GER:')) | set(Tag.objects.filter(name__startswith='Writing'))) - set(ecs)
     for ger in other_gers:
         gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
         gerg.save()
-        r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg)
+        r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg, bypassable=False)
         r.save()
 
     
