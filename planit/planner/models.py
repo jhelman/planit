@@ -126,6 +126,7 @@ class Plan(models.Model):
     start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
     aps = models.ManyToManyField(Course)
+    track = models.ForeignKey(RequirementGroup, null=True)
     
     def __unicode__(self):
         return self.name
