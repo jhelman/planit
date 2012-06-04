@@ -1466,7 +1466,12 @@
         
         function makePopoverForCourse(termId, course) {
             
-			var content = course.courseObj.fields.description + 
+            var descrip = course.courseObj.fields.description;
+            if (course.courseObj.fields.description.length > 100) {
+                descrip = descrip.substring(0, 100) + "...";
+            }
+            
+			var content =  descrip + 
 				'<br /><br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
 				formatTime(course.offering.fields.start_time) + '-' + formatTime(course.offering.fields.end_time) +
 				'<br /><b>Instructor:</b> ' + course.offering.fields.instructor;
