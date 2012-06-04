@@ -244,7 +244,7 @@
 		
 		FourYearPlan.prototype.addExemption = function(courseName, exemption) {
 		    courseName = makeCondensedName(courseName);
-		    addCourseReqs(exemption, false);			
+		    addCourseReqs(exemption, true);			
 			this.exemptions[courseName] = exemption;
 		}
 		
@@ -444,7 +444,7 @@
                 for (var j in rg.reqs) {
                     var req = rg.reqs[j];
                     if ($.inArray(req.name, course.reqNames) == -1 ||
-                        (isExemption && !course.bypassable)) {
+                        (isExemption && !req.bypassable)) {
                         continue;
                     }
                     req.numFulfilled++;
@@ -470,7 +470,7 @@
             plan.getTermById(this.getTermId()).units += this.units;
             // console.log(plan.units);
             plan.units += this.units;
-            addCourseReqs(this, true);
+            addCourseReqs(this, false);
         }
         
         
@@ -528,7 +528,6 @@
         }
         
         function Req(name, req, reqGroup) {
-            console.log(name);
             this.name = name;
             this.cName = makeCondensedName(name);
             this.fulfillers = new Array();
@@ -610,7 +609,7 @@
         {% endif %}
 		{% endfor %}
     	t.addCourse(c);
-    	addCourseReqs(c, true);
+    	addCourseReqs(c, false);
     	{% endfor %}
     	{% endfor %}
     	{% endfor %}
@@ -2250,7 +2249,6 @@
                     } else if (bElems.length == 4) {
                         req = plan.getRequirement(reqName, [$(bElems[2]).find('a').html()]);
                     }
-                    console.log(req);
                     if (!req.bypassable) {
                         byButton = false;
                     }
@@ -2702,7 +2700,6 @@
                         animateForward(bElems.length);
                     } else {
                         animateBackward(bElems.length - 1);
-                        console.log($('#content-div').html());
                     }
 				},
 				
