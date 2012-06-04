@@ -114,7 +114,7 @@ def index(request):
                         days.append(start_day + 4)
                 setattr(course, 'days', days)
                 course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3) #kludge to exclude summer
-                setattr(course, 'offering_json', simplejson.dumps(serializers.serialize('json', course_offerings)))
+                setattr(course, 'offering_json', simplejson.dumps(serializers.serialize('json', course_offerings, use_natural_keys=True)))
                 setattr(course, 'course_json', simplejson.dumps(serializers.serialize('json', [course])))
             terms[t]['units'] = units
             totalUnits += units
@@ -151,7 +151,7 @@ def fill_response_info_for_courses(results, responseData):
     for course in results:
         classNames.append(course.identifier)
         course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
-        offerings[course.identifier] = serializers.serialize('json', course_offerings)
+        offerings[course.identifier] = serializers.serialize('json', course_offerings, use_natural_keys=True)
         req_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all())
         requirement_groups[course.identifier] = serializers.serialize('json', req_groups)
         reqs = Requirement.objects.filter(fulfillers__in=course.tags.all()) 

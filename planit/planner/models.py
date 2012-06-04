@@ -34,6 +34,9 @@ class Instructor(models.Model):
 
     def __unicode__(self):
         return "%s, %s" % (self.last_name, self.first_name)
+        
+    def natural_key(self):
+        return "%s, %s" % (self.last_name, self.first_name) 
 
 class University(models.Model):
     name = models.CharField(max_length=256)

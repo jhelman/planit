@@ -1445,7 +1445,8 @@
             
             $('#' + termId + makeCondensedName(course.cName)).popover({
                title: course.cName + ": " + course.courseObj.fields.title,
-               content: course.courseObj.fields.description,
+               content: course.courseObj.fields.description + 
+			   '<br /></br /><b>Instructor:</b> ' + course.offering.fields.instructor,
                placement: 'bottom'
             });
             
