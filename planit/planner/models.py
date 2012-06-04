@@ -34,6 +34,9 @@ class Instructor(models.Model):
 
     def __unicode__(self):
         return "%s, %s" % (self.last_name, self.first_name)
+        
+    def natural_key(self):
+        return "%s, %s" % (self.last_name, self.first_name) 
 
 class University(models.Model):
     name = models.CharField(max_length=256)
@@ -111,18 +114,22 @@ class PrereqGroup(models.Model):
     for_course = models.ForeignKey(Course, related_name='prereqs')
     mandatory = models.BooleanField()
     satisfiers = models.ManyToManyField(Course)
+    
+    def __unicode__(self):
+        return self.for_course.identifier
 
 class Plan(models.Model):
-    student_name = models.CharField(max_length=100) #eventually user
+    name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
     user = models.ForeignKey(UserData, null=True)
     university = models.OneToOneField(University)
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
     aps = models.ManyToManyField(Course)
+    track = models.ForeignKey(RequirementGroup, null=True)
     
     def __unicode__(self):
-        return self.student_name
+        return self.name
         
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
