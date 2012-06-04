@@ -111,6 +111,9 @@ class PrereqGroup(models.Model):
     for_course = models.ForeignKey(Course, related_name='prereqs')
     mandatory = models.BooleanField()
     satisfiers = models.ManyToManyField(Course)
+    
+    def __unicode__(self):
+        return self.for_course.identifier
 
 class Plan(models.Model):
     name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
