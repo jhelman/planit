@@ -53,8 +53,10 @@ def parse_section(section, course, year):
     for schedule in sch.getiterator(tag='schedule'):
         start_t = schedule.find('startTime').text
         end_t =  schedule.find('endTime').text
-        start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
-        end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
+        #start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
+        #end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
+        start_t = datetime.datetime(*strptime(start_t, "%H:%M:%S")[0:6]).time()
+        end_t = datetime.datetime(*strptime(end_t, "%H:%M:%S")[0:6]).time()
         days_list = schedule.find('days').text.split()
         daystr = "".join([word[0] if word[0:2] != 'Th' else 'R' for word in days_list])
         for year in range(4):
@@ -80,8 +82,12 @@ def make_tags(tag_strs, course):
 def parse_course(course_elem):
     dept = course_elem.find('subject').text
     code = course_elem.find('code').text
-    int_code = int(filter(lambda x: x.isdigit(), code)) # for courses like MATH51H, CS106A, etc, just want the int part
     idstr = dept + code
+    print idstr
+    int_code = filter(lambda x: x.isdigit(), code) # for courses like MATH51H, CS106A, etc, just want the int part
+    if int_code == '':
+        return
+    int_code = int(int_code)
     idnum = int(course_elem.find('administrativeInformation').find('courseId').text)
     title = course_elem.find('title').text
     year = 2008 + random.randint(0, 4)  #int(course_elem.find('year').text.split('-')[1])
@@ -153,7 +159,7 @@ def filldb():
     for i in range(3):
         t=Term(i)
         t.save()
-    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml']
+    fnames = ['all2.xml'] #'cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml']
     for fname in fnames:
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
