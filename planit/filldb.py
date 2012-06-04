@@ -141,7 +141,7 @@ def add_tag(tag_str, arr):
     for cname in arr:
         c = course=Course.objects.filter(identifier=cname)
         if c:
-            tm = TagMapping(tag=t, course=Course.objects.filter(identifier=cname)[0])
+            tm = TagMapping(tag=t, course=Course.objects.filter(identifier__startswith=cname)[0])
             tm.save()
     return t
     
@@ -204,7 +204,9 @@ def filldb():
                      'PHYSICS23', 'PHYSICS25', 'PHYSICS45', 'PHYSICS61', 'PHYSICS63', 'PHYSICS65']
     sci_electives = add_requirement_group(m, "Science Electives", 1, sci_electives) 
 ########################
-    tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['CS191W','CS194W', 'CS210B', 'CS294W']) 
+    win_corerg = add_requirement_group(m, "Writing in the Major", 1, ['CS191W','CS194W', 'CS210B', 'CS294W']) 
+########################
+    tis_corerg = add_requirement_group(m, "Technolocy in Society", 1, ['STS101','STS112', 'STS115', 'BIOE131', 'CS181', 'ENGR145', 'HUMBIO174', 'MSE181', 'MSE193', 'POLISCI114S', 'PUBLPOL194']) 
 ######################
     ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"]) 
 
@@ -219,7 +221,6 @@ def filldb():
     cs_core = add_requirement_group(m, "CS core", 3, ["CS107", "CS110", "CS161"]) 
 ##########################
 
-    # we'll have to add a note saying only cs106b or 106x can count not both. we cant do xor.
         
     ecs = Tag.objects.filter(name__startswith='GER:EC')
     ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
