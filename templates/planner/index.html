@@ -1439,6 +1439,10 @@
             
             return warningStr;   
         }
+		
+		function chopSecondsFromTime(time) {
+			return time.substr(0, time.length - 3);
+		}
         
         
         function makePopoverForCourse(termId, course) {
@@ -1446,7 +1450,9 @@
             $('#' + termId + makeCondensedName(course.cName)).popover({
                title: course.cName + ": " + course.courseObj.fields.title,
                content: course.courseObj.fields.description + 
-			   '<br /></br /><b>Instructor:</b> ' + course.offering.fields.instructor,
+			   '<br /><br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
+			   chopSecondsFromTime(course.offering.fields.start_time) + '-' + chopSecondsFromTime(course.offering.fields.end_time) +
+			   '</br /><b>Instructor:</b> ' + course.offering.fields.instructor,
                placement: 'bottom'
             });
             
