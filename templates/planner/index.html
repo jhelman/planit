@@ -2775,13 +2775,17 @@
                 <ul class="nav pull-right">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            CS FYP1&nbsp;<b class="caret"></b>  
+                            {{ plan.name }}&nbsp;<b class="caret"></b>  
                         </a>
                         <ul class="dropdown-menu">
-
-                            <li><a href="#">CS FYP1&nbsp;<i class="icon-ok"></i></a></li>
-                            <li><a href="#">CS FYP2</a></li>
-                            <li><a href="#">ME FYP1</a></li>
+							{% for p in allPlans %}
+							<li><a href="#"> 
+							{{ p.name }}&nbsp;
+							{% if p.name == plan.name %}
+							<i class="icon-ok"></i>
+							{% endif %}
+							</a></li>
+							{% endfor %}
                             <li class="divider"></li>
                             <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
                         </ul>

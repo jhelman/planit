@@ -28,7 +28,7 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request):
-    plan = Plan.objects.filter(name='Dan Vinegrad')[0]
+    plan = Plan.objects.all()[0]
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
     for course in plan.aps.all():
@@ -47,6 +47,7 @@ def index(request):
     args = {}
     args['plan'] = plan
     args['exempt'] = exempt
+    args['allPlans'] = Plan.objects.all() # TODO only current user's plans
     years = [{}, {}, {}, {}]
     years[0]['name'] = 'Freshman'
     years[1]['name'] = 'Sophomore'
