@@ -2312,7 +2312,13 @@
         }
         
         var currentSearch;
+        var cancelNext = false;
         
+        function cancelNextFn() {
+            removeSpinner();
+            cancelNext = true;
+        }
+                
         function runSearch(event) {
             
             // Don't run a search if enter
@@ -2337,13 +2343,18 @@
             
             $('#breadcrumb-div').find('.breadcrumb').empty();
             $('#breadcrumb-div').find('.breadcrumb').html('<li class="active" id="blevel0">' + 
-                '<a href="#" onclick="returnHome(false);">Home</a></li>');
+                '<a href="#" onclick="cancelNextFn(); returnHome(false);">Home</a></li>');
+                
+            cancelNext = false;
                 
             moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue);
                         
             $.ajax({
 				url: '/search/' + searchValue,
-                success: function (data, textStatus, jqXHR) {                    
+                success: function (data, textStatus, jqXHR) {
+                    if (cancelNext == true) {
+                        return;
+                    }                    
                     if (data.query != $('#course-search').attr('value') || data.query == currentSearch) {
                         return;
                     }
@@ -2359,6 +2370,13 @@
                     $('#content-div').html(html);
                     addButtonsToSearchResults();
                     refreshScroll(1);
+                },
+                error: function (data, textStatus, jqXHR) {
+                    if (cancelNext == true) {
+                        return;
+                    }
+                    removeSpinner();
+                    $('#content-div').html("<b>Search failed.  Try again.</b>");
                 }
             });
         }
@@ -2540,11 +2558,10 @@
             elem = $(elem);
             
             makeNewSpinner();
-            
-            
+                        
             $.ajax({
 				url: '/reqSearch/' + elem.find('.req-name').html(),
-                success: function (data, textStatus, jqXHR) {                    
+                success: function (data, textStatus, jqXHR) {                 
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2556,7 +2573,11 @@
                     addButtonsToSearchResults();
                     refreshScroll(3);
                     removeSpinner();
-                }
+                }, 
+                error: function(data, textStatus, jqXHR) {
+				    removeSpinner();
+				    ajaxMessage("An error occurred. Please try again.", ERROR);
+			    }
             });
             
         }
@@ -2718,6 +2739,8 @@
             //     reqJSON = (reqJSON.requirements)[$(bElems[i]).html()];
             // }
             
+            makeNewSpinner();
+                        
             var data = new Object();
 			data['courseNames'] = courseArr;
 			$.ajax({
@@ -2725,6 +2748,7 @@
 				url: '/courseInfo/',
 				data: data,
 				success: function(data, textStatus, jqXHR) {
+				    removeSpinner();
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2738,6 +2762,11 @@
                         animateBackward(bElems.length - 1);
                     }
 				},
+				
+				error: function(data, textStatus, jqXHR) {
+				    removeSpinner();
+				    ajaxMessage("An error occurred. Please try again.", ERROR);
+			    }
 				
 			}); 
             
