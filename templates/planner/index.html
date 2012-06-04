@@ -819,6 +819,14 @@
 				
 				drop: function (event, ui) {
 				    var courseName = ui.draggable.find('.courseName').html();
+					
+					var violations = prereqViolations['{{ term.condensedName }}'];
+					if (violations) {
+						for (var k in violations) {
+							unhighlightCourse(violations[k], 'course-missing-prereq');
+						}
+					}
+					
                     $('#{{ term.condensedName }}-courses').prepend(ui.draggable);
 					
 					dropTerm = '{{ term.condensedName }}';
