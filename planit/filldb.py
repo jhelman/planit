@@ -160,7 +160,7 @@ def filldb():
     u.save()
     m=Major(name='CS')
     m.save()
-    p=Plan(student_name='Dan Vinegrad', university=u,
+    p=Plan(name='Dan Vinegrad', university=u,
         major=m,start_year=2008,num_years=4)
     prefixes=['EC', 'HUM','ME'] 
     p.save()

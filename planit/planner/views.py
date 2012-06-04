@@ -28,7 +28,7 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request):
-    plan = Plan.objects.filter(student_name='Dan Vinegrad')[0]
+    plan = Plan.objects.filter(name='Dan Vinegrad')[0]
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
     for course in plan.aps.all():
@@ -138,7 +138,6 @@ def index(request):
     args['term_names'] = term_names
     args['max_units'] = plan.university.max_units_per_quarter
     args['general_reqs'] = simplejson.dumps(general_req_groups)
-    print args['general_reqs']
     args['major_reqs'] = simplejson.dumps(major_req_groups)
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
 

@@ -113,7 +113,7 @@ class PrereqGroup(models.Model):
     satisfiers = models.ManyToManyField(Course)
 
 class Plan(models.Model):
-    student_name = models.CharField(max_length=100) #eventually user
+    name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
     user = models.ForeignKey(UserData, null=True)
     university = models.OneToOneField(University)
     major = models.ForeignKey(Major)
@@ -122,7 +122,7 @@ class Plan(models.Model):
     aps = models.ManyToManyField(Course)
     
     def __unicode__(self):
-        return self.student_name
+        return self.name
         
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course)
