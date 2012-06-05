@@ -177,17 +177,23 @@ def fill_response_info_for_courses(results, responseData):
 
 NUM_RESULTS = 10
     
-def search(request, prefix, offset='0'):
+def search(request, prefix, limit='0'):
     prefix = unquote(prefix)
-    offset = int(offset)
+    limit = int(limit)
     responseData = {}
     responseData["query"] = prefix
     responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
-    results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
+    if limit > 0:
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[:limit]
+    else:
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
     if len(results) == 0:
         prefix = prefix.replace(' ', '')
         responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
-        results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
+        if limit > 0:
+            results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[:limit]
+        else:
+            results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
     return fill_response_info_for_courses(results, responseData)
     
 def course_info(request):
@@ -199,9 +205,9 @@ def course_info(request):
         results.extend(Course.objects.filter(identifier=identifier))
     return fill_response_info_for_courses(results, responseData)
 
-def req_search(request, requirement_name, offset='0'):
+def req_search(request, requirement_name, limit='0'):
     requirement_name = unquote(requirement_name)
-    offset = int(offset)
+    limit = int(limit)
     responseData = {}
     responseData["query"] = requirement_name
     print requirement_name
@@ -209,7 +215,10 @@ def req_search(request, requirement_name, offset='0'):
     results = []
     if len(reqs) == 1:
         responseData["numResults"] = Course.objects.filter(tags=reqs[0].fulfillers).count()
-        results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
+        if limit > 0:
+            results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')[:limit]
+        else:
+            results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')
     print results
     return fill_response_info_for_courses(results, responseData) 
     
