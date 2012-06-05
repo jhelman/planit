@@ -231,7 +231,7 @@ def filldb():
     sys_core.is_track=True
     sys_core.save()
     sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
-    sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=ef_core)
+    sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=sys_core)
     sys_ass.save()
     
     track_electives = add_tag('Track Electives (Systems)', ['CS144', 'CS145', 'CS149', 'CS155', 'CS240', 'CS242', 'CS243', 'CS244', 'CS245', 'EE271', 'CS282'])		
