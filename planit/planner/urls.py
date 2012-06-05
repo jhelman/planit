@@ -9,5 +9,5 @@ urlpatterns = patterns('planner.views',
     url(r'^setExemption/$', 'set_exemption', name='exemption'),
     url(r'^addCourse/$', 'add_course'),
     url(r'^deleteCourse/$', 'delete_course'),
-    url(r'^moveCourse/$', 'move_course'),
+    url(r'^moveCourse/$', 'move_course')
 )
