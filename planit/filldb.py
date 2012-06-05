@@ -227,7 +227,7 @@ def filldb():
 
 ##########################
 ##########################
-    sys_core = add_requirement_group(m, "Track Depth (Systems)", 2, ["CS140"]) 
+    sys_core = add_requirement_group(m, "Track Depth (Systems)", 4, ["CS140"]) 
     sys_core.is_track=True
     sys_core.save()
     sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
