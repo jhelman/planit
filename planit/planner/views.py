@@ -130,7 +130,9 @@ def index(request):
             offered_terms.append((offering.term.num, offering.year))
         offerings[str(course.identifier)] = course_offerings
         
-    major_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major=plan.major))
+    major_reqs = list(RequirementGroup.objects.filter(major=plan.major, is_track=False))
+    major_reqs.extend(list(RequirementGroup.objects.filter(major=plan.major, is_track=True, name=plan.track)))
+    major_req_groups = get_python_dict_for_reqs(major_reqs)
     general_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major__isnull=True))
             
     args['years'] = years
