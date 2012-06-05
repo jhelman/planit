@@ -53,10 +53,13 @@ def parse_section(section, course, year):
     for schedule in sch.getiterator(tag='schedule'):
         start_t = schedule.find('startTime').text
         end_t =  schedule.find('endTime').text
-        start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
-        end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
-       # start_t = datetime.datetime(*strptime(start_t, "%H:%M:%S")[0:6]).time()
-       # end_t = datetime.datetime(*strptime(end_t, "%H:%M:%S")[0:6]).time()
+        try:
+            start_t = datetime.datetime(*strptime(start_t, "%I:%M:%S %p")[0:6]).time()
+            end_t = datetime.datetime(*strptime(end_t, "%I:%M:%S %p")[0:6]).time()
+        except Exception:
+            start_t = datetime.datetime(*strptime(start_t, "%H:%M:%S")[0:6]).time()
+            end_t = datetime.datetime(*strptime(end_t, "%H:%M:%S")[0:6]).time()
+
         days_list = schedule.find('days').text.split()
         daystr = "".join([word[0] if word[0:2] != 'Th' else 'R' for word in days_list])
         for year in range(4):
@@ -168,7 +171,7 @@ def filldb():
     for i in range(3):
         t=Term(i)
         t.save()
-    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml']
+    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
     for fname in fnames:
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
