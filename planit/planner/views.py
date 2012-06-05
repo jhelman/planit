@@ -181,9 +181,11 @@ def search(request, prefix, offset='0'):
     offset = int(offset)
     responseData = {}
     responseData["query"] = prefix
+    responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
     results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
     if len(results) == 0:
         prefix = prefix.replace(' ', '')
+        responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
         results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
     return fill_response_info_for_courses(results, responseData)
     
@@ -203,6 +205,7 @@ def req_search(request, requirement_name, offset='0'):
     reqs = Requirement.objects.filter(name=requirement_name)
     results = []
     if len(reqs) == 1:
+        responseData["numResults"] = Course.objects.filter(tags=reqs[0].fulfillers).count()
         results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
     return fill_response_info_for_courses(results, responseData) 
     
