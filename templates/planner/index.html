@@ -2364,7 +2364,7 @@
             moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue, true);
                         
             $.ajax({
-				url: '/search/' + searchValue,
+				url: '/search/' + encodeURI(searchValue),
                 success: function (data, textStatus, jqXHR) {
                     if (cancelNext == true) {
                         return;
@@ -2582,7 +2582,7 @@
             makeNewSpinner();
                                     
             $.ajax({
-				url: '/reqSearch/' + elem.find('.req-name').html(),
+				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()),
                 success: function (data, textStatus, jqXHR) {
                     console.log(data);
                     classesJSON = jQuery.parseJSON(data.classes);
