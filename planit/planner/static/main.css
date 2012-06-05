@@ -1,3 +1,11 @@
+.navbar-inner {
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .quarter-div {
     width: 220px;
     height: 130px;
@@ -191,8 +199,8 @@ div.course-missing-prereq {
 
 #search-spinner {
 	position: absolute;
-	top: -15px;
-	left: 270px;
+	top: -22px;
+	left: 258px;
 }
 
 
@@ -413,15 +421,12 @@ div.course-missing-prereq {
 	width: 320px;
 	height: 40px;
 	margin-left: -10px;
-	display: table;
 	text-align: center;
 	margin-bottom: 10px;
 }
 
-#course-search-form {
-	display: table-cell;
-	vertical-align: middle;
-	
+#course-search {
+  margin-top: 7px;
 }
 
 .added-units {
@@ -534,5 +539,9 @@ div.course-missing-prereq {
 
 .popover {
   z-index: 5000;
+}
+
+span.longName {
+  display: none;
 }
 

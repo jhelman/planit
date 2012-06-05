@@ -18,6 +18,13 @@
  * limitations under the License.
  * ========================================================== */
 
+/* Changed by Jonathan Helman 2012 
+	- Made so that the popover will not go too high in the screen by making
+	  the popover move down to 10 px below the top and the arrow to align 
+	  with the object by making the show () function take in the event
+    parameter from the enter function
+*/
+
 
 !function ($) {
 
@@ -69,15 +76,16 @@
       return options
     }
 
+		/* Change by Jonathan Helman 2012 - add e parameter to show */
   , enter: function (e) {
       var self = $(e.currentTarget)[this.type](this._options).data(this.type)
 
-      if (!self.options.delay || !self.options.delay.show) return self.show()
+      if (!self.options.delay || !self.options.delay.show) return self.show(e)
 
       clearTimeout(this.timeout)
       self.hoverState = 'in'
       this.timeout = setTimeout(function() {
-        if (self.hoverState == 'in') self.show()
+        if (self.hoverState == 'in') self.show(e)
       }, self.options.delay.show)
     }
 
@@ -93,7 +101,9 @@
       }, self.options.delay.hide)
     }
 
-  , show: function () {
+		/* Change by Jonathan Helman 2012 - add e parameter from enter function*/
+
+  , show: function (e) {	
       var $tip
         , inside
         , pos
@@ -136,9 +146,17 @@
           case 'left':
             tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
             break
-          case 'right':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
+
+					/* Changed by Jonathan Helman 2012 (see top for summary of change) */
+          case 'right': {
+						var newTop = pos.top + pos.height / 2 - actualHeight / 2;
+						if (pos.top < actualHeight / 2) {
+							newTop = 10;
+							$tip.find('.arrow').css('top', $(e.currentTarget).position().top + 3);
+						}
+            tp = {top: newTop, left: pos.left + pos.width}
             break
+					}
         }
 
         $tip

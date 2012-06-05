@@ -1106,11 +1106,11 @@
                     
                     var num = 0;
                     if (i == 2) {
-                        num = countClasses($(bElems[1]).find('a').html(), $(bElems[2]).html(),
+                        num = countClasses($(bElems[1]).find('.longName').html(), $(bElems[2]).find('.longName').html(),
                                 $(liElems[j]).find('.req-name').html());
                             
                     } else if (i == 1) {
-                        num = countReqs($(bElems[1]).find('a').html(), $(liElems[j]).find('.req-name').html());
+                        num = countReqs($(bElems[1]).find('.longName').html(), $(liElems[j]).find('.req-name').html());
                         
                         
                     } else if (i == 0) {
@@ -1495,7 +1495,7 @@
             $('#' + termId + makeCondensedName(course.cName)).popover({
                title: course.cName + ": " + course.courseObj.fields.title,
                content: content,
-               placement: 'bottom'
+               placement: 'right'
             });
             
         }
@@ -2132,12 +2132,11 @@
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
-        
             if (courses.length == 0) {
                 html += '</ul></div></div></div>';
                 return html;
             }
-            			
+            			            			
             for (var i in courses) {
                 
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
@@ -2291,13 +2290,16 @@
                 if (reqName.indexOf("Search: ") == -1) {
                     var req;
                     if (bElems.length == 3) {
-                        req = plan.getRequirement(makeCondensedName(courseName), [$(bElems[2]).html()]);
+                        req = plan.getRequirement(makeCondensedName(courseName), 
+                            [$(bElems[2]).find('.longName').html()]);
                         if (req == false) {
-                            req = plan.getRequirement($(bElems[2]).html(), [$(bElems[2]).html()]);
+                            req = plan.getRequirement($(bElems[2]).find('.longName').html(),
+                                [$(bElems[2]).find('.longName').html()]);
                         }
                     } else if (bElems.length == 4) {
-                        req = plan.getRequirement(reqName, [$(bElems[2]).find('a').html()]);
+                        req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
                     }
+                    console.log(req);
                     if (!req.bypassable) {
                         byButton = false;
                     }
@@ -2477,10 +2479,14 @@
         function moveToNextBreadcrumbLevel(num, name) {
             var oldNum = num - 1;
             $('#blevel' + oldNum).removeClass('active');
-            $('#blevel' + oldNum).html('<a href="#">' + 
-                $('#blevel' + oldNum).html() + '</a><span class="divider">/</span>');
+            $('#blevel' + oldNum).html('<a href="#">' + $('#blevel' + oldNum).html()
+                 + '</a><span class="divider">/</span>');
+            var newName = name;
+            if (name.length > 12) {
+                newName = name.substring(0, 12) + "...";
+            }
             $('#breadcrumb-div').find('.breadcrumb').append('<li class="active" id="blevel' + num +
-                '">' + name + '</li>');
+                '"><span>' + newName + '</span><span class="longName">' + name + '</span></li>');
         } 
         
         var SPACER = 40;
@@ -2569,12 +2575,12 @@
         
         function getReqClasses(elem) {
             elem = $(elem);
-            
+                        
             makeNewSpinner();
                         
             $.ajax({
 				url: '/reqSearch/' + elem.find('.req-name').html(),
-                success: function (data, textStatus, jqXHR) {                 
+                success: function (data, textStatus, jqXHR) {   
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2622,12 +2628,12 @@
 
         }
         
-        function getReqsAndClasses(liName, reqJSON, reqName, classJSON, isForward) {
+        function getReqsAndClasses(liName, reqJSON, reqDisplayCount, reqName, classJSON, isForward) {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             
                 var liGroupHTML = "";
                 var liClassHTML = "";
-                
+                                
                 for (var i in classJSON) {
                     var courseShortName = classJSON[i].fields.identifier;
                     var courseLongName = classJSON[i].fields.title;
@@ -2646,18 +2652,22 @@
                 var reqCount = 0;
                 for (var i in reqJSON.requirements) {
                     reqCount += reqJSON.requirements[i].fulfillers.length;
-                    if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1) {
+                    
+                    if (((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
+                        (reqJSON.requirements[i]).fulfillers.length == 1)
+                        || reqDisplayCount == 1) {
                         continue;
  
-                    } else {
-                        var numClasses = countClasses(liName, reqName, i);
-                         liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
-                            '<span class="req-name">' + i + '</span>' + 
-                            '<span class="req-info">' + 
-                            (numClasses == 0 ? '<i class="icon-ok"></i>' : 
-                            ('<span class="badge badge-important" id="general-req-badge">' + 
-                             numClasses + '</span>')) + '</span></a></li>';
-                    }
+                    } 
+                    
+                                        
+                     var numClasses = countClasses(liName, reqName, i);
+                     liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
+                        '<span class="req-name">' + i + '</span>' + 
+                        '<span class="req-info">' + 
+                        (numClasses == 0 ? '<i class="icon-ok"></i>' : 
+                        ('<span class="badge badge-important" id="general-req-badge">' + 
+                         numClasses + '</span>')) + '</span></a></li>';
                  }
 
                  var cDiv = $('#search-scroll-div0');
@@ -2681,7 +2691,7 @@
                                      
                  html += '<div class="requirement-' + (liGroupHTML != "" ? 'sub' : '') + 
                     'heading">' + 
-                    (liGroupHTML != "" ? 'Courses:' : 'Select ' + 
+                    (liGroupHTML != "" ? (liClassHTML != "" ? 'Courses:' : '') : 'Select ' + 
                     (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
                             : reqJSON.num_reqs_to_fulfill) + ' of the following courses:') + '</div>';
                      
@@ -2729,13 +2739,21 @@
             // var reqName = elem.find('.req-name').html();            
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var reqJSON = ($(bElems[1]).html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
+            var reqJSON = ($(bElems[1]).find('.longName').html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
             reqJSON = reqJSON[reqName];
+            
+            var reqCount = 0;
+            for (var i in reqJSON.requirements) {
+                reqCount++;
+            }
+            
             
             var courseArr = []
             for (var i in reqJSON.requirements) {
                 var req = (reqJSON.requirements[i]);
-                if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1) {
+                if (((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
+                    (reqJSON.requirements[i]).fulfillers.length == 1) 
+                    || reqCount == 1) {
                     for (var i in req.fulfillers) {
                        var cName = req.fulfillers[i];
                        if ($.inArray(cName, courseArr) == -1) {
@@ -2746,7 +2764,7 @@
                     
                 }
             }
-            
+                        
             // For higher level trees - is this right?
             // for (var i = 3; i < bElems.length; i++) {
             //     reqJSON = (reqJSON.requirements)[$(bElems[i]).html()];
@@ -2767,7 +2785,7 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqName, classesJSON, isForward);
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward);
                     if (isForward) {
                         moveToNextBreadcrumbLevel(bElems.length, reqName);
                         animateForward(bElems.length);
@@ -2820,7 +2838,7 @@
 
             // Need to reload the frame
             if (num == 2) {
-                getNextLevelOfReqs($('#blevel' + num).html(), false);
+                getNextLevelOfReqs($('#blevel' + num).find('.longName').html(), false);
             } else {
                 animateBackward(num);
             }
@@ -2838,12 +2856,12 @@
 
 
 
-<body style="margin-top: 35px;"> 
+<body> 
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
     
-    <div class="navbar navbar-fixed-top">
+    <div class="navbar">
         <div class="navbar-inner">
                 <div class="container-fluid">
                 
@@ -2995,7 +3013,7 @@
 
     </div>
     
-    <table><tr>
+    <table style="margin-top: -13px"><tr>
         
         <td>
     
@@ -3048,12 +3066,6 @@
                                                         <i style="position: relative; top: 2px;" class="icon-remove"></i>
                                                     </div>
                                                 </div>
-            				                    <!-- <tr>
-                                                    <td class="courseName"></td>
-                                                    <td class="units"><div class="units-rollover">{{ course.max_units }}</div></td>
-                                                    <td class="info"><i class="icon-move"></i>&nbsp;
-                                                        <i class="icon-trash" onclick="removeCourse(this);"></i></td>
-                                                </tr> -->
             				                </div>
             							{% endfor %}
             						</div>
@@ -3067,54 +3079,11 @@
             						</div>
             						
         						</div>
-                                
-        					    
-        					    	
-
-        				       <!-- <table>
-                                    <tr>
-                                        <td style="padding: 0px">
-                                            
-                                            
-                                        </td>
-                    
-                                        <td style="padding: 0px">
-                                            <div class="quarter-info-div">
-                                                <span class="quarter-info-span">
-                                                    Units<br/>
-                                                    <span id="{{ term.condensedName }}-units">{{ term.units }}</span><br/>
-                                                    <span id="{{ term.condensedName }}-added-units" class="added-units">+0</span><br/>
-                                                    <br/>
-                            
-                                                    <i class="icon-calendar" onclick="openCalendar('{{ term.condensedName }}', this);"></i>
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table> -->
-						
-						
 						
         					</td>
         				{% endfor %}
-        				<td>&nbsp;</td>
         			</tr>
         		{% endfor %}
-                    <!-- <tr style="height: 10px">
-                        <td>&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        
-                        <td>
-                            <b>Major</b>: Computer Science &nbsp;&nbsp;&nbsp;&nbsp;<br/>
-                            <b>Total Units</b>: <span id="total-units">{{ totalUnits }}</span>
-                        </td>
-                    </tr>     
-                 -->
-        		
         		
         	</table>
 	
@@ -3138,7 +3107,7 @@
                             </div>
                             <div id="breadcrumb-div">
                                 <ul class="breadcrumb">
-                                    <li id="blevel0" class="active">Home</li>
+                                    <li id="blevel0" class="active"><span>Home</span><span class="longName">Home</span></li>
                                 </ul>
                             </div>
                             
