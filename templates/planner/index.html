@@ -1304,25 +1304,36 @@
                 
                 eventsToShow = collectDatesForTerm(quarterScheduleToShow);
 
-                var minTime = 8;
-                var maxTime = 18;
+                var minTime = null;
+                var maxTime = null;
                 for (var i in eventsToShow) {
-                    if (eventsToShow[i].start.getHours() < 8 && 
-                        eventsToShow[i].start.getHours() < minTime) {
-                        minTime = eventsToShow[i].start.getHours() - 1;
+                    if (minTime == null || eventsToShow[i].start.getHours() < minTime) {
+                        minTime = eventsToShow[i].start.getHours() + 
+                            (eventsToShow[i].start.getMinutes() / 60);
                     }
-                    if (eventsToShow[i].end.getHours() > 18 && 
-                        eventsToShow[i].end.getHours() > maxTime) {
-                        maxTime = eventsToShow[i].end.getHours() + 1;
+                    if (maxTime == null || eventsToShow[i].end.getHours() > maxTime) {
+                        maxTime = eventsToShow[i].end.getHours() + 
+                            (eventsToShow[i].end.getMinutes() / 60);
+                    
                     }
                 }
                               
-               var startHour = 8;
-               if (minTime < 8) {
+               var startHour;
+               
+               if (minTime >= 8 && maxTime <= 18) {
+                   minTime = 8; 
+                   maxTime = 18;
+                   startHour = 8; 
+               } else if (minTime >= 8 && maxTime > 18) {
                    startHour = minTime;
-               } else if (maxTime > 18) {
-                   startHour = maxTime - 9;
+                   minTime = 8;
+               } else if (minTime < 8 && maxTime <= 18) {
+                   startHour = minTime;
+                   maxTime = 18;
+               } else if (minTime < 8 && maxTime > 18) {
+                   startHour = minTime;
                }
+
                
                 $('#schedule-modal-calendar').fullCalendar({ 
                     firstDay: 1,
