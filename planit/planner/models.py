@@ -22,7 +22,7 @@ class UserData(models.Model):
 
 class Major(models.Model):
     name = models.CharField(max_length=128)
-#    tracks = models.ManyToManyField('RequirementGroup')
+    tracks = models.ManyToManyField('RequirementGroup', related_name='tracks')
     
     def __unicode__(self):
         return self.name
@@ -90,6 +90,7 @@ class Course(models.Model):
         return self.identifier
 
 class RequirementGroup(models.Model):
+    is_track = models.BooleanField(default=False)
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
     n_prereqs = models.IntegerField() #gonna change the name of this
