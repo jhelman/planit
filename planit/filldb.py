@@ -190,7 +190,7 @@ def filldb():
                 e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
     
-    math_corerg = add_requirement_group(m, "Math core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
+    math_corerg = add_requirement_group(m, "Math Core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
     math_electives = ['MATH51', 'MATH103','MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
     math_electives = add_requirement_group(m, "Math Electives", 2, math_electives) 
 
@@ -198,7 +198,7 @@ def filldb():
     fiftiesr = Requirement(name='MATH52/53', fulfillers=fiftiest, n_class=2, group=math_electives)
     fiftiesr.save()
 ########################
-    sci_corerg = add_requirement_group(m, "Science core", 2, ['PHYSICS41','PHYSICS43']) 
+    sci_corerg = add_requirement_group(m, "Science Core", 2, ['PHYSICS41','PHYSICS43']) 
     sci_electives = ['BIO41', 'BIO42', 'BIO43', 'CEE63', 'CEE64', 'CEE70', 'CHEM31A', 'CHEM31B', 'CHEM33', 'CHEM35',
                      'CHEM36', 'CHEM131', 'CHEM135', 'EARTHSYS10', 'ENGR31', 'GES1A', 'GES1B', 'GES1C', 'PHYSICS21',
                      'PHYSICS23', 'PHYSICS25', 'PHYSICS45', 'PHYSICS61', 'PHYSICS63', 'PHYSICS65']
@@ -210,7 +210,7 @@ def filldb():
 ######################
     ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"]) 
 
-    cs_intro = add_tag('CS106', ['CS106A', 'CS106B', 'CS106X'])
+    cs_intro = add_tag('CS106', ['CS106B', 'CS106X'])
     cs_intro = Requirement(name='CS106', fulfillers=cs_intro, n_class=1, group=ef_core)
     cs_intro.save()
 
@@ -218,7 +218,7 @@ def filldb():
                     'ENGR50','ENGR50E','ENGR50M','ENGR60','ENGR62','ENGR80', 'ENGR90']
     ef_electives = add_requirement_group(m, "Engineering Electives", 1, ef_electives) 
 ##########################
-    cs_core = add_requirement_group(m, "CS core", 3, ["CS107", "CS110", "CS161"]) 
+    cs_core = add_requirement_group(m, "CS Core", 3, ["CS107", "CS110", "CS161"]) 
 ##########################
 
         

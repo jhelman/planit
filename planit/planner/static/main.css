@@ -536,3 +536,7 @@ div.course-missing-prereq {
   z-index: 5000;
 }
 
+span.longName {
+  display: none;
+}
+
