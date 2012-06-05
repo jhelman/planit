@@ -22,7 +22,7 @@ class UserData(models.Model):
 
 class Major(models.Model):
     name = models.CharField(max_length=128)
-#    tracks = models.ManyToManyField('RequirementGroup')
+    tracks = models.ManyToManyField('RequirementGroup', related_name='tracks')
     
     def __unicode__(self):
         return self.name
@@ -92,6 +92,7 @@ class Course(models.Model):
 class RequirementGroup(models.Model):
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
+    is_track = models.BooleanField(default=False)
     n_prereqs = models.IntegerField() #gonna change the name of this
      
     def __unicode__(self):
@@ -147,7 +148,7 @@ class CourseOffering(models.Model):
         
     def __unicode__(self):
         return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year) + '-' + str(self.year + 1)
-
+##
 #does it scale
 class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)

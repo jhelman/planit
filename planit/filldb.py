@@ -208,7 +208,7 @@ def filldb():
                      'PHYSICS23', 'PHYSICS25', 'PHYSICS45', 'PHYSICS61', 'PHYSICS63', 'PHYSICS65']
     sci_electives = add_requirement_group(m, "Science Electives", 1, sci_electives) 
 ########################
-    win_corerg = add_requirement_group(m, "Writing in the Major", 1, ['CS191W','CS194W', 'CS210B', 'CS294W']) 
+    win_corerg = add_requirement_group(m, "Writing in the Major", 1, ['CS191W','CS194W', 'CS210B', 'CS294W', 'CS181W']) 
 ########################
     tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['STS101','STS112', 'STS115', 'BIOE131', 'CS181', 'ENGR145', 'HUMBIO174', 'MSE181', 'MSE193', 'POLISCI114S', 'PUBLPOL194']) 
 ######################
@@ -248,7 +248,8 @@ def filldb():
     gen_elecs = add_tag('General Electives', gen_elecs)
     gen_elecs = Requirement(name='General Electives', fulfillers=gen_elecs, n_class=3, group=sys_core)
     gen_elecs.save()
-		
+    m.tracks.add(sys_core)		
+    m.save()
 	
 
 ##########################
