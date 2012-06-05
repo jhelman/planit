@@ -22,7 +22,7 @@ class UserData(models.Model):
 
 class Major(models.Model):
     name = models.CharField(max_length=128)
-#    tracks = models.ManyToManyField('RequirementGroup')
+    tracks = models.ManyToManyField('RequirementGroup', related_name='tracks')
     
     def __unicode__(self):
         return self.name
