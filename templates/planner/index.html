@@ -446,8 +446,12 @@
                         (isExemption && !req.bypassable)) {
                         continue;
                     }
+					
+					var oldF = req.isFulfilled();
+					
                     req.numFulfilled++;
-                    if (req.isFulfilled()) {
+					
+                    if (req.isFulfilled() && !oldF) {
                         rg.numFulfilled++;
                     }
                 }
