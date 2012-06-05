@@ -250,11 +250,11 @@ def filldb():
     gen_elecs.save()
     m.tracks.add(sys_core)		
     m.save()
-	
 
 ##########################
 
-        
+    p.track = sys_core
+    p.save()
     ecs = Tag.objects.filter(name__startswith='GER:EC')
     ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
     ecrg.save()
