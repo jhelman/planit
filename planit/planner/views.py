@@ -6,6 +6,13 @@ from django.core import serializers
 from django.views.decorators.csrf import ensure_csrf_cookie
 from models import *
 import re
+from urllib import unquote
+
+def unquote_str(source):
+    result = unquote(source)
+    if '%u' in result:
+        result = result.replace('%u','\\u').decode('unicode_escape')
+    return result
 
 def get_python_dict_for_reqs(requirement_groups):
     req_groups = {}
@@ -177,6 +184,7 @@ def fill_response_info_for_courses(results, responseData):
 NUM_RESULTS = 10
     
 def search(request, prefix, offset='0'):
+    prefix = unquote_str(prefix)
     offset = int(offset)
     responseData = {}
     responseData["query"] = prefix
@@ -198,6 +206,7 @@ def course_info(request):
     return fill_response_info_for_courses(results, responseData)
 
 def req_search(request, requirement_name, offset='0'):
+    requirement_name = unquote_str(requirement_name)
     offset = int(offset)
     responseData = {}
     responseData["query"] = requirement_name
