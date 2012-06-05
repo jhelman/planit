@@ -400,11 +400,11 @@
 		   this.prereqGroups = prereqGroups;
 		   this.reqGroups = [];
 		   var reqGroupNames = [];
-		   console.log(reqGroups);
 		   for (var i in reqGroups) {
-		       console.log(name + " " + reqGroups[i]);
-		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
-		       reqGroupNames.push(reqGroups[i].fields.name);
+		       if ($.inArray(reqGroups[i].fields.name, reqGroupNames) == -1) {
+		           this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
+		           reqGroupNames.push(reqGroups[i].fields.name);
+	           }
 	       }
 		   this.reqNames = [];
 		   for (var i in reqs) {
