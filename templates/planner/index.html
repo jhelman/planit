@@ -400,7 +400,9 @@
 		   this.prereqGroups = prereqGroups;
 		   this.reqGroups = [];
 		   var reqGroupNames = [];
+		   console.log(reqGroups);
 		   for (var i in reqGroups) {
+		       console.log(name + " " + reqGroups[i]);
 		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
 		       reqGroupNames.push(reqGroups[i].fields.name);
 	       }
@@ -438,6 +440,7 @@
             }
                                     
             // Check for reqs and reqGroups
+            console.log(course.reqGroups);
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
@@ -446,6 +449,7 @@
                         (isExemption && !req.bypassable)) {
                         continue;
                     }
+                    console.log(req.name);
                     req.numFulfilled++;
                     if (req.isFulfilled()) {
                         rg.numFulfilled++;
@@ -2134,9 +2138,7 @@
         
         function highlightCourse(courseName, cssClassName) {
             var courseArr = (plan.getCourseDictionary())[courseName];
-            
-            console.log(courseArr);
-            
+                        
             for (var x in courseArr) {
                                 
                 var course = courseArr[x];
@@ -2180,7 +2182,7 @@
             } else {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
                 req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
-                console.log(req);
+                // console.log(req);
                 if (courses.length != req.numCoursesToFulfill) {
                     numRequired = req.numCoursesToFulfill;
                 }
