@@ -199,8 +199,8 @@ div.course-missing-prereq {
 
 #search-spinner {
 	position: absolute;
-	top: -15px;
-	left: 270px;
+	top: -22px;
+	left: 258px;
 }
 
 
@@ -421,15 +421,12 @@ div.course-missing-prereq {
 	width: 320px;
 	height: 40px;
 	margin-left: -10px;
-	display: table;
 	text-align: center;
 	margin-bottom: 10px;
 }
 
-#course-search-form {
-	display: table-cell;
-	vertical-align: middle;
-	
+#course-search {
+  margin-top: 7px;
 }
 
 .added-units {
