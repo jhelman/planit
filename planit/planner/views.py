@@ -201,6 +201,7 @@ def req_search(request, requirement_name, offset='0'):
     offset = int(offset)
     responseData = {}
     responseData["query"] = requirement_name
+    print requirement_name
     reqs = Requirement.objects.filter(name=requirement_name)
     results = []
     if len(reqs) == 1:

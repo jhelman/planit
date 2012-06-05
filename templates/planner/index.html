@@ -2299,7 +2299,6 @@
                     } else if (bElems.length == 4) {
                         req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
                     }
-                    console.log(req);
                     if (!req.bypassable) {
                         byButton = false;
                     }
@@ -2362,7 +2361,7 @@
                 
             cancelNext = false;
                 
-            moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue);
+            moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue, true);
                         
             $.ajax({
 				url: '/search/' + searchValue,
@@ -2476,14 +2475,18 @@
             hasSpinner = false;
         }
         
-        function moveToNextBreadcrumbLevel(num, name) {
+        function moveToNextBreadcrumbLevel(num, name, isSearch) {
             var oldNum = num - 1;
             $('#blevel' + oldNum).removeClass('active');
             $('#blevel' + oldNum).html('<a href="#">' + $('#blevel' + oldNum).html()
                  + '</a><span class="divider">/</span>');
             var newName = name;
-            if (name.length > 12) {
-                newName = name.substring(0, 12) + "...";
+            var len = 12;
+            if (isSearch) {
+                len = 30;
+            }
+            if (name.length > len) {
+                newName = name.substring(0, len) + "...";
             }
             $('#breadcrumb-div').find('.breadcrumb').append('<li class="active" id="blevel' + num +
                 '"><span>' + newName + '</span><span class="longName">' + name + '</span></li>');
@@ -2555,7 +2558,7 @@
             html += '</div></div></div></div>';
             $('#content-div').append(html);
             
-            moveToNextBreadcrumbLevel(1, tlName);
+            moveToNextBreadcrumbLevel(1, tlName, false);
             
             // countReqs(reqGroup);
                         
@@ -2577,10 +2580,11 @@
             elem = $(elem);
                         
             makeNewSpinner();
-                        
+                                    
             $.ajax({
 				url: '/reqSearch/' + elem.find('.req-name').html(),
-                success: function (data, textStatus, jqXHR) {   
+                success: function (data, textStatus, jqXHR) {
+                    console.log(data);
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2610,7 +2614,7 @@
             
             var cDiv = $('#search-scroll-div0');
                 
-            moveToNextBreadcrumbLevel(bElems.length, reqName);
+            moveToNextBreadcrumbLevel(bElems.length, reqName, false);
             
             $('#search-scroll-div' + (level - 1)).find('.pane').hide();
                 
@@ -2787,7 +2791,7 @@
 					reqGroupsJSON = data.req_groups;
                     getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward);
                     if (isForward) {
-                        moveToNextBreadcrumbLevel(bElems.length, reqName);
+                        moveToNextBreadcrumbLevel(bElems.length, reqName, false);
                         animateForward(bElems.length);
                     } else {
                         animateBackward(bElems.length - 1);
@@ -2856,12 +2860,12 @@
 
 
 
-<body> 
+<body style="margin: 30px;"> 
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
     
-    <div class="navbar">
+    <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
                 <div class="container-fluid">
                 
@@ -3013,7 +3017,7 @@
 
     </div>
     
-    <table style="margin-top: -13px"><tr>
+    <table style="margin-left: -30px"><tr>
         
         <td>
     
