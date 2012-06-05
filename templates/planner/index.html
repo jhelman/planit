@@ -1106,11 +1106,11 @@
                     
                     var num = 0;
                     if (i == 2) {
-                        num = countClasses($(bElems[1]).find('a').html(), $(bElems[2]).html(),
+                        num = countClasses($(bElems[1]).find('.longName').html(), $(bElems[2]).find('.longName').html(),
                                 $(liElems[j]).find('.req-name').html());
                             
                     } else if (i == 1) {
-                        num = countReqs($(bElems[1]).find('a').html(), $(liElems[j]).find('.req-name').html());
+                        num = countReqs($(bElems[1]).find('.longName').html(), $(liElems[j]).find('.req-name').html());
                         
                         
                     } else if (i == 0) {
@@ -2290,13 +2290,16 @@
                 if (reqName.indexOf("Search: ") == -1) {
                     var req;
                     if (bElems.length == 3) {
-                        req = plan.getRequirement(makeCondensedName(courseName), [$(bElems[2]).html()]);
+                        req = plan.getRequirement(makeCondensedName(courseName), 
+                            [$(bElems[2]).find('.longName').html()]);
                         if (req == false) {
-                            req = plan.getRequirement($(bElems[2]).html(), [$(bElems[2]).html()]);
+                            req = plan.getRequirement($(bElems[2]).find('.longName').html(),
+                                [$(bElems[2]).find('.longName').html()]);
                         }
                     } else if (bElems.length == 4) {
-                        req = plan.getRequirement(reqName, [$(bElems[2]).find('a').html()]);
+                        req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
                     }
+                    console.log(req);
                     if (!req.bypassable) {
                         byButton = false;
                     }
