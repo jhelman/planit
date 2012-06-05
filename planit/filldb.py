@@ -214,7 +214,7 @@ def filldb():
 ######################
     ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"]) 
 
-    cs_intro = add_tag('CS106', ['CS106A', 'CS106B', 'CS106X'])
+    cs_intro = add_tag('CS106', ['CS106B', 'CS106X'])
     cs_intro = Requirement(name='CS106', fulfillers=cs_intro, n_class=1, group=ef_core)
     cs_intro.save()
 
