@@ -172,7 +172,7 @@ def filldb():
     for i in range(3):
         t=Term(i)
         t.save()
-    fnames = ['all2.xml']#cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
+    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
     for fname in fnames:
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
