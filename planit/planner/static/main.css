@@ -1,3 +1,11 @@
+.navbar-inner {
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .quarter-div {
     width: 220px;
     height: 130px;
