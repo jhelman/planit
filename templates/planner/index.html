@@ -74,7 +74,7 @@
         
         function createEventObjects(courseName, offering, isAdded, isWarning) {
             var eventObjects = [];
-            
+                        
             for (var i = 0; i < offering.weekdays.length; i++) {
                 eventObjects.push(makeNewEvent(offering.weekdays.charAt(i), offering.start_time,
                     offering.end_time, courseName, isAdded, isWarning));
@@ -94,7 +94,6 @@
                 }
                 $.merge(eventArray, (term.courses)[i].eventObjects);
             }
-            
             return eventArray;
             
         }
@@ -919,24 +918,23 @@
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
 			
+            // $('#schedule-modal-calendar').fullCalendar({ 
+            //                 firstDay: 1,
+            //                 weekends: false,
+            //                 header: false,
+            //                 defaultView: 'agendaWeek',
+            //                 slotMinutes: 30,
+            //                 height: 300,
+            //                 allDaySlot: false,
+            //                 columnFormat: {week: 'dddd'}
+            //             });
+			
             
-            $('#schedule-modal-calendar').fullCalendar({ 
-                firstDay: 1,
-                weekends: false,
-                header: false,
-                defaultView: 'agendaWeek',
-                minTime: '8:00',
-                maxTime: '18:00',
-                slotMinutes: 30,
-                allDaySlot: false,
-                columnFormat: {week: 'dddd'}
-            });
-            
-            $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
-            
+
             $('#schedule-modal').on('shown', function () {
-                $('#schedule-modal-calendar').fullCalendar('removeEvents');
-                $('#schedule-modal-calendar').fullCalendar('addEventSource', collectDatesForTerm(quarterScheduleToShow));
+
+                $('#schedule-modal-calendar').fullCalendar('addEventSource', eventsToShow);
+                
             });
             
             $('#schedule-modal').on('hide', function () {
@@ -1292,6 +1290,7 @@
         
         
         var quarterScheduleToShow = null;
+        var eventsToShow = null;
         
         function openCalendar(quarterName, tt) {
             
@@ -1301,7 +1300,46 @@
             quarterScheduleToShow = quarterName;  
             
             $('#schedule-modal').show(0, function() {
-                $('#schedule-modal-calendar').fullCalendar('render');
+                $('#schedule-modal-calendar').fullCalendar('destroy');
+                
+                eventsToShow = collectDatesForTerm(quarterScheduleToShow);
+
+                var minTime = 8;
+                var maxTime = 18;
+                for (var i in eventsToShow) {
+                    if (eventsToShow[i].start.getHours() < 8 && 
+                        eventsToShow[i].start.getHours() < minTime) {
+                        minTime = eventsToShow[i].start.getHours() - 1;
+                    }
+                    if (eventsToShow[i].end.getHours() > 18 && 
+                        eventsToShow[i].end.getHours() > maxTime) {
+                        maxTime = eventsToShow[i].end.getHours() + 1;
+                    }
+                }
+                              
+               var startHour = 8;
+               if (minTime < 8) {
+                   startHour = minTime;
+               } else if (maxTime > 18) {
+                   startHour = maxTime - 9;
+               }
+               
+                $('#schedule-modal-calendar').fullCalendar({ 
+                    firstDay: 1,
+                    weekends: false,
+                    header: false,
+                    defaultView: 'agendaWeek',
+                    minTime: minTime,
+                    maxTime: maxTime,
+                    firstHour: startHour,
+                    slotMinutes: 30,
+                    contentHeight: 440,
+                    allDaySlot: false,
+                    columnFormat: {week: 'dddd'}
+                });
+               
+                  
+                $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
                 $('#schedule-modal').modal('show');
             });
         }
