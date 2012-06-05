@@ -143,7 +143,7 @@ def index(request):
     args['major_reqs'] = simplejson.dumps(major_req_groups)
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
 
-def fill_response_info_for_courses(results, responseData):
+def fill_response_info_for_courses(results, response_data):
     classNames = []
     offerings = {}
     prereq_groups = {}
@@ -166,13 +166,13 @@ def fill_response_info_for_courses(results, responseData):
         prereq_groups[course.identifier] = course_prereqs
         
     data = serializers.serialize('json', results)
-    responseData["classes"] = data
-    responseData["classNames"] = classNames
-    responseData["offerings"] = offerings
-    responseData["prereq_groups"] = prereq_groups
-    responseData["req_groups"] = requirement_groups
-    responseData["reqs"] = requirements
-    return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
+    response_data["classes"] = data
+    response_data["classNames"] = classNames
+    response_data["offerings"] = offerings
+    response_data["prereq_groups"] = prereq_groups
+    response_data["req_groups"] = requirement_groups
+    response_data["reqs"] = requirements
+    return HttpResponse(simplejson.dumps(response_data), mimetype='application/json')
     
 
 NUM_RESULTS = 10
@@ -180,47 +180,47 @@ NUM_RESULTS = 10
 def search(request, prefix, limit='0'):
     prefix = unquote(prefix)
     limit = int(limit)
-    responseData = {}
-    responseData["query"] = prefix
-    responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
+    response_data = {}
+    response_data["query"] = prefix
+    response_data["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
     if limit > 0:
         results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[:limit]
     else:
         results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
     if len(results) == 0:
         prefix = prefix.replace(' ', '')
-        responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
+        response_data["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
         if limit > 0:
             results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[:limit]
         else:
             results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
-    return fill_response_info_for_courses(results, responseData)
+    return fill_response_info_for_courses(results, response_data)
     
 def course_info(request):
     course_names = request.POST.getlist('courseNames[]')
-    responseData = {}
-    responseData["query"] = course_names
+    response_data = {}
+    response_data["query"] = course_names
     results = []
     for identifier in course_names:
         results.extend(Course.objects.filter(identifier=identifier))
-    return fill_response_info_for_courses(results, responseData)
+    return fill_response_info_for_courses(results, response_data)
 
 def req_search(request, requirement_name, limit='0'):
     requirement_name = unquote(requirement_name)
     limit = int(limit)
-    responseData = {}
-    responseData["query"] = requirement_name
+    response_data = {}
+    response_data["query"] = requirement_name
     print requirement_name
     reqs = Requirement.objects.filter(name=requirement_name)
     results = []
     if len(reqs) == 1:
-        responseData["numResults"] = Course.objects.filter(tags=reqs[0].fulfillers).count()
+        response_data["numResults"] = Course.objects.filter(tags=reqs[0].fulfillers).count()
         if limit > 0:
             results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')[:limit]
         else:
             results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')
     print results
-    return fill_response_info_for_courses(results, responseData) 
+    return fill_response_info_for_courses(results, response_data) 
     
 
 def add_course(request):
@@ -289,10 +289,21 @@ def set_exemption(request):
         if add == 'true':
             plan.aps.add(course)
         else:
-            print "removing..."
             plan.aps.remove(course)
         plan.save()
         
     return HttpResponse()
+    
+def tracks_for_major(request, major_name):
+    response_data = {}
+    response_data["query"] = major_name
+    track_names = []
+    major = Major.objects.filter(name=major_name)[0]
+    for track in major.tracks.all():
+        track_names.append(track.name)
+    response_data["tracks"] = track_names
+    return HttpResponse(simplejson.dumps(response_data), mimetype='application/json')
+    
+    
     
     
