@@ -28,7 +28,7 @@ def get_python_dict_for_reqs(requirement_groups):
     return req_groups
     
 @ensure_csrf_cookie
-def index(request):
+def index(request):    
     plan = Plan.objects.all()[0]
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
@@ -43,6 +43,7 @@ def index(request):
     args['plan'] = plan
     args['exempt'] = exempt
     args['allPlans'] = Plan.objects.all() # TODO only current user's plans
+    args['majors'] = simplejson.dumps(serializers.serialize('json', Major.objects.all(), use_natural_keys=True))
     years = [{}, {}, {}, {}]
     years[0]['name'] = 'Freshman'
     years[1]['name'] = 'Sophomore'
@@ -137,7 +138,6 @@ def index(request):
     args['max_units'] = plan.university.max_units_per_quarter
     args['general_reqs'] = simplejson.dumps(general_req_groups)
     args['major_reqs'] = simplejson.dumps(major_req_groups)
-    print args['major_reqs']
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
 
 def fill_response_info_for_courses(results, response_data):
@@ -207,7 +207,6 @@ def req_search(request, requirement_name, limit='0'):
     limit = int(limit)
     response_data = {}
     response_data["query"] = requirement_name
-    print requirement_name
     reqs = Requirement.objects.filter(name=requirement_name)
     results = []
     if len(reqs) == 1:
@@ -216,7 +215,6 @@ def req_search(request, requirement_name, limit='0'):
             results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')[:limit]
         else:
             results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')
-    print results
     return fill_response_info_for_courses(results, response_data) 
     
 
@@ -248,8 +246,6 @@ def delete_course(request):
     if len(enrollments) == 1:
         to_delete = enrollments[0]
         to_delete.delete()
-    else:
-        print "wtf..."
     return HttpResponse()
 
 def move_course(request):

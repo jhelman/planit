@@ -97,6 +97,9 @@ class RequirementGroup(models.Model):
      
     def __unicode__(self):
         return  self.name # i forget if python auto converts to string
+        
+    def natural_key(self):
+        return self.name
  
 class Requirement(models.Model):
     name = models.CharField(max_length=64)
