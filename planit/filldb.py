@@ -191,7 +191,7 @@ def filldb():
                 e.save()
     
     math_corerg = add_requirement_group(m, "Math Core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
-    math_electives = ['MATH51', 'MATH103','MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
+    math_electives = ['MATH51', 'MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
     math_electives = add_requirement_group(m, "Math Electives", 2, math_electives) 
 
     fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])

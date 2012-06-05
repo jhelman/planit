@@ -2132,12 +2132,11 @@
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
-        
             if (courses.length == 0) {
                 html += '</ul></div></div></div>';
                 return html;
             }
-            			
+            			            			
             for (var i in courses) {
                 
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
@@ -2573,12 +2572,12 @@
         
         function getReqClasses(elem) {
             elem = $(elem);
-            
+                        
             makeNewSpinner();
                         
             $.ajax({
 				url: '/reqSearch/' + elem.find('.req-name').html(),
-                success: function (data, textStatus, jqXHR) {                 
+                success: function (data, textStatus, jqXHR) {   
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2626,12 +2625,12 @@
 
         }
         
-        function getReqsAndClasses(liName, reqJSON, reqName, classJSON, isForward) {
+        function getReqsAndClasses(liName, reqJSON, reqDisplayCount, reqName, classJSON, isForward) {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             
                 var liGroupHTML = "";
                 var liClassHTML = "";
-                
+                                
                 for (var i in classJSON) {
                     var courseShortName = classJSON[i].fields.identifier;
                     var courseLongName = classJSON[i].fields.title;
@@ -2650,19 +2649,22 @@
                 var reqCount = 0;
                 for (var i in reqJSON.requirements) {
                     reqCount += reqJSON.requirements[i].fulfillers.length;
-                    if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
-                        (reqJSON.requirements[i]).fulfillers.length == 1) {
+                    
+                    if (((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
+                        (reqJSON.requirements[i]).fulfillers.length == 1)
+                        || reqDisplayCount == 1) {
                         continue;
  
-                    } else {
-                        var numClasses = countClasses(liName, reqName, i);
-                         liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
-                            '<span class="req-name">' + i + '</span>' + 
-                            '<span class="req-info">' + 
-                            (numClasses == 0 ? '<i class="icon-ok"></i>' : 
-                            ('<span class="badge badge-important" id="general-req-badge">' + 
-                             numClasses + '</span>')) + '</span></a></li>';
-                    }
+                    } 
+                    
+                                        
+                     var numClasses = countClasses(liName, reqName, i);
+                     liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
+                        '<span class="req-name">' + i + '</span>' + 
+                        '<span class="req-info">' + 
+                        (numClasses == 0 ? '<i class="icon-ok"></i>' : 
+                        ('<span class="badge badge-important" id="general-req-badge">' + 
+                         numClasses + '</span>')) + '</span></a></li>';
                  }
 
                  var cDiv = $('#search-scroll-div0');
@@ -2686,7 +2688,7 @@
                                      
                  html += '<div class="requirement-' + (liGroupHTML != "" ? 'sub' : '') + 
                     'heading">' + 
-                    (liGroupHTML != "" ? 'Courses:' : 'Select ' + 
+                    (liGroupHTML != "" ? (liClassHTML != "" ? 'Courses:' : '') : 'Select ' + 
                     (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
                             : reqJSON.num_reqs_to_fulfill) + ' of the following courses:') + '</div>';
                      
@@ -2734,14 +2736,21 @@
             // var reqName = elem.find('.req-name').html();            
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var reqJSON = ($(bElems[1]).html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
+            var reqJSON = ($(bElems[1]).find('.longName').html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
             reqJSON = reqJSON[reqName];
+            
+            var reqCount = 0;
+            for (var i in reqJSON.requirements) {
+                reqCount++;
+            }
+            
             
             var courseArr = []
             for (var i in reqJSON.requirements) {
                 var req = (reqJSON.requirements[i]);
-                if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
-                    (reqJSON.requirements[i]).fulfillers.length == 1) {
+                if (((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
+                    (reqJSON.requirements[i]).fulfillers.length == 1) 
+                    || reqCount == 1) {
                     for (var i in req.fulfillers) {
                        var cName = req.fulfillers[i];
                        if ($.inArray(cName, courseArr) == -1) {
@@ -2752,7 +2761,7 @@
                     
                 }
             }
-            
+                        
             // For higher level trees - is this right?
             // for (var i = 3; i < bElems.length; i++) {
             //     reqJSON = (reqJSON.requirements)[$(bElems[i]).html()];
@@ -2773,7 +2782,7 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqName, classesJSON, isForward);
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward);
                     if (isForward) {
                         moveToNextBreadcrumbLevel(bElems.length, reqName);
                         animateForward(bElems.length);
