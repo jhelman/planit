@@ -143,6 +143,7 @@ def index(request):
     args['max_units'] = plan.university.max_units_per_quarter
     args['general_reqs'] = simplejson.dumps(general_req_groups)
     args['major_reqs'] = simplejson.dumps(major_req_groups)
+    print args['major_reqs']
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
 
 def fill_response_info_for_courses(results, response_data):

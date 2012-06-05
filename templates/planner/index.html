@@ -74,7 +74,7 @@
         
         function createEventObjects(courseName, offering, isAdded, isWarning) {
             var eventObjects = [];
-            
+                        
             for (var i = 0; i < offering.weekdays.length; i++) {
                 eventObjects.push(makeNewEvent(offering.weekdays.charAt(i), offering.start_time,
                     offering.end_time, courseName, isAdded, isWarning));
@@ -94,7 +94,6 @@
                 }
                 $.merge(eventArray, (term.courses)[i].eventObjects);
             }
-            
             return eventArray;
             
         }
@@ -242,18 +241,18 @@
 			return dict;
 		}
 		
-		FourYearPlan.prototype.addExemption = function(courseName, exemption) {
+		FourYearPlan.prototype.addExemption = function(courseName, exemption, req, tlGroup) {
 		    courseName = makeCondensedName(courseName);
-		    addCourseReqs(exemption, true);			
+		    addCourseReqs(exemption, true, req, tlGroup);			
 			this.exemptions[courseName] = exemption;
 		}
 		
-		FourYearPlan.prototype.removeExemption = function(courseName) {
+		FourYearPlan.prototype.removeExemption = function(courseName, req, tlGroup) {
 		    courseName = makeCondensedName(courseName);
             if (this.exemptions[courseName] != undefined) {
                 var e = this.exemptions[courseName];
                 this.exemptions[courseName] = undefined;
-                removeCourseReqs(e, true);
+                removeCourseReqs(e, true, req, tlGroup);
             }
             
 		}
@@ -295,7 +294,7 @@
         }
         
     
-        function removeCourseReqs(course, isExemption) {
+        function removeCourseReqs(course, isExemption, req, tlGroup) {
             
             var cName = makeCondensedName(course.name);
             
@@ -331,7 +330,7 @@
             this.units -= course.units;
             this.plan.units -= course.units;
             
-            removeCourseReqs(course, false);
+            removeCourseReqs(course, false, false, false);
             
         }
         
@@ -416,7 +415,7 @@
         //     console.log(offering);
         // }
 
-        function addCourseReqs(course, isExemption) {
+        function addCourseReqs(course, isExemption, req, tlGroup) {
          			   
          	var cName = makeCondensedName(course.name);
          			   
@@ -462,7 +461,7 @@
             return termNames[offeringF.term] + offeringF.year + '-' + (parseInt(offeringF.year) + 1);
         }
 
-        Course.prototype.confirmCourse = function() {
+        Course.prototype.confirmCourse = function(req, tlGroup) {
             this.isAdded = false;
             for (var i in this.eventObjects) {
                 (this.eventObjects)[i].color = 'none';
@@ -470,7 +469,7 @@
             plan.getTermById(this.getTermId()).units += this.units;
             // console.log(plan.units);
             plan.units += this.units;
-            addCourseReqs(this, false);
+            addCourseReqs(this, false, req, tlGroup);
         }
         
         
@@ -481,6 +480,7 @@
             
             for (var i in this.offerings) {
                 if ((this.offerings)[i].fields.term == termNum && (this.offerings)[i].fields.year == startYear) {
+                    this.offering = this.offerings[i];
                     return createEventObjects(this.cName, (this.offerings)[i].fields, 
                         false, false)
                 }
@@ -918,24 +918,23 @@
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
 			
+            // $('#schedule-modal-calendar').fullCalendar({ 
+            //                 firstDay: 1,
+            //                 weekends: false,
+            //                 header: false,
+            //                 defaultView: 'agendaWeek',
+            //                 slotMinutes: 30,
+            //                 height: 300,
+            //                 allDaySlot: false,
+            //                 columnFormat: {week: 'dddd'}
+            //             });
+			
             
-            $('#schedule-modal-calendar').fullCalendar({ 
-                firstDay: 1,
-                weekends: false,
-                header: false,
-                defaultView: 'agendaWeek',
-                minTime: '8:00',
-                maxTime: '18:00',
-                slotMinutes: 30,
-                allDaySlot: false,
-                columnFormat: {week: 'dddd'}
-            });
-            
-            $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
-            
+
             $('#schedule-modal').on('shown', function () {
-                $('#schedule-modal-calendar').fullCalendar('removeEvents');
-                $('#schedule-modal-calendar').fullCalendar('addEventSource', collectDatesForTerm(quarterScheduleToShow));
+
+                $('#schedule-modal-calendar').fullCalendar('addEventSource', eventsToShow);
+                
             });
             
             $('#schedule-modal').on('hide', function () {
@@ -1147,7 +1146,7 @@
                         
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
-            
+                        
             plan.getTermById(quarterID).removeCourse(course);
             
             updateQuarterUnitsUI(quarterID, parseInt("-" + numUnits), true);
@@ -1249,6 +1248,8 @@
             }
             
             $('#new-plan-modal').modal('hide');
+            $('#new-plan-modal').hide();
+            
             
             var planName = $('#plan-name').attr('value');
             var major = $('#major').attr('value');
@@ -1271,6 +1272,7 @@
             }
 
             $('#account-settings-modal').modal('hide');
+            
         }
         
 
@@ -1288,14 +1290,69 @@
         
         
         var quarterScheduleToShow = null;
+        var eventsToShow = null;
         
         function openCalendar(quarterName, tt) {
             
             $(tt).tooltip('hide');
             $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');            
             
-            quarterScheduleToShow = quarterName;
-            $('#schedule-modal').modal('show');  
+            quarterScheduleToShow = quarterName;  
+            
+            $('#schedule-modal').show(0, function() {
+                $('#schedule-modal-calendar').fullCalendar('destroy');
+                
+                eventsToShow = collectDatesForTerm(quarterScheduleToShow);
+
+                var minTime = null;
+                var maxTime = null;
+                for (var i in eventsToShow) {
+                    if (minTime == null || eventsToShow[i].start.getHours() < minTime) {
+                        minTime = eventsToShow[i].start.getHours() + 
+                            (eventsToShow[i].start.getMinutes() / 60);
+                    }
+                    if (maxTime == null || eventsToShow[i].end.getHours() > maxTime) {
+                        maxTime = eventsToShow[i].end.getHours() + 
+                            (eventsToShow[i].end.getMinutes() / 60);
+                    
+                    }
+                }
+                              
+               var startHour;
+               
+               if (minTime >= 8 && maxTime <= 18) {
+                   minTime = 8; 
+                   maxTime = 18;
+                   startHour = 8; 
+               } else if (minTime >= 8 && maxTime > 18) {
+                   startHour = minTime;
+                   minTime = 8;
+               } else if (minTime < 8 && maxTime <= 18) {
+                   startHour = minTime;
+                   maxTime = 18;
+               } else if (minTime < 8 && maxTime > 18) {
+                   startHour = minTime;
+               }
+
+               
+                $('#schedule-modal-calendar').fullCalendar({ 
+                    firstDay: 1,
+                    weekends: false,
+                    header: false,
+                    defaultView: 'agendaWeek',
+                    minTime: minTime,
+                    maxTime: maxTime,
+                    firstHour: startHour,
+                    slotMinutes: 30,
+                    contentHeight: 440,
+                    allDaySlot: false,
+                    columnFormat: {week: 'dddd'}
+                });
+               
+                  
+                $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
+                $('#schedule-modal').modal('show');
+            });
         }
         
         
@@ -1408,9 +1465,9 @@
                 changeSelectedUnits($(this), quarterID, courseObj.identifier, false);
             });
             
-            addToElem.find('.units').on('mouseover', function(event) {
-                $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover('hide');
-            });
+            // addToElem.find('.units').on('mouseover', function(event) {
+            //     $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover('hide');
+            // });
                                         
         }
         
@@ -1593,7 +1650,9 @@
                         
             // console.log(course);            
             
-            course.confirmCourse();
+            var req = getReqByBreadcrumb(makeCondensedName(courseName));
+            
+            course.confirmCourse(req, getTopLevelByBreadcrumb());
             
             updateQuarterUnitsUI(termId, units, true);
             
@@ -2076,6 +2135,8 @@
         function highlightCourse(courseName, cssClassName) {
             var courseArr = (plan.getCourseDictionary())[courseName];
             
+            console.log(courseArr);
+            
             for (var x in courseArr) {
                                 
                 var course = courseArr[x];
@@ -2111,10 +2172,18 @@
         }
         
         function createSearchResults(courses, isReq, reqName, num) {
-                        
-                        
+                
+                
+            var numRequired = "all";        
             if (!isReq) {
                 num = 1;
+            } else {
+                var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+                req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
+                console.log(req);
+                if (courses.length != req.numCoursesToFulfill) {
+                    numRequired = req.numCoursesToFulfill;
+                }
             }
             // $('#search-scroll-content').empty();
                           
@@ -2128,7 +2197,7 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
                         '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                            : 'Select all of the following:') +
+                            : 'Select ' + numRequired + ' of the following:') +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
@@ -2198,12 +2267,15 @@
 			data['plan'] = plan.planName;
 			data['add'] = adding;
 			
+			var req = getReqByBreadcrumb(makeCondensedName(courseName));
+            
+			
 			if (adding) {
 			    var e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
 				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
-                plan.addExemption(makeCondensedName(courseName), e);
+                plan.addExemption(makeCondensedName(courseName), e, req, getTopLevelByBreadcrumb());
 		    } else {
-		        plan.removeExemption(courseName);
+		        plan.removeExemption(courseName, req, getTopLevelByBreadcrumb());
 	        }
 	        	
 	        updateRequirementsUI();
@@ -2269,6 +2341,33 @@
             refreshScroll(0);
         }
                 
+        function getTopLevelByBreadcrumb() {
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            
+            return $(bElems[1]).find('.longName').html();
+            
+        }
+        
+        
+        function getReqByBreadcrumb(courseName) {
+            
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var reqName = $(bElems[bElems.length - 1]).html();
+            
+            var req = false;
+            if (bElems.length == 3) {
+                req = plan.getRequirement(makeCondensedName(courseName), 
+                    [$(bElems[2]).find('.longName').html()]);
+                if (req == false) {
+                    req = plan.getRequirement($(bElems[2]).find('.longName').html(),
+                        [$(bElems[2]).find('.longName').html()]);
+                }
+            } else if (bElems.length == 4) {
+                req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
+            }
+            
+            return req;
+        }
         
         function addButtonsToSearchResults() {
 
@@ -2288,17 +2387,7 @@
                 var reqName = $(bElems[bElems.length - 1]).html();
                 var byButton = true;
                 if (reqName.indexOf("Search: ") == -1) {
-                    var req;
-                    if (bElems.length == 3) {
-                        req = plan.getRequirement(makeCondensedName(courseName), 
-                            [$(bElems[2]).find('.longName').html()]);
-                        if (req == false) {
-                            req = plan.getRequirement($(bElems[2]).find('.longName').html(),
-                                [$(bElems[2]).find('.longName').html()]);
-                        }
-                    } else if (bElems.length == 4) {
-                        req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
-                    }
+                    var req = getReqByBreadcrumb(courseName);
                     if (!req.bypassable) {
                         byButton = false;
                     }
@@ -2565,7 +2654,7 @@
             $('#search-scroll-div0').find('.pane').hide();
             
             $('#content-div').animate(
-                {'left': -cDiv.width() - SPACER}, 750, function () {
+                {'left': -cDiv.width() - SPACER}, 500, function () {
                     $('#blevel0').html('<a href="#" onclick="moveBackNLevels(this)">' + 
                             $('#blevel0').find('a').html() + '</a><span class="divider">/</span>');
                     refreshScroll(1);         
@@ -2584,7 +2673,6 @@
             $.ajax({
 				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()),
                 success: function (data, textStatus, jqXHR) {
-                    console.log(data);
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2621,7 +2709,7 @@
             $('#content-div').append(html);
             
             $('#content-div').animate(
-                {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
+                {'left': -bElems.length * (cDiv.width() + SPACER)}, 500, function () {
                     var cur = $('#blevel' + (bElems.length - 1));
                     cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                           cur.find('a').html() + '</a><span class="divider">/</span>');
@@ -2638,7 +2726,9 @@
                 var liGroupHTML = "";
                 var liClassHTML = "";
                                 
+                var classCount = 0;
                 for (var i in classJSON) {
+                    classCount++;
                     var courseShortName = classJSON[i].fields.identifier;
                     var courseLongName = classJSON[i].fields.title;
                     var courseDict = plan.getCourseDictionary();
@@ -2655,15 +2745,14 @@
                                 
                 var reqCount = 0;
                 for (var i in reqJSON.requirements) {
-                    reqCount += reqJSON.requirements[i].fulfillers.length;
-                    
+                    reqCount++;
                     if (((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
                         (reqJSON.requirements[i]).fulfillers.length == 1)
                         || reqDisplayCount == 1) {
                         continue;
  
                     } 
-                    
+                    // reqCount += reqJSON.requirements[i].num_courses_to_fulfill;
                                         
                      var numClasses = countClasses(liName, reqName, i);
                      liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
@@ -2683,7 +2772,7 @@
 
                  var html = scroller + '<div class="cdiv" id="cdiv' + 
                     (isForward ? bElems.length : (bElems.length - 1)) +'">';
-                                            
+                                                                                     
                  if (liGroupHTML != "") {
                      html += '<div class="requirement-heading">Select ' + 
                         (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
@@ -2692,12 +2781,12 @@
                         '<div class="requirement-subheading">Course groups:</div>' + 
                         '<div class="nav nav-tabs nav-stacked">' + liGroupHTML + '</div>';
                 }
-                                     
+                                                     
                  html += '<div class="requirement-' + (liGroupHTML != "" ? 'sub' : '') + 
                     'heading">' + 
                     (liGroupHTML != "" ? (liClassHTML != "" ? 'Courses:' : '') : 'Select ' + 
-                    (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
-                            : reqJSON.num_reqs_to_fulfill) + ' of the following courses:') + '</div>';
+                        (classCount > reqJSON.num_reqs_to_fulfill ? reqJSON.num_reqs_to_fulfill
+                            : 'all') + ' of the following courses:') + '</div>';
                      
                  html += '<ul class="nav nav-pills nav-stacked">' + liClassHTML + 
                     '</ul></div></div></div>';
@@ -2718,7 +2807,7 @@
              $('#search-scroll-div' + (num - 1)).find('.pane').hide();
 
              $('#content-div').animate(
-                 {'left': -num * (cDiv.width() + SPACER)}, 750, function () {
+                 {'left': -num * (cDiv.width() + SPACER)}, 500, function () {
                         var cur = $('#blevel' + (num - 1));
                         cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                               cur.find('a').html() + '</a><span class="divider">/</span>');
@@ -2811,18 +2900,18 @@
             
             var cDiv = $('#search-scroll-div0');
             
-            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
+            $('#search-scroll-div' + num).find('.pane').show();                
+            refreshScroll(num); 
+            
+            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 500, function () {
                     
                 var cDivs = $('#content-div').find('.nano');
                 for (var j = cDivs.length; j > num; j--) {
                     $('#search-scroll-div' + j).remove();
                 }
                 
-                $('#search-scroll-div' + num).find('.pane').show();                
-                refreshScroll(num); 
                 addButtonsToSearchResults();        
-                
-                
+                                
             });
         }
         
@@ -2860,7 +2949,7 @@
 
 
 
-<body style="margin: 30px;"> 
+<body style="margin: 35px;"> 
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
@@ -3017,7 +3106,7 @@
 
     </div>
     
-    <table style="margin-left: -30px"><tr>
+    <table style="margin-left: -35px"><tr>
         
         <td>
     
