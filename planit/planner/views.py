@@ -140,6 +140,7 @@ def index(request):
     args['max_units'] = plan.university.max_units_per_quarter
     args['general_reqs'] = simplejson.dumps(general_req_groups)
     args['major_reqs'] = simplejson.dumps(major_req_groups)
+    print args['major_reqs']
     return render_to_response('planner/index.html', args, context_instance=RequestContext(request))
 
 def fill_response_info_for_courses(results, responseData):
@@ -173,14 +174,19 @@ def fill_response_info_for_courses(results, responseData):
     responseData["reqs"] = requirements
     return HttpResponse(simplejson.dumps(responseData), mimetype='application/json')
     
+
+NUM_RESULTS = 10
     
-def search(request, prefix):
+def search(request, prefix, offset='0'):
+    offset = int(offset)
     responseData = {}
     responseData["query"] = prefix
-    results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
+    responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
+    results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
     if len(results) == 0:
         prefix = prefix.replace(' ', '')
-        results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')
+        responseData["numResults"] = Course.objects.filter(identifier__startswith=prefix).count()
+        results = Course.objects.filter(identifier__startswith=prefix).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
     return fill_response_info_for_courses(results, responseData)
     
 def course_info(request):
@@ -192,13 +198,15 @@ def course_info(request):
         results.extend(Course.objects.filter(identifier=identifier))
     return fill_response_info_for_courses(results, responseData)
 
-def req_search(request, requirement_name):
+def req_search(request, requirement_name, offset='0'):
+    offset = int(offset)
     responseData = {}
     responseData["query"] = requirement_name
     reqs = Requirement.objects.filter(name=requirement_name)
     results = []
     if len(reqs) == 1:
-        results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')
+        responseData["numResults"] = Course.objects.filter(tags=reqs[0].fulfillers).count()
+        results = Course.objects.filter(tags=reqs[0].fulfillers).order_by('dept', 'code', 'identifier')[offset:offset + NUM_RESULTS]
     return fill_response_info_for_courses(results, responseData) 
     
 

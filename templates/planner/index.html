@@ -1495,7 +1495,7 @@
             $('#' + termId + makeCondensedName(course.cName)).popover({
                title: course.cName + ": " + course.courseObj.fields.title,
                content: content,
-               placement: 'bottom'
+               placement: 'right'
             });
             
         }
@@ -2477,10 +2477,14 @@
         function moveToNextBreadcrumbLevel(num, name) {
             var oldNum = num - 1;
             $('#blevel' + oldNum).removeClass('active');
-            $('#blevel' + oldNum).html('<a href="#">' + 
-                $('#blevel' + oldNum).html() + '</a><span class="divider">/</span>');
+            $('#blevel' + oldNum).html('<a href="#">' + $('#blevel' + oldNum).html()
+                 + '</a><span class="divider">/</span>');
+            var newName = name;
+            if (name.length > 12) {
+                newName = name.substring(0, 12) + "...";
+            }
             $('#breadcrumb-div').find('.breadcrumb').append('<li class="active" id="blevel' + num +
-                '">' + name + '</li>');
+                '"><span>' + newName + '</span><span class="longName">' + name + '</span></li>');
         } 
         
         var SPACER = 40;
@@ -2646,7 +2650,8 @@
                 var reqCount = 0;
                 for (var i in reqJSON.requirements) {
                     reqCount += reqJSON.requirements[i].fulfillers.length;
-                    if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1) {
+                    if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
+                        (reqJSON.requirements[i]).fulfillers.length == 1) {
                         continue;
  
                     } else {
@@ -2735,7 +2740,8 @@
             var courseArr = []
             for (var i in reqJSON.requirements) {
                 var req = (reqJSON.requirements[i]);
-                if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1) {
+                if ((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
+                    (reqJSON.requirements[i]).fulfillers.length == 1) {
                     for (var i in req.fulfillers) {
                        var cName = req.fulfillers[i];
                        if ($.inArray(cName, courseArr) == -1) {
@@ -2820,7 +2826,7 @@
 
             // Need to reload the frame
             if (num == 2) {
-                getNextLevelOfReqs($('#blevel' + num).html(), false);
+                getNextLevelOfReqs($('#blevel' + num).find('.longName').html(), false);
             } else {
                 animateBackward(num);
             }
@@ -3138,7 +3144,7 @@
                             </div>
                             <div id="breadcrumb-div">
                                 <ul class="breadcrumb">
-                                    <li id="blevel0" class="active">Home</li>
+                                    <li id="blevel0" class="active"><span>Home</span><span class="longName">Home</span></li>
                                 </ul>
                             </div>
                             
