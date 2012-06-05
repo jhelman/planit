@@ -33,8 +33,8 @@ def index(request):
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
     for course in plan.aps.all():
-        requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()) 
-        requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
+        requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()).distinct()
+        requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
         setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
         setattr(course, 'reqs', serializers.serialize('json', requirements))
         exempt.append(course)
@@ -66,8 +66,8 @@ def index(request):
             terms[t]['courses'] = []
             for e in term_enrolled:
                 course = e.course.course
-                requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()) 
-                requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
+                requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()).distinct()
+                requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
                 setattr(course, 'start_time', e.course.start_time)
                 setattr(course, 'end_time', e.course.end_time)
                 setattr(course, 'weekdays', e.course.weekdays)
@@ -150,9 +150,9 @@ def fill_response_info_for_courses(results, response_data):
         classNames.append(course.identifier)
         course_offerings = CourseOffering.objects.filter(course=course).exclude(term__num=3).order_by('year', 'term', 'start_time')
         offerings[course.identifier] = serializers.serialize('json', course_offerings, use_natural_keys=True)
-        req_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all())
+        req_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()).distinct()
         requirement_groups[course.identifier] = serializers.serialize('json', req_groups)
-        reqs = Requirement.objects.filter(fulfillers__in=course.tags.all()) 
+        reqs = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
         requirements[course.identifier] = serializers.serialize('json', reqs)
         course_prereqs = []
         for group in PrereqGroup.objects.filter(for_course=course):
