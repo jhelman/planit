@@ -401,10 +401,8 @@
 		   this.reqGroups = [];
 		   var reqGroupNames = [];
 		   for (var i in reqGroups) {
-		       if ($.inArray(reqGroups[i].fields.name, reqGroupNames) == -1) {
-		           this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
-		           reqGroupNames.push(reqGroups[i].fields.name);
-	           }
+		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
+		       reqGroupNames.push(reqGroups[i].fields.name);
 	       }
 		   this.reqNames = [];
 		   for (var i in reqs) {
