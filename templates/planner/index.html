@@ -245,6 +245,9 @@
 		    courseName = makeCondensedName(courseName);
 		    addCourseReqs(exemption, true, req, tlGroup);			
 			this.exemptions[courseName] = exemption;
+			if ($.inArray(courseName, this.exemptCourseName) == -1) {
+				this.exemptCourseNames.push(courseName);
+			}
 		}
 		
 		FourYearPlan.prototype.removeExemption = function(courseName, req, tlGroup) {
@@ -253,6 +256,10 @@
                 var e = this.exemptions[courseName];
                 this.exemptions[courseName] = undefined;
                 removeCourseReqs(e, true, req, tlGroup);
+				var index = $.inArray(courseName, this.exemptCourseNames);
+				if (index != -1) {
+					this.exemptCourseNames.splice(index, 1);
+				}
             }
             
 		}
@@ -1773,6 +1780,7 @@
 				sat[i] = false;
 			}
 			var exempt = plan.exemptCourseNames;
+			console.log(exempt);
 			for (var i = 0; i < prereqGroups.length; i++) {
 				for (var j = 0; j < exempt.length; j++) {
 					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
