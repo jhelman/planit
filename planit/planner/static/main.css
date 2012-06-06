@@ -480,14 +480,15 @@ div.course-missing-prereq {
 }
 
 .badge {
-	font-size: 12px;
+	font-size: 11px;
 }
 
 .req-info {
   position: absolute;
   right: 10px;
-  text-align: right;
+  text-align: center;
   margin-left: 5px;
+  width: 30px;
 }
 
 .req-link {

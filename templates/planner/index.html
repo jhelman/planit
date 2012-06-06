@@ -2747,11 +2747,16 @@
         function getReqClasses(elem) {
             elem = $(elem);
                         
+            cancelNext = false;
+                        
             makeNewSpinner();
                                     
             $.ajax({
 				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()) + '/10',
-                success: function (data, textStatus, jqXHR) {
+                success: function (data, textStatus, jqXHR) {                    
+                    if (cancelNext == true) {
+                        return;
+                    }
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2765,7 +2770,10 @@
                     removeSpinner();
                 }, 
                 error: function(data, textStatus, jqXHR) {
-				    removeSpinner();
+				    if (cancelNext == true) {
+                        return;
+                    }
+                    removeSpinner();
 				    ajaxMessage("An error occurred. Please try again.", ERROR);
 			    }
             });
@@ -2943,6 +2951,8 @@
             // }
             
             makeNewSpinner();
+            
+            cancelNext = false;
                         
             var data = new Object();
 			data['courseNames'] = courseArr;
@@ -2951,6 +2961,9 @@
 				url: '/courseInfo/',
 				data: data,
 				success: function(data, textStatus, jqXHR) {
+				    if (cancelNext == true) {
+				        return;
+			        }
 				    removeSpinner();
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
@@ -2967,6 +2980,9 @@
 				},
 				
 				error: function(data, textStatus, jqXHR) {
+				    if (cancelNext == true) {
+				        return;
+			        }
 				    removeSpinner();
 				    ajaxMessage("An error occurred. Please try again.", ERROR);
 			    }
@@ -2996,6 +3012,7 @@
         
         
         function moveBackNLevels(elem) {
+            cancelNextFn();
             elem = $(elem);
             var liElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var num = parseInt(elem.closest('li').attr('id').substring(6));
