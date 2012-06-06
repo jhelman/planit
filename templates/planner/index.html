@@ -808,7 +808,7 @@
 					if (violations) {
 						for (var k in violations) {
 							var courseName = violations[k];
-							highlightCourse(courseName, 'course-missing-prereq');
+							highlightCourse(courseName, 'course-missing-prereq', false);
 						}
 					}
 			    },
@@ -821,7 +821,7 @@
 					if (violations) {
 						for (var k in violations) {
 							var courseName = violations[k];
-							unhighlightCourse(courseName, 'course-missing-prereq');
+							unhighlightCourse(courseName, 'course-missing-prereq', false);
 						}
 					}
 					
@@ -834,7 +834,7 @@
 					var violations = prereqViolations['{{ term.condensedName }}'];
 					if (violations) {
 						for (var k in violations) {
-							unhighlightCourse(violations[k], 'course-missing-prereq');
+							unhighlightCourse(violations[k], 'course-missing-prereq', false);
 						}
 					}
 					
@@ -1034,9 +1034,10 @@
             }
         }
         
+		var deletionPrereqViolations = null; 
                 
         function removeCourse(infoElem) {
-            
+			
             var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
             var qDiv = courseElem.closest('.quarter-div');
@@ -1068,6 +1069,37 @@
             // updateAddedUnits(qDiv.attr('id'), course.units, false, true);
             
             alertBox.fadeIn();
+			
+			deletionPrereqViolations = new Array();
+			var yearNum = getYearArrayIndex(qDiv.attr('id'));
+			var termNum = getTermArrayIndex(qDiv.attr('id'));
+			for (var i = yearNum; i < years.length; i++) {
+				for (var j = 0; j < termNames.length; j++) {
+					if (i == yearNum && j <= termNum) {
+						continue;
+					}
+					var term = plan.getTerm(j, i);
+					for (var key in term.courses) {
+						var c = (term.courses)[key];
+						if (c == undefined) continue;
+						for (var k = 0; k < c.prereqGroups.length; k++) {
+							var group = c.prereqGroups[k];
+							if ($.inArray(course.cName, group) != -1) {
+								var result = checkBackwardForMissingPrereq(i, j, c, course);
+								if (result) {
+									deletionPrereqViolations.push(result);
+								}
+							}
+						}
+					}
+					
+					
+				}
+			}
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				highlightCourse(courseName, 'course-missing-prereq', true);
+			}
         }
         
         
@@ -1082,6 +1114,12 @@
             turnOnQDivMouse(qDiv);
             
             // resetAddedUnits(quarterID);
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				unhighlightCourse(courseName, 'course-missing-prereq', true);
+			}
+			deletionPrereqViolations = null;
+			
         }
         
         function updateTotalUnits() {
@@ -1179,6 +1217,13 @@
             cancelDeleteCourse(quarterID);
             
             updateRequirementsUI();
+			
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				unhighlightCourse(courseName, 'course-missing-prereq', true);
+			}
+			deletionPrereqViolations = null;
+			
 			
 			var termYear = convertFromCondensedName(quarterID).split(" ");
 			var termName = termYear[0];
@@ -1508,7 +1553,6 @@
 						warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
 					} else {
 						warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
-						//prereqViolations = warningArrayOffering[j];
 					}
                 }
             }
@@ -1780,7 +1824,6 @@
 				sat[i] = false;
 			}
 			var exempt = plan.exemptCourseNames;
-			console.log(exempt);
 			for (var i = 0; i < prereqGroups.length; i++) {
 				for (var j = 0; j < exempt.length; j++) {
 					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
@@ -1904,16 +1947,16 @@
         
         function turnOnCourseHighlight(courseName) {
             if (courseName != false) {
-                unhighlightCourse(courseName, 'highlight-course');
+                unhighlightCourse(courseName, 'highlight-course', false);
             }
             $('.search-result').find('a').on('mouseover', function (event) {
                 var courseName = $(this).find('.shortName').html();
-                highlightCourse(courseName, 'highlight-course');
+                highlightCourse(courseName, 'highlight-course', false);
             });
 
             $('.search-result').find('a').on('mouseout', function (event) {
                 var courseName = $(this).find('.shortName').html();
-                unhighlightCourse(courseName, 'highlight-course');
+                unhighlightCourse(courseName, 'highlight-course', false);
             });
         }
         
@@ -2150,7 +2193,7 @@
                         
         }
         
-        function highlightCourse(courseName, cssClassName) {
+        function highlightCourse(courseName, cssClassName, warning) {
             var courseArr = (plan.getCourseDictionary())[courseName];
                         
             for (var x in courseArr) {
@@ -2161,15 +2204,21 @@
                 }
                 var offering = course.offering.fields;
                 var termStr = termNames[offering.term] + offering.year + '-' + (parseInt(offering.year) + 1);
-            
+            	
                 $('#' + termStr + course.cName).addClass(cssClassName);
-           
+				
+				if (warning) {
+	                $('#' + termStr).css('background-color', '#f3eed2');
+	                $('#' + termStr + '-units-div').empty();
+	                $('#' + termStr + '-units-div').html('<div class="units">' + courseName + ' is missing a prerequisite</div>');
+				}
+           	 
             }           
             
         }
         
         
-        function unhighlightCourse(courseName, cssClassName) {
+        function unhighlightCourse(courseName, cssClassName, warning) {
             
             var courseArr = (plan.getCourseDictionary())[courseName];
             
@@ -2182,6 +2231,17 @@
                 var termStr = termNames[offering.term] + offering.year + '-' + (parseInt(offering.year) + 1);
             
                 $('#' + termStr + course.cName).removeClass(cssClassName);
+				
+				if (warning) {
+                    returnCellToColor($('#' + termStr));
+                    $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTermById(termStr).units + 
+                         '</span>' +
+			            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
+                         '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                         '</span>&nbsp;<span class="added-units" id="' + termStr + 
+                         '-added-units" style="display: none"></span>');
+					
+				}
            
             }
             
