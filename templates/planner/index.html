@@ -1034,9 +1034,10 @@
             }
         }
         
+		var deletionPrereqViolations = null; 
                 
         function removeCourse(infoElem) {
-            
+			
             var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
             var qDiv = courseElem.closest('.quarter-div');
@@ -1068,6 +1069,37 @@
             // updateAddedUnits(qDiv.attr('id'), course.units, false, true);
             
             alertBox.fadeIn();
+			
+			deletionPrereqViolations = new Array();
+			var yearNum = getYearArrayIndex(qDiv.attr('id'));
+			var termNum = getTermArrayIndex(qDiv.attr('id'));
+			for (var i = yearNum; i < years.length; i++) {
+				for (var j = 0; j < termNames.length; j++) {
+					if (i == yearNum && j <= termNum) {
+						continue;
+					}
+					var term = plan.getTerm(j, i);
+					for (var key in term.courses) {
+						var c = (term.courses)[key];
+						if (c == undefined) continue;
+						for (var k = 0; k < c.prereqGroups.length; k++) {
+							var group = c.prereqGroups[k];
+							if ($.inArray(course.cName, group) != -1) {
+								var result = checkBackwardForMissingPrereq(i, j, c, course);
+								if (result) {
+									deletionPrereqViolations.push(result);
+								}
+							}
+						}
+					}
+					
+					
+				}
+			}
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				highlightCourse(courseName, 'course-missing-prereq');
+			}
         }
         
         
@@ -1082,6 +1114,12 @@
             turnOnQDivMouse(qDiv);
             
             // resetAddedUnits(quarterID);
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				unhighlightCourse(courseName, 'course-missing-prereq');
+			}
+			deletionPrereqViolations = null;
+			
         }
         
         function updateTotalUnits() {
@@ -1179,6 +1217,13 @@
             cancelDeleteCourse(quarterID);
             
             updateRequirementsUI();
+			
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				unhighlightCourse(courseName, 'course-missing-prereq');
+			}
+			deletionPrereqViolations = null;
+			
 			
 			var termYear = convertFromCondensedName(quarterID).split(" ");
 			var termName = termYear[0];
@@ -1780,7 +1825,6 @@
 				sat[i] = false;
 			}
 			var exempt = plan.exemptCourseNames;
-			console.log(exempt);
 			for (var i = 0; i < prereqGroups.length; i++) {
 				for (var j = 0; j < exempt.length; j++) {
 					if ($.inArray(exempt[j], prereqGroups[i]) != -1) {
