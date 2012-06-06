@@ -1415,8 +1415,15 @@
             if (fullname.length == 0) {
                 fullname = $('#account-settings-fullname').attr('placeholder');
             }
+            
+            var gradYear = $('#graduation-year').attr('value');
+            console.log(gradYear);
 
             $('#account-settings-modal').modal('hide');
+            
+            
+            // TODO Dan do stuff with account settings (change years of four year plan??)
+            
         }
         
 
@@ -3157,6 +3164,8 @@
                             {{ plan.name }}&nbsp;<b class="caret"></b>  
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                            <li class="divider"></li>
 							{% for p in allPlans %}
 							<li><a href="#"> 
 							{{ p.name }}&nbsp;
@@ -3165,8 +3174,6 @@
 							{% endif %}
 							</a></li>
 							{% endfor %}
-                            <li class="divider"></li>
-                            <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
                         </ul>
                      </li>
                     <li class="divider-vertical"></li>
