@@ -632,7 +632,12 @@
 		{% endfor %}
 		{% endautoescape %}
 		
-		var minTotalUnits = {{ minUnits }};
+		var minTotalUnits = 5;//{{ minUnits }};
+		
+		{% autoescape off %}
+		var majorsJSON = jQuery.parseJSON({{ majors }});
+		{% endautoescape %}
+		
 	        
         var classesJSON = null;
         var offeringsJSON = null;
@@ -907,7 +912,16 @@
 			
             returnHome(true);
                   
-            updateTotalUnits(plan.units);      
+            updateTotalUnits(plan.units); 
+            
+            $('#account-settings-modal').on('hidden', function () {
+                $('#account-settings-modal').hide();
+            });
+            
+            $('#new-plan-modal').on('hidden', function () {
+                $('#new-plan-modal').hide();
+            });
+                 
             
             // Static
             // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
@@ -943,13 +957,15 @@
             
 
             $('#schedule-modal').on('shown', function () {
-
                 $('#schedule-modal-calendar').fullCalendar('addEventSource', eventsToShow);
-                
             });
             
             $('#schedule-modal').on('hide', function () {
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
+            });
+            
+            $('#schedule-modal').on('hidden', function () {
+                $('#schedule-modal').hide();
             });
             
            turnOnQDivMouse();
@@ -980,7 +996,10 @@
         function doQDivMouseOver(elem) {
             elem.css('background-color', '#d9edf7'); 
             turnHeadingsColor(elem.attr('id'), '#d9edf7');
-            elem.find('.calendar-over').show();
+            var events = collectDatesForTerm(elem.attr('id'));
+            if (events.length != 0) {
+                elem.find('.calendar-over').show();
+            }
         }
         
         function doQDivMouseOut(elem) {
@@ -1123,13 +1142,14 @@
         }
         
         function updateTotalUnits() {
+
             $('#total-units').html(plan.units);
             if (plan.units < minTotalUnits) {
                 $('#total-units-icon').html('<i class="icon-exclamation-sign"></i>');
                 $('#total-units-icon').find('i').tooltip({title: 'Need ' + minTotalUnits + ' units in plan', 
                     placement: 'right'});
             } else {
-                $('#total-units-icon').html();
+                $('#total-units-icon').html('');
             }   
         }
         
@@ -1258,15 +1278,71 @@
         }
         
         
-        function openNewPlanModal() {
-            $('#new-plan-modal').modal('show');            
+        
+        function closeNewPlanModal() {
+                
+            $('#plan-name').attr('value', '');
+            $('#major').attr('value', '');
+            $('#track-select').closest('.control-group').hide();
+                
+            $('#new-plan-modal').modal('hide');
         }
+            
+                
+        function openNewPlanModal() {
+            
+            tracksShown = false;
+            
+            for (var i in majorsJSON) {
+                $('#major').append('<option value="' + majorsJSON[i].fields.name + '">' + 
+                    majorsJSON[i].fields.name + '</option>');
+            }
+            
+            
+            $('#new-plan-modal').modal('show');  
+    		
+                      
+        }
+        
+        var tracksShown = false;
+        
+        function getTracksForMajor(elem) {
+            
+            tracksShown = true;
+            
+            var majorName = $(elem).attr('value');
+            
+            if (majorName == "") {
+                $('#track-select').closest('.control-group').hide();
+                return;
+            }
+            
+            var tracks;
+            for (var i in majorsJSON) {
+                if (majorsJSON[i].fields.name == majorName) {
+                    tracks = majorsJSON[i].fields.tracks;
+                    break;
+                }
+            }
+            
+            
+            $('#track-select').html('<option value="">Choose a track</option>');
+            for (var j in tracks) {
+                $('#track-select').append('<option value="' + tracks[j] + '">' + 
+                    tracks[j] + '</option>');
+            }
+            $('#track-select').closest('.control-group').show();
+        }
+        
+        
         
         
         function validateNewPlan() {
                         
             var planName = $('#plan-name').attr('value');
             var major = $('#major').attr('value');
+            var track = $('#track-select').attr('value');
+            
             
             var flag = 0;
             
@@ -1291,6 +1367,21 @@
                 
             }   
            
+           
+            if (tracksShown) {
+                
+                if (track.length == 0) {
+                    $('#track-select').closest('.control-group').addClass('error');
+                    $('#track-help-block').show();
+                    flag = 1;
+                } else {
+                    $('#track-select').closest('.control-group').removeClass('error');
+                    $('#track-help-block').hide();
+
+                }
+                
+            }
+           
             return (flag == 0 ? true : false);
             
         }
@@ -1302,20 +1393,18 @@
             if (validateNewPlan() == false) {
                 return;
             }
-            
-            $('#new-plan-modal').modal('hide');
-            $('#new-plan-modal').hide();
-            
-            
+             
             var planName = $('#plan-name').attr('value');
             var major = $('#major').attr('value');
+            var track = $('#track-select').attr('value');
             
-            
-            $('#plan-name').attr('value', '');
-            $('#major').attr('value', '');
+             
+             // TODO: Dan make a new track here
+          
         }
         
         
+
         
         function openAccountSettingsModal() {
             $('#account-settings-modal').modal('show');
@@ -1328,7 +1417,6 @@
             }
 
             $('#account-settings-modal').modal('hide');
-            
         }
         
 
@@ -1348,18 +1436,24 @@
         var quarterScheduleToShow = null;
         var eventsToShow = null;
         
-        function openCalendar(quarterName, tt) {
+        function openCalendar(quarterName, elem) {
             
-            $(tt).tooltip('hide');
-            $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');            
+            // $(elem).tooltip('hide');
             
             quarterScheduleToShow = quarterName;  
             
+            eventsToShow = collectDatesForTerm(quarterScheduleToShow);
+            
+            if (eventsToShow.length == 0) {
+                return;
+            }
+            
+            $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');            
+            
+            
             $('#schedule-modal').show(0, function() {
                 $('#schedule-modal-calendar').fullCalendar('destroy');
-                
-                eventsToShow = collectDatesForTerm(quarterScheduleToShow);
-
+            
                 var minTime = null;
                 var maxTime = null;
                 for (var i in eventsToShow) {
@@ -1714,13 +1808,13 @@
             var req = getReqByBreadcrumb(makeCondensedName(courseName));
             
             course.confirmCourse(req, getTopLevelByBreadcrumb());
-            
-            updateQuarterUnitsUI(termId, units, true);
+                                    
+            cancelAddCourse(course.courseObj, course.offerings);
             
             updateRequirementsUI();
             
-            cancelAddCourse(course.courseObj, course.offerings);
-                        
+            updateQuarterUnitsUI(termId, units, true);
+            
             makeDrag('#' + termId + course.cName);
             
             addCourseToDraggables(termId, course);
@@ -3118,16 +3212,25 @@
                      <div class="control-group">
                          <label class="control-label" for="major">Major</label>
                          <div class="controls">
-                             <select id="major">
+                             <select id="major" onchange="getTracksForMajor(this);">
                                  <option value="">Choose a major</option>
-                                 <option value="Computer Science">Computer Science</option>
-                                 <option value="Electrical Engineering">Electrical Engineering</option>
-                                 <option value="Physics">Physics</option>
                              </select>
                              <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
                          </div>
                     </div>
                 </fieldset>
+                
+                
+                 <fieldset>
+                     <div class="control-group" style="display: none">
+                         <label class="control-label" for="track">Track</label>
+                         <div class="controls">
+                             <select id="track-select"></select>
+                             <p class="help-inline" id="track-help-block" style="display: none;">Required</p>
+                         </div>
+                    </div>
+                </fieldset>
+                
 
             </form>
         </div>
