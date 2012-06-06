@@ -1539,9 +1539,15 @@
             if (course.courseObj.fields.description.length > 100) {
                 descrip = descrip.substring(0, 100) + "...";
             }
+			
+			var unitsStr = '' + course.minUnits;
+			if (course.maxUnits > course.minUnits) {
+				unitsStr += '-' + course.maxUnits;
+			}
             
 			var content =  descrip + 
-				'<br /><br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
+				'<br /><br /><b>Units:</b> ' + unitsStr +
+				'<br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
 				formatTime(course.offering.fields.start_time) + '-' + formatTime(course.offering.fields.end_time) +
 				'<br /><b>Instructor:</b> ' + course.offering.fields.instructor;
 				
