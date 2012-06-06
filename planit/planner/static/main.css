@@ -484,12 +484,16 @@ div.course-missing-prereq {
 }
 
 .req-info {
+  position: absolute;
+  right: 10px;
+  text-align: right;
   margin-left: 5px;
 }
 
 .req-link {
-	text-align: center;
+	text-align: left;
 }
+
 
 #breadcrumb-div {
 	width: 320px;
