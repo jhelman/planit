@@ -167,12 +167,12 @@ def add_requirement_group(m, rg_name, n, classes):
     for r in reqs:
         r.save()
     return rg
-
+#
 def filldb():
     for i in range(3):
         t=Term(i)
         t.save()
-    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
+    fnames = ['all2.xml'] #cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
     for fname in fnames:
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
@@ -227,11 +227,19 @@ def filldb():
 
 ##########################
 ##########################
+<<<<<<< HEAD
     sys_core = add_requirement_group(m, "Track Depth (Systems)", 4, ["CS140"]) 
     sys_core.is_track=True
     sys_core.save()
     sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
     sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=sys_core)
+=======
+    sys_core = add_requirement_group(m, "Track Depth (Systems)", 2, ["CS140"]) 
+    sys_core.is_track=True
+    sys_core.save()
+    sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
+    sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=ef_core)
+>>>>>>> 4bdbb39f24e9131b23f27aebbee5782fb381f9fc
     sys_ass.save()
     
     track_electives = add_tag('Track Electives (Systems)', ['CS144', 'CS145', 'CS149', 'CS155', 'CS240', 'CS242', 'CS243', 'CS244', 'CS245', 'EE271', 'CS282'])		
@@ -248,6 +256,7 @@ def filldb():
     gen_elecs = add_tag('General Electives', gen_elecs)
     gen_elecs = Requirement(name='General Electives', fulfillers=gen_elecs, n_class=3, group=sys_core)
     gen_elecs.save()
+<<<<<<< HEAD
     m.tracks.add(sys_core)		
     m.save()
 
@@ -255,6 +264,14 @@ def filldb():
 
     p.track = sys_core
     p.save()
+=======
+		
+	
+
+##########################
+
+        
+>>>>>>> 4bdbb39f24e9131b23f27aebbee5782fb381f9fc
     ecs = Tag.objects.filter(name__startswith='GER:EC')
     ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
     ecrg.save()

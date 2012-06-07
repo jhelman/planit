@@ -90,6 +90,7 @@ class Course(models.Model):
         return self.identifier
 
 class RequirementGroup(models.Model):
+    is_track = models.BooleanField(default=False)
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
     is_track = models.BooleanField(default=False)
