@@ -1400,6 +1400,7 @@
             
              
              // TODO: Dan make a new track here
+			 $("#new-plan-form").submit();
 			 
         }
         
@@ -3202,13 +3203,13 @@
             <h3>Create New Four-Year Plan</h3>
         </div>
         <div class="modal-body">
-            <form class="form-horizontal" id="new-plan-form">
-                
+            <form class="form-horizontal" id="new-plan-form" action="/createPlan/" method="POST">
+                 {% csrf_token %}
                  <fieldset>
                      <div class="control-group">
                          <label class="control-label" for="plan-name">Four-Year Plan Name</label>
                          <div class="controls">
-                             <input type="text" id="plan-name"></input>
+                             <input type="text" id="plan-name" name="planName"></input>
                              <p class="help-inline" id="plan-name-help-block" style="display: none;">Required</p>
                          </div>
                     </div>
@@ -3219,7 +3220,7 @@
                      <div class="control-group">
                          <label class="control-label" for="major">Major</label>
                          <div class="controls">
-                             <select id="major" onchange="getTracksForMajor(this);">
+                             <select id="major" onchange="getTracksForMajor(this);" name="major">
                                  <option value="">Choose a major</option>
                              </select>
                              <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
@@ -3232,7 +3233,7 @@
                      <div class="control-group" style="display: none">
                          <label class="control-label" for="track">Track</label>
                          <div class="controls">
-                             <select id="track-select"></select>
+                             <select id="track-select" name="track"></select>
                              <p class="help-inline" id="track-help-block" style="display: none;">Required</p>
                          </div>
                     </div>

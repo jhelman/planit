@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils import simplejson
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core import serializers
 from django.views.decorators.csrf import ensure_csrf_cookie
 from models import *
@@ -300,7 +300,8 @@ def tracks_for_major(request, major_name):
         track_names.append(track.name)
     response_data["tracks"] = track_names
     return HttpResponse(simplejson.dumps(response_data), mimetype='application/json')
-    
+
+@ensure_csrf_cookie
 def create_plan(request):
     params = request.POST.dict()
     plan_name = params['planName']
@@ -313,7 +314,7 @@ def create_plan(request):
     if len(tracks) == 1:
         plan.track = tracks[0]
     plan.save()
-    return NttpResponse()
+    return HttpResponseRedirect('/' + plan_name + '/')
     
     
     
