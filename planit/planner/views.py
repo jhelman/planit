@@ -28,8 +28,12 @@ def get_python_dict_for_reqs(requirement_groups):
     return req_groups
     
 @ensure_csrf_cookie
-def index(request):    
-    plan = Plan.objects.all()[0]
+def index(request, plan_name=None):
+    plan = None  
+    if plan_name:
+        plan = Plan.objects.filter(name=plan_name)[0]
+    else:
+        plan = Plan.objects.all()[0]
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
     for course in plan.aps.all():
@@ -296,6 +300,21 @@ def tracks_for_major(request, major_name):
         track_names.append(track.name)
     response_data["tracks"] = track_names
     return HttpResponse(simplejson.dumps(response_data), mimetype='application/json')
+    
+def create_plan(request):
+    params = request.POST.dict()
+    plan_name = params['planName']
+    major_name = params['major']
+    track_name = params['track']
+    major = Major.objects.filter(name=major_name)[0]
+    tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major)
+    univ = University.objects.filter(name='Stanford')[0]
+    plan = Plan(name=plan_name, university=univ, major=major, start_year=2008, num_years=4)
+    if len(tracks) == 1:
+        plan.track = tracks[0]
+    plan.save()
+    return NttpResponse()
+    
     
     
     

@@ -13,4 +13,6 @@ urlpatterns = patterns('planner.views',
     url(r'^addCourse/$', 'add_course'),
     url(r'^deleteCourse/$', 'delete_course'),
     url(r'^moveCourse/$', 'move_course'),
+    url(r'^createPlan/$', 'create_plan'),
+    url(r'^(?P<plan_name>.+)/$', 'index'),
 )
