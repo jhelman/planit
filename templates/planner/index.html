@@ -3319,10 +3319,10 @@
     
 	        <table id="plan-table" style="padding: 0px; margin: -10px;">
                 <tr style="height: 30px">
-                    <td style="border-bottom: 2px solid;">&nbsp;</td>
+                    <td style="border-bottom: 2px solid;" class="top-left-corner">&nbsp;</td>
                     <td id="Autumn" class="quarter-label"><h4>Autumn Quarter</h4></td>
                     <td id="Winter" class="quarter-label"><h4>Winter Quarter</h4></td>
-                    <td id="Spring" class="quarter-label"><h4>Spring Quarter</h4></td>
+                    <td id="Spring" class="quarter-label top-right-corner"><h4>Spring Quarter</h4></td>
                 </tr>
 		
 		
@@ -3330,13 +3330,21 @@
         		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
                     <tr style="background-color: #{% cycle eaeaea,f7f7f7 %}">
                     <!-- <tr> -->
+						{% if forloop.last %}
+						<td id="{{ year.year }}" class="year-label bottom-left-corner"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
+						{% else %}
         				<td id="{{ year.year }}" class="year-label"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
-			
+						{% endif %}
 			
         				{% for term in year.terms %}
-        					<td class="quarter-td">
+							{% if forloop.last and forloop.parentloop.last %}
+    					    <td class="quarter-td bottom-right-corner">
+							{% else %}
+							<td class="quarter-td">
+							{% endif %}
+								
         					    
-        					    <div class="quarter-div" id="{{ term.condensedName }}">
+								<div class="quarter-div" id="{{ term.condensedName }}">
 			    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
         						    <div class="quarter-div cover"></div>
 
