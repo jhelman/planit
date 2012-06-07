@@ -3147,7 +3147,7 @@
 
 
 
-<body style="margin: 35px;"> 
+<body style="margin: 35px; background-image: url('{{ STATIC_URL }}photo.jpg'); background-repeat: repeat;"> 
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
@@ -3313,16 +3313,17 @@
 
     </div>
     
-    <table style="margin-left: -35px"><tr>
+
+    <table class="inner-table"><tr>
         
         <td>
     
-	        <table id="plan-table" style="padding: 0px; margin: -10px;">
+	        <table id="plan-table">
                 <tr style="height: 30px">
-                    <td style="border-bottom: 2px solid;" class="top-left-corner">&nbsp;</td>
+                    <td class="top-left-corner">&nbsp;</td>
                     <td id="Autumn" class="quarter-label"><h4>Autumn Quarter</h4></td>
                     <td id="Winter" class="quarter-label"><h4>Winter Quarter</h4></td>
-                    <td id="Spring" class="quarter-label top-right-corner"><h4>Spring Quarter</h4></td>
+                    <td id="Spring" class="quarter-label"><div><h4>Spring Quarter</h4></div></td>
                 </tr>
 		
 		
@@ -3330,36 +3331,23 @@
         		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
                     <tr style="background-color: #{% cycle eaeaea,f7f7f7 %}">
                     <!-- <tr> -->
-						{% if forloop.last %}
-						<td id="{{ year.year }}" class="year-label bottom-left-corner"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
-						{% else %}
-        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
-						{% endif %}
+        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.year }}</h4></td>
 			
         				{% for term in year.terms %}
-							{% if forloop.last and forloop.parentloop.last %}
-    					    <td class="quarter-td bottom-right-corner">
-							{% else %}
 							<td class="quarter-td">
-							{% endif %}
-								
-        					    
 								<div class="quarter-div" id="{{ term.condensedName }}">
 			    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
         						    <div class="quarter-div cover"></div>
-
             				        <div class="alert alert-error delete-alert">
                                 	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
                                 	    <h4 class="alert-heading"></h4>
                                 	    <span class="alert-body"></span>
                                 	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
                                 	    <span class="alert-delete-course-name" style="display: none; visibility; hidden;"></span>
-                                	    
                                 	    <br />
                                 	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
                                 	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                                     </div>
-			    	
 			    	                <div class="courses-div" id="{{ term.condensedName }}-courses">
         							    {% for course in term.courses %}
             				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
@@ -3377,7 +3365,6 @@
             				                </div>
             							{% endfor %}
             						</div>
-            						
             						<div class="units-div" id="{{ term.condensedName }}-units-div">
             						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
             						    <span class="calendar-over" onclick="openCalendar('{{ term.condensedName }}', this);">
@@ -3385,9 +3372,7 @@
                                         </span>
                                         &nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" style="display: none"></span>
             						</div>
-            						
         						</div>
-						
         					</td>
         				{% endfor %}
         			</tr>
@@ -3451,9 +3436,10 @@
             
         </td>
         
+        
+        
     </tr></table>    
-    
-    
+        
 </body>
 
 
