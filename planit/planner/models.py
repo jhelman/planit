@@ -97,6 +97,9 @@ class RequirementGroup(models.Model):
      
     def __unicode__(self):
         return  self.name # i forget if python auto converts to string
+        
+    def natural_key(self):
+        return self.name
  
 class Requirement(models.Model):
     name = models.CharField(max_length=64)
@@ -123,7 +126,7 @@ class PrereqGroup(models.Model):
 class Plan(models.Model):
     name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
     user = models.ForeignKey(UserData, null=True)
-    university = models.OneToOneField(University)
+    university = models.ForeignKey(University)
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
