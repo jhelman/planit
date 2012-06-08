@@ -29,7 +29,7 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request, plan_name=None):
-    user = User.objects.filteR(username=request.user)
+    user = User.objects.filter(username=request.user)
     plan = None
     args = {}
     args['user'] = user
