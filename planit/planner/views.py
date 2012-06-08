@@ -29,12 +29,15 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request, plan_name=None):
-    plan = None  
-    if plan_name:
-        plan = Plan.objects.filter(name=plan_name)[0]
-    else:
-        plan = Plan.objects.all()[0]
-    enrolled = Enrollment.objects.filter(plan=plan)
+    plan = None
+    try:  
+        if plan_name:
+            plan = Plan.objects.filter(name=plan_name)[0]
+        else:
+            plan = Plan.objects.all()[0]
+        enrolled = Enrollment.objects.filter(plan=plan)
+    except:
+        return HttpResponse("No such plan could be found")
     exempt = []
     for course in plan.aps.all():
         requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()).distinct()
