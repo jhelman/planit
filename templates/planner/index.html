@@ -74,7 +74,7 @@
         
         function createEventObjects(courseName, offering, isAdded, isWarning) {
             var eventObjects = [];
-            
+                        
             for (var i = 0; i < offering.weekdays.length; i++) {
                 eventObjects.push(makeNewEvent(offering.weekdays.charAt(i), offering.start_time,
                     offering.end_time, courseName, isAdded, isWarning));
@@ -94,7 +94,6 @@
                 }
                 $.merge(eventArray, (term.courses)[i].eventObjects);
             }
-            
             return eventArray;
             
         }
@@ -242,18 +241,25 @@
 			return dict;
 		}
 		
-		FourYearPlan.prototype.addExemption = function(courseName, exemption) {
+		FourYearPlan.prototype.addExemption = function(courseName, exemption, req, tlGroup) {
 		    courseName = makeCondensedName(courseName);
-		    addCourseReqs(exemption, true);			
+		    addCourseReqs(exemption, true, req, tlGroup);			
 			this.exemptions[courseName] = exemption;
+			if ($.inArray(courseName, this.exemptCourseName) == -1) {
+				this.exemptCourseNames.push(courseName);
+			}
 		}
 		
-		FourYearPlan.prototype.removeExemption = function(courseName) {
+		FourYearPlan.prototype.removeExemption = function(courseName, req, tlGroup) {
 		    courseName = makeCondensedName(courseName);
             if (this.exemptions[courseName] != undefined) {
                 var e = this.exemptions[courseName];
                 this.exemptions[courseName] = undefined;
-                removeCourseReqs(e, true);
+                removeCourseReqs(e, true, req, tlGroup);
+				var index = $.inArray(courseName, this.exemptCourseNames);
+				if (index != -1) {
+					this.exemptCourseNames.splice(index, 1);
+				}
             }
             
 		}
@@ -295,7 +301,7 @@
         }
         
     
-        function removeCourseReqs(course, isExemption) {
+        function removeCourseReqs(course, isExemption, req, tlGroup) {
             
             var cName = makeCondensedName(course.name);
             
@@ -331,7 +337,7 @@
             this.units -= course.units;
             this.plan.units -= course.units;
             
-            removeCourseReqs(course, false);
+            removeCourseReqs(course, false, false, false);
             
         }
         
@@ -416,7 +422,7 @@
         //     console.log(offering);
         // }
 
-        function addCourseReqs(course, isExemption) {
+        function addCourseReqs(course, isExemption, req, tlGroup) {
          			   
          	var cName = makeCondensedName(course.name);
          			   
@@ -439,6 +445,7 @@
             }
                                     
             // Check for reqs and reqGroups
+            //console.log(course.reqGroups);
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
@@ -447,8 +454,11 @@
                         (isExemption && !req.bypassable)) {
                         continue;
                     }
-                    req.numFulfilled++;
-                    if (req.isFulfilled()) {
+
+					var oldF = req.isFulfilled();
+					req.numFulfilled++;
+					
+                    if (req.isFulfilled() && !oldF) {
                         rg.numFulfilled++;
                     }
                 }
@@ -462,7 +472,7 @@
             return termNames[offeringF.term] + offeringF.year + '-' + (parseInt(offeringF.year) + 1);
         }
 
-        Course.prototype.confirmCourse = function() {
+        Course.prototype.confirmCourse = function(req, tlGroup) {
             this.isAdded = false;
             for (var i in this.eventObjects) {
                 (this.eventObjects)[i].color = 'none';
@@ -470,7 +480,7 @@
             plan.getTermById(this.getTermId()).units += this.units;
             // console.log(plan.units);
             plan.units += this.units;
-            addCourseReqs(this, false);
+            addCourseReqs(this, false, req, tlGroup);
         }
         
         
@@ -481,6 +491,7 @@
             
             for (var i in this.offerings) {
                 if ((this.offerings)[i].fields.term == termNum && (this.offerings)[i].fields.year == startYear) {
+                    this.offering = this.offerings[i];
                     return createEventObjects(this.cName, (this.offerings)[i].fields, 
                         false, false)
                 }
@@ -621,7 +632,12 @@
 		{% endfor %}
 		{% endautoescape %}
 		
-		var minTotalUnits = {{ minUnits }};
+		var minTotalUnits = 5;//{{ minUnits }};
+		
+		{% autoescape off %}
+		var majorsJSON = jQuery.parseJSON({{ majors }});
+		{% endautoescape %}
+		
 	        
         var classesJSON = null;
         var offeringsJSON = null;
@@ -797,7 +813,7 @@
 					if (violations) {
 						for (var k in violations) {
 							var courseName = violations[k];
-							highlightCourse(courseName, 'course-missing-prereq');
+							highlightCourse(courseName, 'course-missing-prereq', false);
 						}
 					}
 			    },
@@ -810,7 +826,7 @@
 					if (violations) {
 						for (var k in violations) {
 							var courseName = violations[k];
-							unhighlightCourse(courseName, 'course-missing-prereq');
+							unhighlightCourse(courseName, 'course-missing-prereq', false);
 						}
 					}
 					
@@ -823,7 +839,7 @@
 					var violations = prereqViolations['{{ term.condensedName }}'];
 					if (violations) {
 						for (var k in violations) {
-							unhighlightCourse(violations[k], 'course-missing-prereq');
+							unhighlightCourse(violations[k], 'course-missing-prereq', false);
 						}
 					}
 					
@@ -896,7 +912,16 @@
 			
             returnHome(true);
                   
-            updateTotalUnits(plan.units);      
+            updateTotalUnits(plan.units); 
+            
+            $('#account-settings-modal').on('hidden', function () {
+                $('#account-settings-modal').hide();
+            });
+            
+            $('#new-plan-modal').on('hidden', function () {
+                $('#new-plan-modal').hide();
+            });
+                 
             
             // Static
             // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
@@ -918,28 +943,29 @@
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
 			
+            // $('#schedule-modal-calendar').fullCalendar({ 
+            //                 firstDay: 1,
+            //                 weekends: false,
+            //                 header: false,
+            //                 defaultView: 'agendaWeek',
+            //                 slotMinutes: 30,
+            //                 height: 300,
+            //                 allDaySlot: false,
+            //                 columnFormat: {week: 'dddd'}
+            //             });
+			
             
-            $('#schedule-modal-calendar').fullCalendar({ 
-                firstDay: 1,
-                weekends: false,
-                header: false,
-                defaultView: 'agendaWeek',
-                minTime: '8:00',
-                maxTime: '18:00',
-                slotMinutes: 30,
-                allDaySlot: false,
-                columnFormat: {week: 'dddd'}
-            });
-            
-            $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
-            
+
             $('#schedule-modal').on('shown', function () {
-                $('#schedule-modal-calendar').fullCalendar('removeEvents');
-                $('#schedule-modal-calendar').fullCalendar('addEventSource', collectDatesForTerm(quarterScheduleToShow));
+                $('#schedule-modal-calendar').fullCalendar('addEventSource', eventsToShow);
             });
             
             $('#schedule-modal').on('hide', function () {
                 $('#schedule-modal-calendar').fullCalendar('removeEvents');
+            });
+            
+            $('#schedule-modal').on('hidden', function () {
+                $('#schedule-modal').hide();
             });
             
            turnOnQDivMouse();
@@ -968,17 +994,20 @@
         }
         
         function doQDivMouseOver(elem) {
-            elem.css('background-color', '#d9edf7'); 
-            turnHeadingsColor(elem.attr('id'), '#d9edf7');
-            elem.find('.calendar-over').show();
+            // elem.css('background-color', '#d9edf7'); 
+            //     turnHeadingsColor(elem.attr('id'), '#d9edf7');
+            var events = collectDatesForTerm(elem.attr('id'));
+            if (events.length != 0) {
+                elem.find('.calendar-over').show();
+            }
         }
         
         function doQDivMouseOut(elem) {
-            var yearIndex = getYearArrayIndex(elem.attr('id'));
-            elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
-            $('#' + years[yearIndex]).css('background-color', 
-               (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
-           $('#' + getTermName(elem.attr('id'))).css('background-color', 'white');
+            // var yearIndex = getYearArrayIndex(elem.attr('id'));
+            //           elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+            //           $('#' + years[yearIndex]).css('background-color', 
+            //              (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+            //          $('#' + getTermName(elem.attr('id'))).css('background-color', 'white');
            elem.find('.calendar-over').hide();
         }
         
@@ -1024,9 +1053,10 @@
             }
         }
         
+		var deletionPrereqViolations = null; 
                 
         function removeCourse(infoElem) {
-            
+			
             var courseElem = $(infoElem).closest('.course');
             var courseName = courseElem.find('.courseName').html();
             var qDiv = courseElem.closest('.quarter-div');
@@ -1058,6 +1088,37 @@
             // updateAddedUnits(qDiv.attr('id'), course.units, false, true);
             
             alertBox.fadeIn();
+			
+			deletionPrereqViolations = new Array();
+			var yearNum = getYearArrayIndex(qDiv.attr('id'));
+			var termNum = getTermArrayIndex(qDiv.attr('id'));
+			for (var i = yearNum; i < years.length; i++) {
+				for (var j = 0; j < termNames.length; j++) {
+					if (i == yearNum && j <= termNum) {
+						continue;
+					}
+					var term = plan.getTerm(j, i);
+					for (var key in term.courses) {
+						var c = (term.courses)[key];
+						if (c == undefined) continue;
+						for (var k = 0; k < c.prereqGroups.length; k++) {
+							var group = c.prereqGroups[k];
+							if ($.inArray(course.cName, group) != -1) {
+								var result = checkBackwardForMissingPrereq(i, j, c, course);
+								if (result) {
+									deletionPrereqViolations.push(result);
+								}
+							}
+						}
+					}
+					
+					
+				}
+			}
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				highlightCourse(courseName, 'course-missing-prereq', true);
+			}
         }
         
         
@@ -1072,16 +1133,23 @@
             turnOnQDivMouse(qDiv);
             
             // resetAddedUnits(quarterID);
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				unhighlightCourse(courseName, 'course-missing-prereq', true);
+			}
+			deletionPrereqViolations = null;
+			
         }
         
         function updateTotalUnits() {
+
             $('#total-units').html(plan.units);
             if (plan.units < minTotalUnits) {
                 $('#total-units-icon').html('<i class="icon-exclamation-sign"></i>');
                 $('#total-units-icon').find('i').tooltip({title: 'Need ' + minTotalUnits + ' units in plan', 
                     placement: 'right'});
             } else {
-                $('#total-units-icon').html();
+                $('#total-units-icon').html('');
             }   
         }
         
@@ -1147,7 +1215,7 @@
                         
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
-            
+                        
             plan.getTermById(quarterID).removeCourse(course);
             
             updateQuarterUnitsUI(quarterID, parseInt("-" + numUnits), true);
@@ -1169,6 +1237,13 @@
             cancelDeleteCourse(quarterID);
             
             updateRequirementsUI();
+			
+			for (var k in deletionPrereqViolations) {
+				var courseName = deletionPrereqViolations[k];
+				unhighlightCourse(courseName, 'course-missing-prereq', true);
+			}
+			deletionPrereqViolations = null;
+			
 			
 			var termYear = convertFromCondensedName(quarterID).split(" ");
 			var termName = termYear[0];
@@ -1203,15 +1278,78 @@
         }
         
         
-        function openNewPlanModal() {
-            $('#new-plan-modal').modal('show');            
+        
+        function closeNewPlanModal() {
+                
+            $('#plan-name').attr('value', '');
+            $('#major').attr('value', '');
+            $('#track-select').closest('.control-group').hide();
+                
+            $('#new-plan-modal').modal('hide');
         }
+            
+                
+        function openNewPlanModal() {
+            
+            tracksShown = false;
+            
+            for (var i in majorsJSON) {
+                $('#major').append('<option value="' + majorsJSON[i].fields.name + '">' + 
+                    majorsJSON[i].fields.name + '</option>');
+            }
+            
+            var year = new Date().getFullYear();
+            for (var j = 0; j < 4; j++) {
+                $('#graduation-year').append('<option value="' + (year + j) + '">' + 
+                    (year + j) + '</option>');
+            }
+            
+            
+            $('#new-plan-modal').modal('show');  
+    		
+                      
+        }
+        
+        var tracksShown = false;
+        
+        function getTracksForMajor(elem) {
+            
+            tracksShown = true;
+            
+            var majorName = $(elem).attr('value');
+            
+            if (majorName == "") {
+                $('#track-select').closest('.control-group').hide();
+                return;
+            }
+            
+            var tracks;
+            for (var i in majorsJSON) {
+                if (majorsJSON[i].fields.name == majorName) {
+                    tracks = majorsJSON[i].fields.tracks;
+                    break;
+                }
+            }
+            
+            
+            $('#track-select').html('<option value="">Choose a track</option>');
+            for (var j in tracks) {
+                $('#track-select').append('<option value="' + tracks[j] + '">' + 
+                    tracks[j] + '</option>');
+            }
+            $('#track-select').closest('.control-group').show();
+        }
+        
+        
         
         
         function validateNewPlan() {
                         
             var planName = $('#plan-name').attr('value');
             var major = $('#major').attr('value');
+            var track = $('#track-select').attr('value');
+            
+            
             
             var flag = 0;
             
@@ -1224,8 +1362,7 @@
                 $('#plan-name-help-block').hide();
                 
             }
-             
-             
+            
             if (major.length == 0) {
                 $('#major').closest('.control-group').addClass('error');
                 $('#major-help-block').show();
@@ -1234,7 +1371,22 @@
                 $('#major').closest('.control-group').removeClass('error');
                 $('#major-help-block').hide();
                 
-            }   
+            }
+             
+
+            if (tracksShown) {
+                
+                if (track.length == 0) {
+                    $('#track-select').closest('.control-group').addClass('error');
+                    $('#track-help-block').show();
+                    flag = 1;
+                } else {
+                    $('#track-select').closest('.control-group').removeClass('error');
+                    $('#track-help-block').hide();
+
+                }
+                
+            }
            
             return (flag == 0 ? true : false);
             
@@ -1247,18 +1399,14 @@
             if (validateNewPlan() == false) {
                 return;
             }
-            
-            $('#new-plan-modal').modal('hide');
-            
-            var planName = $('#plan-name').attr('value');
-            var major = $('#major').attr('value');
-            
-            
-            $('#plan-name').attr('value', '');
-            $('#major').attr('value', '');
+                          
+             // TODO: Dan make a new track here
+			 $("#new-plan-form").submit();
+			 
         }
         
         
+
         
         function openAccountSettingsModal() {
             $('#account-settings-modal').modal('show');
@@ -1269,8 +1417,15 @@
             if (fullname.length == 0) {
                 fullname = $('#account-settings-fullname').attr('placeholder');
             }
+            
+            var gradYear = $('#graduation-year').attr('value');
+            console.log(gradYear);
 
             $('#account-settings-modal').modal('hide');
+            
+            
+            // TODO Dan do stuff with account settings (change years of four year plan??)
+            
         }
         
 
@@ -1288,14 +1443,75 @@
         
         
         var quarterScheduleToShow = null;
+        var eventsToShow = null;
         
-        function openCalendar(quarterName, tt) {
+        function openCalendar(quarterName, elem) {
             
-            $(tt).tooltip('hide');
+            // $(elem).tooltip('hide');
+            
+            quarterScheduleToShow = quarterName;  
+            
+            eventsToShow = collectDatesForTerm(quarterScheduleToShow);
+            
+            if (eventsToShow.length == 0) {
+                return;
+            }
+            
             $('#schedule-modal-title').html(convertFromCondensedName(quarterName) + ' Weekly Schedule');            
             
-            quarterScheduleToShow = quarterName;
-            $('#schedule-modal').modal('show');  
+            
+            $('#schedule-modal').show(0, function() {
+                $('#schedule-modal-calendar').fullCalendar('destroy');
+            
+                var minTime = null;
+                var maxTime = null;
+                for (var i in eventsToShow) {
+                    if (minTime == null || eventsToShow[i].start.getHours() < minTime) {
+                        minTime = eventsToShow[i].start.getHours() + 
+                            (eventsToShow[i].start.getMinutes() / 60);
+                    }
+                    if (maxTime == null || eventsToShow[i].end.getHours() > maxTime) {
+                        maxTime = eventsToShow[i].end.getHours() + 
+                            (eventsToShow[i].end.getMinutes() / 60);
+                    
+                    }
+                }
+                              
+               var startHour;
+               
+               if (minTime >= 8 && maxTime <= 18) {
+                   minTime = 8; 
+                   maxTime = 18;
+                   startHour = 8; 
+               } else if (minTime >= 8 && maxTime > 18) {
+                   startHour = minTime;
+                   minTime = 8;
+               } else if (minTime < 8 && maxTime <= 18) {
+                   startHour = minTime;
+                   maxTime = 18;
+               } else if (minTime < 8 && maxTime > 18) {
+                   startHour = minTime;
+               }
+
+               
+                $('#schedule-modal-calendar').fullCalendar({ 
+                    firstDay: 1,
+                    weekends: false,
+                    header: false,
+                    defaultView: 'agendaWeek',
+                    minTime: minTime,
+                    maxTime: maxTime,
+                    firstHour: startHour,
+                    slotMinutes: 30,
+                    contentHeight: 440,
+                    allDaySlot: false,
+                    columnFormat: {week: 'dddd'}
+                });
+               
+                  
+                $('#schedule-modal-calendar').fullCalendar('gotoDate', 2012, 3, 23);
+                $('#schedule-modal').modal('show');
+            });
         }
         
         
@@ -1408,9 +1624,9 @@
                 changeSelectedUnits($(this), quarterID, courseObj.identifier, false);
             });
             
-            addToElem.find('.units').on('mouseover', function(event) {
-                $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover('hide');
-            });
+            // addToElem.find('.units').on('mouseover', function(event) {
+            //     $('#' + quarterID + makeCondensedName(courseObj.identifier)).popover('hide');
+            // });
                                         
         }
         
@@ -1440,7 +1656,6 @@
 						warningStr += warningArrayOffering[j] + " is missing a prerequisite.<br/>";
 					} else {
 						warningStr += warningArrayOffering[j][0] + " is missing a prerequisite.<br/>";
-						//prereqViolations = warningArrayOffering[j];
 					}
                 }
             }
@@ -1478,9 +1693,15 @@
             if (course.courseObj.fields.description.length > 100) {
                 descrip = descrip.substring(0, 100) + "...";
             }
+			
+			var unitsStr = '' + course.minUnits;
+			if (course.maxUnits > course.minUnits) {
+				unitsStr += '-' + course.maxUnits;
+			}
             
 			var content =  descrip + 
-				'<br /><br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
+				'<br /><br /><b>Units:</b> ' + unitsStr +
+				'<br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
 				formatTime(course.offering.fields.start_time) + '-' + formatTime(course.offering.fields.end_time) +
 				'<br /><b>Instructor:</b> ' + course.offering.fields.instructor;
 				
@@ -1593,14 +1814,16 @@
                         
             // console.log(course);            
             
-            course.confirmCourse();
+            var req = getReqByBreadcrumb(makeCondensedName(courseName));
             
-            updateQuarterUnitsUI(termId, units, true);
+            course.confirmCourse(req, getTopLevelByBreadcrumb());
+                                    
+            cancelAddCourse(course.courseObj, course.offerings);
             
             updateRequirementsUI();
             
-            cancelAddCourse(course.courseObj, course.offerings);
-                        
+            updateQuarterUnitsUI(termId, units, true);
+            
             makeDrag('#' + termId + course.cName);
             
             addCourseToDraggables(termId, course);
@@ -1827,16 +2050,16 @@
         
         function turnOnCourseHighlight(courseName) {
             if (courseName != false) {
-                unhighlightCourse(courseName, 'highlight-course');
+                unhighlightCourse(courseName, 'highlight-course', false);
             }
             $('.search-result').find('a').on('mouseover', function (event) {
                 var courseName = $(this).find('.shortName').html();
-                highlightCourse(courseName, 'highlight-course');
+                highlightCourse(courseName, 'highlight-course', false);
             });
 
             $('.search-result').find('a').on('mouseout', function (event) {
                 var courseName = $(this).find('.shortName').html();
-                unhighlightCourse(courseName, 'highlight-course');
+                unhighlightCourse(courseName, 'highlight-course', false);
             });
         }
         
@@ -2073,9 +2296,9 @@
                         
         }
         
-        function highlightCourse(courseName, cssClassName) {
+        function highlightCourse(courseName, cssClassName, warning) {
             var courseArr = (plan.getCourseDictionary())[courseName];
-            
+                        
             for (var x in courseArr) {
                                 
                 var course = courseArr[x];
@@ -2084,15 +2307,21 @@
                 }
                 var offering = course.offering.fields;
                 var termStr = termNames[offering.term] + offering.year + '-' + (parseInt(offering.year) + 1);
-            
+            	
                 $('#' + termStr + course.cName).addClass(cssClassName);
-           
+				
+				if (warning) {
+	                $('#' + termStr).css('background-color', '#f3eed2');
+	                $('#' + termStr + '-units-div').empty();
+	                $('#' + termStr + '-units-div').html('<div class="units">' + courseName + ' is missing a prerequisite</div>');
+				}
+           	 
             }           
             
         }
         
         
-        function unhighlightCourse(courseName, cssClassName) {
+        function unhighlightCourse(courseName, cssClassName, warning) {
             
             var courseArr = (plan.getCourseDictionary())[courseName];
             
@@ -2105,16 +2334,35 @@
                 var termStr = termNames[offering.term] + offering.year + '-' + (parseInt(offering.year) + 1);
             
                 $('#' + termStr + course.cName).removeClass(cssClassName);
+				
+				if (warning) {
+                    returnCellToColor($('#' + termStr));
+                    $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTermById(termStr).units + 
+                         '</span>' +
+			            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
+                         '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                         '</span>&nbsp;<span class="added-units" id="' + termStr + 
+                         '-added-units" style="display: none"></span>');
+					
+				}
            
             }
             
         }
         
         function createSearchResults(courses, isReq, reqName, num) {
-                        
-                        
+                
+                
+            var numRequired = "all";        
             if (!isReq) {
                 num = 1;
+            } else {
+                var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+                req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
+                // console.log(req);
+                if (courses.length != req.numCoursesToFulfill) {
+                    numRequired = req.numCoursesToFulfill;
+                }
             }
             // $('#search-scroll-content').empty();
                           
@@ -2128,7 +2376,7 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
                         '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
-                            : 'Select all of the following:') +
+                            : 'Select ' + numRequired + ' of the following:') +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
@@ -2198,12 +2446,15 @@
 			data['plan'] = plan.planName;
 			data['add'] = adding;
 			
+			var req = getReqByBreadcrumb(makeCondensedName(courseName));
+            
+			
 			if (adding) {
 			    var e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
 				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
-                plan.addExemption(makeCondensedName(courseName), e);
+                plan.addExemption(makeCondensedName(courseName), e, req, getTopLevelByBreadcrumb());
 		    } else {
-		        plan.removeExemption(courseName);
+		        plan.removeExemption(courseName, req, getTopLevelByBreadcrumb());
 	        }
 	        	
 	        updateRequirementsUI();
@@ -2266,9 +2517,39 @@
             $('#blevel0').addClass('active');
             
             $('#content-div').html(html); 
+                        
+        
+            
             refreshScroll(0);
         }
                 
+        function getTopLevelByBreadcrumb() {
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            
+            return $(bElems[1]).find('.longName').html();
+            
+        }
+        
+        
+        function getReqByBreadcrumb(courseName) {
+            
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var reqName = $(bElems[bElems.length - 1]).html();
+            
+            var req = false;
+            if (bElems.length == 3) {
+                req = plan.getRequirement(makeCondensedName(courseName), 
+                    [$(bElems[2]).find('.longName').html()]);
+                if (req == false) {
+                    req = plan.getRequirement($(bElems[2]).find('.longName').html(),
+                        [$(bElems[2]).find('.longName').html()]);
+                }
+            } else if (bElems.length == 4) {
+                req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
+            }
+            
+            return req;
+        }
         
         function addButtonsToSearchResults() {
 
@@ -2288,18 +2569,7 @@
                 var reqName = $(bElems[bElems.length - 1]).html();
                 var byButton = true;
                 if (reqName.indexOf("Search: ") == -1) {
-                    var req;
-                    if (bElems.length == 3) {
-                        req = plan.getRequirement(makeCondensedName(courseName), 
-                            [$(bElems[2]).find('.longName').html()]);
-                        if (req == false) {
-                            req = plan.getRequirement($(bElems[2]).find('.longName').html(),
-                                [$(bElems[2]).find('.longName').html()]);
-                        }
-                    } else if (bElems.length == 4) {
-                        req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
-                    }
-                    console.log(req);
+                    var req = getReqByBreadcrumb(courseName);
                     if (!req.bypassable) {
                         byButton = false;
                     }
@@ -2362,10 +2632,10 @@
                 
             cancelNext = false;
                 
-            moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue);
+            moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue, true);
                         
             $.ajax({
-				url: '/search/' + searchValue,
+				url: '/search/' + encodeURI(searchValue) + '/10',
                 success: function (data, textStatus, jqXHR) {
                     if (cancelNext == true) {
                         return;
@@ -2476,14 +2746,18 @@
             hasSpinner = false;
         }
         
-        function moveToNextBreadcrumbLevel(num, name) {
+        function moveToNextBreadcrumbLevel(num, name, isSearch) {
             var oldNum = num - 1;
             $('#blevel' + oldNum).removeClass('active');
             $('#blevel' + oldNum).html('<a href="#">' + $('#blevel' + oldNum).html()
                  + '</a><span class="divider">/</span>');
             var newName = name;
-            if (name.length > 12) {
-                newName = name.substring(0, 12) + "...";
+            var len = 12;
+            if (isSearch) {
+                len = 30;
+            }
+            if (name.length > len) {
+                newName = name.substring(0, len) + "...";
             }
             $('#breadcrumb-div').find('.breadcrumb').append('<li class="active" id="blevel' + num +
                 '"><span>' + newName + '</span><span class="longName">' + name + '</span></li>');
@@ -2555,14 +2829,14 @@
             html += '</div></div></div></div>';
             $('#content-div').append(html);
             
-            moveToNextBreadcrumbLevel(1, tlName);
+            moveToNextBreadcrumbLevel(1, tlName, false);
             
             // countReqs(reqGroup);
                         
             $('#search-scroll-div0').find('.pane').hide();
             
             $('#content-div').animate(
-                {'left': -cDiv.width() - SPACER}, 750, function () {
+                {'left': -cDiv.width() - SPACER}, 500, function () {
                     $('#blevel0').html('<a href="#" onclick="moveBackNLevels(this)">' + 
                             $('#blevel0').find('a').html() + '</a><span class="divider">/</span>');
                     refreshScroll(1);         
@@ -2576,11 +2850,16 @@
         function getReqClasses(elem) {
             elem = $(elem);
                         
-            makeNewSpinner();
+            cancelNext = false;
                         
+            makeNewSpinner();
+                                    
             $.ajax({
-				url: '/reqSearch/' + elem.find('.req-name').html(),
-                success: function (data, textStatus, jqXHR) {   
+				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()) + '/10',
+                success: function (data, textStatus, jqXHR) {                    
+                    if (cancelNext == true) {
+                        return;
+                    }
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
@@ -2594,7 +2873,10 @@
                     removeSpinner();
                 }, 
                 error: function(data, textStatus, jqXHR) {
-				    removeSpinner();
+				    if (cancelNext == true) {
+                        return;
+                    }
+                    removeSpinner();
 				    ajaxMessage("An error occurred. Please try again.", ERROR);
 			    }
             });
@@ -2610,14 +2892,14 @@
             
             var cDiv = $('#search-scroll-div0');
                 
-            moveToNextBreadcrumbLevel(bElems.length, reqName);
+            moveToNextBreadcrumbLevel(bElems.length, reqName, false);
             
             $('#search-scroll-div' + (level - 1)).find('.pane').hide();
                 
             $('#content-div').append(html);
             
             $('#content-div').animate(
-                {'left': -bElems.length * (cDiv.width() + SPACER)}, 750, function () {
+                {'left': -bElems.length * (cDiv.width() + SPACER)}, 500, function () {
                     var cur = $('#blevel' + (bElems.length - 1));
                     cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                           cur.find('a').html() + '</a><span class="divider">/</span>');
@@ -2634,7 +2916,9 @@
                 var liGroupHTML = "";
                 var liClassHTML = "";
                                 
+                var classCount = 0;
                 for (var i in classJSON) {
+                    classCount++;
                     var courseShortName = classJSON[i].fields.identifier;
                     var courseLongName = classJSON[i].fields.title;
                     var courseDict = plan.getCourseDictionary();
@@ -2651,15 +2935,14 @@
                                 
                 var reqCount = 0;
                 for (var i in reqJSON.requirements) {
-                    reqCount += reqJSON.requirements[i].fulfillers.length;
-                    
+                    reqCount++;
                     if (((reqJSON.requirements[i]).num_courses_to_fulfill == 1 &&
                         (reqJSON.requirements[i]).fulfillers.length == 1)
                         || reqDisplayCount == 1) {
                         continue;
  
                     } 
-                    
+                    // reqCount += reqJSON.requirements[i].num_courses_to_fulfill;
                                         
                      var numClasses = countClasses(liName, reqName, i);
                      liGroupHTML += '<li class="req-link"><a href="#" onclick="getReqClasses(this);">' + 
@@ -2679,7 +2962,7 @@
 
                  var html = scroller + '<div class="cdiv" id="cdiv' + 
                     (isForward ? bElems.length : (bElems.length - 1)) +'">';
-                                            
+                                                                                     
                  if (liGroupHTML != "") {
                      html += '<div class="requirement-heading">Select ' + 
                         (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
@@ -2688,12 +2971,12 @@
                         '<div class="requirement-subheading">Course groups:</div>' + 
                         '<div class="nav nav-tabs nav-stacked">' + liGroupHTML + '</div>';
                 }
-                                     
+                                                     
                  html += '<div class="requirement-' + (liGroupHTML != "" ? 'sub' : '') + 
                     'heading">' + 
                     (liGroupHTML != "" ? (liClassHTML != "" ? 'Courses:' : '') : 'Select ' + 
-                    (reqCount == reqJSON.num_reqs_to_fulfill ? 'all' 
-                            : reqJSON.num_reqs_to_fulfill) + ' of the following courses:') + '</div>';
+                        (classCount > reqJSON.num_reqs_to_fulfill ? reqJSON.num_reqs_to_fulfill
+                            : 'all') + ' of the following courses:') + '</div>';
                      
                  html += '<ul class="nav nav-pills nav-stacked">' + liClassHTML + 
                     '</ul></div></div></div>';
@@ -2714,7 +2997,7 @@
              $('#search-scroll-div' + (num - 1)).find('.pane').hide();
 
              $('#content-div').animate(
-                 {'left': -num * (cDiv.width() + SPACER)}, 750, function () {
+                 {'left': -num * (cDiv.width() + SPACER)}, 500, function () {
                         var cur = $('#blevel' + (num - 1));
                         cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                               cur.find('a').html() + '</a><span class="divider">/</span>');
@@ -2771,6 +3054,8 @@
             // }
             
             makeNewSpinner();
+            
+            cancelNext = false;
                         
             var data = new Object();
 			data['courseNames'] = courseArr;
@@ -2779,6 +3064,9 @@
 				url: '/courseInfo/',
 				data: data,
 				success: function(data, textStatus, jqXHR) {
+				    if (cancelNext == true) {
+				        return;
+			        }
 				    removeSpinner();
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
@@ -2787,7 +3075,7 @@
 					reqGroupsJSON = data.req_groups;
                     getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward);
                     if (isForward) {
-                        moveToNextBreadcrumbLevel(bElems.length, reqName);
+                        moveToNextBreadcrumbLevel(bElems.length, reqName, false);
                         animateForward(bElems.length);
                     } else {
                         animateBackward(bElems.length - 1);
@@ -2795,6 +3083,9 @@
 				},
 				
 				error: function(data, textStatus, jqXHR) {
+				    if (cancelNext == true) {
+				        return;
+			        }
 				    removeSpinner();
 				    ajaxMessage("An error occurred. Please try again.", ERROR);
 			    }
@@ -2807,23 +3098,24 @@
             
             var cDiv = $('#search-scroll-div0');
             
-            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 750, function () {
+            $('#search-scroll-div' + num).find('.pane').show();                
+            refreshScroll(num); 
+            
+            $('#content-div').animate({'left': -((cDiv.width() + SPACER) * num)}, 500, function () {
                     
                 var cDivs = $('#content-div').find('.nano');
                 for (var j = cDivs.length; j > num; j--) {
                     $('#search-scroll-div' + j).remove();
                 }
                 
-                $('#search-scroll-div' + num).find('.pane').show();                
-                refreshScroll(num); 
                 addButtonsToSearchResults();        
-                
-                
+                                
             });
         }
         
         
         function moveBackNLevels(elem) {
+            cancelNextFn();
             elem = $(elem);
             var liElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var num = parseInt(elem.closest('li').attr('id').substring(6));
@@ -2856,12 +3148,13 @@
 
 
 
-<body> 
+<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil5.jpg');"> 
+<!-- <body style="margin: 50px"> -->
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
     
-    <div class="navbar">
+    <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
                 <div class="container-fluid">
                 
@@ -2874,16 +3167,16 @@
                             {{ plan.name }}&nbsp;<b class="caret"></b>  
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                            <li class="divider"></li>
 							{% for p in allPlans %}
-							<li><a href="#"> 
+							<li><a href="/{{ p.name }}"> 
 							{{ p.name }}&nbsp;
 							{% if p.name == plan.name %}
 							<i class="icon-ok"></i>
 							{% endif %}
 							</a></li>
 							{% endfor %}
-                            <li class="divider"></li>
-                            <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
                         </ul>
                      </li>
                     <li class="divider-vertical"></li>
@@ -2912,33 +3205,52 @@
             <h3>Create New Four-Year Plan</h3>
         </div>
         <div class="modal-body">
-            <form class="form-horizontal" id="new-plan-form">
-                
+            <form class="form-horizontal" id="new-plan-form" action="/createPlan/" method="POST">
+                 {% csrf_token %}
                  <fieldset>
                      <div class="control-group">
                          <label class="control-label" for="plan-name">Four-Year Plan Name</label>
                          <div class="controls">
-                             <input type="text" id="plan-name"></input>
+                             <input type="text" id="plan-name" name="planName"></input>
                              <p class="help-inline" id="plan-name-help-block" style="display: none;">Required</p>
                          </div>
                     </div>
                 </fieldset>
+                
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="graduation-year">Graduation Year</label>
+                        <div class="controls">
+                            <select name="gradYear" id="graduation-year">
+                            </select>
+                        </div>
+                   </div>
+               </fieldset>
                    
                    
                  <fieldset>
                      <div class="control-group">
                          <label class="control-label" for="major">Major</label>
                          <div class="controls">
-                             <select id="major">
+                             <select id="major" onchange="getTracksForMajor(this);" name="major">
                                  <option value="">Choose a major</option>
-                                 <option value="Computer Science">Computer Science</option>
-                                 <option value="Electrical Engineering">Electrical Engineering</option>
-                                 <option value="Physics">Physics</option>
                              </select>
                              <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
                          </div>
                     </div>
                 </fieldset>
+                
+                
+                 <fieldset>
+                     <div class="control-group" style="display: none">
+                         <label class="control-label" for="track">Track</label>
+                         <div class="controls">
+                             <select id="track-select" name="track"></select>
+                             <p class="help-inline" id="track-help-block" style="display: none;">Required</p>
+                         </div>
+                    </div>
+                </fieldset>
+                
 
             </form>
         </div>
@@ -2967,23 +3279,6 @@
                         </div>
                    </div>
                </fieldset>
-
-
-                <fieldset>
-                    <div class="control-group">
-                        <label class="control-label" for="graduation-year">Graduation Year</label>
-                        <div class="controls">
-                            <select id="graduation-year">
-                                <option value="2012">2012</option>
-                                <option value="2013">2013</option>
-                                <option value="2014">2014</option>
-                                <option value="2015">2015</option>
-                                <option value="2016">2016</option>
-                            </select>
-                        </div>
-                   </div>
-               </fieldset>
-
            </form>
        </div>
 
@@ -3013,45 +3308,42 @@
 
     </div>
     
-    <table style="margin-top: -13px"><tr>
+    <div class="cover-inner-table">&nbsp;</div>
+
+    <table class="inner-table"><tr>
         
         <td>
     
-	        <table id="plan-table" style="padding: 0px; margin: -10px;">
+	        <table id="plan-table">
                 <tr style="height: 30px">
-                    <td style="border-bottom: 2px solid;">&nbsp;</td>
+                    <td class="top-left-corner">&nbsp;</td>
                     <td id="Autumn" class="quarter-label"><h4>Autumn Quarter</h4></td>
                     <td id="Winter" class="quarter-label"><h4>Winter Quarter</h4></td>
-                    <td id="Spring" class="quarter-label"><h4>Spring Quarter</h4></td>
+                    <td id="Spring" class="quarter-label"><div><h4>Spring Quarter</h4></div></td>
                 </tr>
 		
 		
         		{% for year in years %}
         		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-                    <tr style="background-color: #{% cycle eaeaea,f7f7f7 %}">
-                    <!-- <tr> -->
-        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
-			
+                    <!-- <tr style="background-color: #{% cycle ffffff, ffffff %}"> -->
+                    <tr>
+        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.year }}</h4></td>
 			
         				{% for term in year.terms %}
-        					<td class="quarter-td">
-        					    
-        					    <div class="quarter-div" id="{{ term.condensedName }}">
+							<td class="quarter-td">
+								<div class="quarter-div" id="{{ term.condensedName }}">
 			    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
         						    <div class="quarter-div cover"></div>
-
             				        <div class="alert alert-error delete-alert">
                                 	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
                                 	    <h4 class="alert-heading"></h4>
                                 	    <span class="alert-body"></span>
                                 	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
                                 	    <span class="alert-delete-course-name" style="display: none; visibility; hidden;"></span>
-                                	    
                                 	    <br />
                                 	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
                                 	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                                     </div>
-			    	
 			    	                <div class="courses-div" id="{{ term.condensedName }}-courses">
         							    {% for course in term.courses %}
             				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
@@ -3069,7 +3361,6 @@
             				                </div>
             							{% endfor %}
             						</div>
-            						
             						<div class="units-div" id="{{ term.condensedName }}-units-div">
             						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
             						    <span class="calendar-over" onclick="openCalendar('{{ term.condensedName }}', this);">
@@ -3077,9 +3368,7 @@
                                         </span>
                                         &nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" style="display: none"></span>
             						</div>
-            						
         						</div>
-						
         					</td>
         				{% endfor %}
         			</tr>
@@ -3143,9 +3432,10 @@
             
         </td>
         
+        
+        
     </tr></table>    
-    
-    
+        
 </body>
 
 

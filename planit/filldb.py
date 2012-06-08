@@ -208,9 +208,9 @@ def filldb():
                      'PHYSICS23', 'PHYSICS25', 'PHYSICS45', 'PHYSICS61', 'PHYSICS63', 'PHYSICS65']
     sci_electives = add_requirement_group(m, "Science Electives", 1, sci_electives) 
 ########################
-    win_corerg = add_requirement_group(m, "Writing in the Major", 1, ['CS191W','CS194W', 'CS210B', 'CS294W']) 
+    win_corerg = add_requirement_group(m, "Writing in the Major", 1, ['CS191W','CS194W', 'CS210B', 'CS294W', 'CS181W']) 
 ########################
-    tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['STS101','STS112', 'STS115', 'BIOE131', 'CS181', 'ENGR145', 'HUMBIO174', 'MSE181', 'MSE193', 'POLISCI114S', 'PUBLPOL194']) 
+    tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['STS101','STS112', 'STS115', 'BIOE131', 'CS181', 'CS181W', 'ENGR145', 'HUMBIO174', 'MSE181', 'MSE193', 'POLISCI114S', 'PUBLPOL194']) 
 ######################
     ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"]) 
 
@@ -230,7 +230,7 @@ def filldb():
     sys_core = add_requirement_group(m, "Track Depth (Systems)", 2, ["CS140"]) 
     sys_core.is_track=True
     sys_core.save()
-    sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
+    sys_ass = add_tag('EE108B+CS143', ['EE108B', 'CS143'])
     sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=ef_core)
     sys_ass.save()
     
@@ -250,10 +250,12 @@ def filldb():
     gen_elecs.save()
 		
 	
+    m.tracks.add(sys_core)		
+    m.save()
 
-##########################
 
-        
+    p.track = sys_core
+    p.save()
     ecs = Tag.objects.filter(name__startswith='GER:EC')
     ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
     ecrg.save()

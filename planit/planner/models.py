@@ -93,10 +93,14 @@ class RequirementGroup(models.Model):
     is_track = models.BooleanField(default=False)
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
+    is_track = models.BooleanField(default=False)
     n_prereqs = models.IntegerField() #gonna change the name of this
      
     def __unicode__(self):
         return  self.name # i forget if python auto converts to string
+        
+    def natural_key(self):
+        return self.name
  
 class Requirement(models.Model):
     name = models.CharField(max_length=64)
@@ -123,7 +127,7 @@ class PrereqGroup(models.Model):
 class Plan(models.Model):
     name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
     user = models.ForeignKey(UserData, null=True)
-    university = models.OneToOneField(University)
+    university = models.ForeignKey(University)
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
@@ -148,7 +152,7 @@ class CourseOffering(models.Model):
         
     def __unicode__(self):
         return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year) + '-' + str(self.year + 1)
-
+##
 #does it scale
 class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)
