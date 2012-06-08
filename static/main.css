@@ -1,5 +1,5 @@
 body {
-  background-image: url('photo.jpg');
+  background-image: url('b2.jpg');
   background-repeat: repeat-y;
 }
 
@@ -15,8 +15,8 @@ div.course {
     margin-bottom: 4px;
     margin-left: auto;
     margin-right: auto;
-		padding-top: 5px;
-		padding-bottom: 5px;
+		padding-top: 3px;
+		padding-bottom: 3px;
 		padding-left: 5px;
 		padding-right: 5px;
 		cursor: pointer;
@@ -96,8 +96,8 @@ div.course-missing-prereq {
 
 /* Quarter div CSS */
 .quarter-div {
-    width: 310px;
-    height: 150px;
+    width: 320px;
+    height: 170px;
     padding: 0px;
 		margin: 0px;
 		overflow: hidden;
@@ -141,7 +141,7 @@ div.course-missing-prereq {
 
 
 .courses-div {
-	height: 130px;
+	height: 150px;
 	overflow: scroll;
 	border-bottom: 1px dashed #bbb;
 }
@@ -178,7 +178,7 @@ div.course-missing-prereq {
 /* Plan table CSS */
 
 .inner-table {
-  margin-top: 75px;
+  margin-top: 67px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -477,8 +477,8 @@ div.course-missing-prereq {
 	-moz-border-radius: 5px;
 	border: 1px solid #ddd;
 	background-color: #fff;
-	width: 310px;
-	height: 530px;
+	width: 350px;
+	height: 560px;
 	padding-bottom: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
@@ -502,9 +502,9 @@ div.course-missing-prereq {
   border-radius: 5px;
   -moz-border-radius: 5px;
   border: 1px solid #dddddd;
-  width: 310px;
-  margin-top: 25px;
-  padding: 20px 10px 20px;
+  width: 350px;
+  margin-top: 50px;
+  padding: 30px 10px 30px;
   background-color: #fff;
   
   
@@ -539,7 +539,7 @@ div.course-missing-prereq {
 	border-top-right-radius: 5px;
 	-mox-border-top-right-radius: 5px;
 	background-color: #eeeeee;
-	width: 330px;
+	width: 370px;
 	height: 40px;
 	margin-left: -10px;
 	text-align: center;
@@ -564,7 +564,7 @@ div.course-missing-prereq {
 
 #content-div .nano {
 	position: absolute;
-	height: 430px;
+	height: 450px;
 	margin-left: 5px;
 }
 
@@ -583,7 +583,7 @@ div.course-missing-prereq {
 
 .cdiv {
 	position: absolute;
-	width: 295px;
+	width: 330px;
 }
 
 .new-content-div {
@@ -622,7 +622,7 @@ div.course-missing-prereq {
 
 
 #breadcrumb-div {
-	width: 330px;
+	width: 370px;
 	margin-left: -10px;
 	margin-top: -10px;
 }
