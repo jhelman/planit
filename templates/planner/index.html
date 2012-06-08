@@ -311,14 +311,11 @@
             }
                                                   
             // Check for reqs and reqGroups
-            console.log(course.reqGroups);
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
                     var r = rg.reqs[j];
                     var pos = $.inArray(course, r.usedToFulfill);
-                    // console.log(r.name);
-                    //                     console.log(r.usedToFulfill);
                     // To stop double deletion
                     if (tlGroup == 'Major' && pos == -1) {
                         continue;
@@ -430,8 +427,6 @@
         // }
 
         function addCourseReqs(course, isExemption, req, tlGroup) {
-            req = false;
-            tlGroup = false;
          			            			   
          	var cName = makeCondensedName(course.name);
          			   
@@ -470,8 +465,6 @@
 					var oldF = r.isFulfilled();
 					r.numFulfilled++;
 					r.usedToFulfill.push(course);
-                    console.log(r.name);
-                    console.log(r.usedToFulfill);
 					
                     if (r.isFulfilled() && !oldF) {
                         rg.numFulfilled++;
@@ -566,6 +559,8 @@
             this.reqGroup = reqGroup;
             this.bypassable = req.bypassable;
             this.usedToFulfill = [];
+            console.log(this.name);
+            console.log(this.numFulfilled);
         }
         
         Req.prototype.isFulfilled = function() {
@@ -598,17 +593,18 @@
 	        }
 	        plan.generalReqs.push(rg);
 	    }
-        var majorReqs = {{ major_reqs }};
+        var majorReqs = {{ major_reqs }};	    
         for (var i in majorReqs) {
 		    var rg = new ReqGroup(i, majorReqs[i]);
 		    for (var j in majorReqs[i].requirements) {
 		        var r = new Req(j, majorReqs[i].requirements[j], rg);
+		        console.log(r);
 		        rg.addReq(r);
 	        }
 	        plan.majorReqs.push(rg);
 	    }
         {% endautoescape %}
-	
+	    console.log(plan.majorReqs);
     	{% for year in years %}
     	{% for term in year.terms %}
     	var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
@@ -626,7 +622,7 @@
     	var c = new Course('{{ course.identifier }}', offerings, 
     	    getOffering(offerings, {{ term.num }}, {{ year.year_index }}), 
     	    {{ course.min_units }}, {{ course.max_units }}, {{ course.units }}, jQuery.parseJSON({{ course.course_json }})[0], 
-    	    prereqGroups, {{ course.req_groups }}, {{ course.reqs }}, false, false);
+    	    prereqGroups, {{ course.req_groups }}, {{ course.reqs }}, false, false); 	       
     	{% endautoescape %}
 		
 		// add draggable information
@@ -3181,7 +3177,7 @@
 
 
 
-<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil23.jpg');"> 
+<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil10.jpg');"> 
 <!-- <body style="margin: 50px"> -->
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->

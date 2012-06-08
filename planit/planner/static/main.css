@@ -203,12 +203,12 @@ div.course-missing-prereq {
   border-radius: 5px;
   -moz-border-radius: 5px;
   width: 1070px;
-  height: 730px;
+  height: 620px;
   position: absolute;
   top: 70px;
-  left: 108px;
+  left: 150px;
   z-index: 1;
-  opacity: 1;
+  opacity: 0.8;
 }*/
 
 .inner-table {
@@ -260,7 +260,7 @@ div.course-missing-prereq {
 		padding-right: 15px;
 		border-top: 1px solid #bbb;
 		text-align: center;
-		background-color: #eee;
+    background-color: #eee;
 		
 		
 /*    background: rgb(242,246,248); /* Old browsers */
@@ -675,7 +675,7 @@ div.course-missing-prereq {
 	padding-right: 30px;
 	padding-top: 5px;
 	padding-bottom: 5px;
-	margin: 0px;
+	margin-top: 5px;
 	font-weight: bold;
 }
 
