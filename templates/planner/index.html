@@ -135,13 +135,13 @@
 		    }
 		});
 	
-        var termNames = new Array();
+        var termNames = [];
 		{% for name in term_names %}
 		termNames.push('{{ name }}');
 		{% endfor %}
 		
-		var years = new Array();
-		var yearNums = new Array();
+		var years = [];
+		var yearNums = [];
 		{% for year in years %}
 		var start_num = {{ year.start_num }}
 		years.push(start_num + '-' + (start_num + 1));
@@ -161,8 +161,8 @@
             this.planName = planName;
             this.major = major;
             this.units = 0;
-            this.terms = new Array();
-			this.exemptCourseNames = new Array();
+            this.terms = [];
+			this.exemptCourseNames = [];
 			this.exemptions = new Object();
             for (var i in termNames) {
                 for (var j in years) {
@@ -170,8 +170,8 @@
                     this.terms[termID] = new Term(termID, this);
                 }
             }
-            this.generalReqs = new Array();
-            this.majorReqs = new Array();
+            this.generalReqs = [];
+            this.majorReqs = [];
         }
         
         FourYearPlan.prototype.makeTotalReqGroups = function() {
@@ -273,8 +273,8 @@
             this.termID = termID;
             this.units = 0;
             this.plan = plan;
-            this.acceptedDragsForTerm = new Array();
-            this.courses = new Array();   
+            this.acceptedDragsForTerm = [];
+            this.courses = [];  
         }
     
         Term.prototype.addCourse = function(course) {
@@ -311,20 +311,28 @@
             }
                                                   
             // Check for reqs and reqGroups
+            console.log(course.reqGroups);
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
-                    var req = rg.reqs[j];
-                    if ($.inArray(req.name, course.reqNames) == -1 ||
+                    var r = rg.reqs[j];
+                    var pos = $.inArray(course, r.usedToFulfill);
+                    // console.log(r.name);
+                    //                     console.log(r.usedToFulfill);
+                    // To stop double deletion
+                    if (tlGroup == 'Major' && pos == -1) {
+                        continue;
+                    }
+                    if ($.inArray(r.name, course.reqNames) == -1 ||
                         (isExemption && !course.bypassable)) {
                         continue;
                     }
                     
-                    var oldF = req.isFulfilled();
+                    var oldF = r.isFulfilled();
+                    r.numFulfilled--;
+                    r.usedToFulfill.splice(pos, 1);
                                         
-                    req.numFulfilled--;
-                                        
-                    if (!req.isFulfilled() && oldF) {
+                    if (!r.isFulfilled() && oldF) {
                         rg.numFulfilled--;
                     }
                 }
@@ -422,7 +430,9 @@
         // }
 
         function addCourseReqs(course, isExemption, req, tlGroup) {
-         			   
+            req = false;
+            tlGroup = false;
+         			            			   
          	var cName = makeCondensedName(course.name);
          			   
             // Course already in schedule
@@ -444,25 +454,32 @@
             }
                                     
             // Check for reqs and reqGroups
-            //console.log(course.reqGroups);
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
-                    var req = rg.reqs[j];
-                    if ($.inArray(req.name, course.reqNames) == -1 ||
-                        (isExemption && !req.bypassable)) {
+                    var r = rg.reqs[j];
+                    // To stop double counting
+                    if (tlGroup == 'Major' && req.name != r.name) {
+                        continue;
+                    }
+                    if ($.inArray(r.name, course.reqNames) == -1 ||
+                        (isExemption && !r.bypassable)) {
                         continue;
                     }
 
-					var oldF = req.isFulfilled();
-					req.numFulfilled++;
+					var oldF = r.isFulfilled();
+					r.numFulfilled++;
+					r.usedToFulfill.push(course);
+                    console.log(r.name);
+                    console.log(r.usedToFulfill);
 					
-                    if (req.isFulfilled() && !oldF) {
+                    if (r.isFulfilled() && !oldF) {
                         rg.numFulfilled++;
                     }
                 }
             }  
             
+            // console.log("------");
              
         }
 
@@ -520,7 +537,7 @@
         function ReqGroup(name, reqGroup) {
             this.name = name;
             this.numReqsToFulfill = parseInt(reqGroup.num_reqs_to_fulfill);
-            this.reqs = new Array();
+            this.reqs = [];
             this.numFulfilled = 0;
         }
         
@@ -540,14 +557,15 @@
         function Req(name, req, reqGroup) {
             this.name = name;
             this.cName = makeCondensedName(name);
-            this.fulfillers = new Array();
+            this.fulfillers = [];
             for (var i in req.fulfillers) {
-                this.fulfillers = req.fulfillers[i];
+                this.fulfillers.push(req.fulfillers[i]);
             }
             this.numCoursesToFulfill = parseInt(req.num_courses_to_fulfill);
             this.numFulfilled = 0;
             this.reqGroup = reqGroup;
             this.bypassable = req.bypassable;
+            this.usedToFulfill = [];
         }
         
         Req.prototype.isFulfilled = function() {
@@ -619,7 +637,7 @@
         {% endif %}
 		{% endfor %}
     	t.addCourse(c);
-    	addCourseReqs(c, false);
+    	addCourseReqs(c, false, false, false);
     	{% endfor %}
     	{% endfor %}
     	{% endfor %}
@@ -1063,6 +1081,9 @@
             
             var course = plan.getTermById(qDiv.attr('id')).getCourse(courseName);
             
+            console.log('removing...');
+			console.log(course);
+            
             doQDivMouseOut(qDiv);
             turnOffQDivMouse(qDiv);
             // turnHeadingsColor(qDiv.attr('id'), '#f2dede');
@@ -1090,7 +1111,7 @@
             
             alertBox.fadeIn();
 			
-			deletionPrereqViolations = new Array();
+			deletionPrereqViolations = [];
 			var yearNum = getYearArrayIndex(qDiv.attr('id'));
 			var termNum = getTermArrayIndex(qDiv.attr('id'));
 			for (var i = yearNum; i < years.length; i++) {
@@ -1119,7 +1140,12 @@
 			for (var k in deletionPrereqViolations) {
 				var courseName = deletionPrereqViolations[k];
 				highlightCourse(courseName, 'course-missing-prereq', true);
-			}
+			}	
+			
+			
+			console.log('2nd removing...');
+			console.log(course);		
+			
         }
         
         
@@ -1213,6 +1239,9 @@
             var numUnits = course.units;
                         
             courseElem.remove();
+            
+            console.log('deleting...');
+            console.log(course);
                         
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
@@ -1681,7 +1710,7 @@
 		}
 		
 		function makePrereqString(prereqGroups) {
-			var arr = new Array()
+			var arr = []
 			for (var i in prereqGroups) {
 				arr.push(formatPrereqGroup(prereqGroups[i]));
 			}
@@ -1819,7 +1848,7 @@
             
             course.confirmCourse(req, getTopLevelByBreadcrumb());
                                     
-            cancelAddCourse(course.courseObj, course.offerings);
+            cancelAddCourse(course.courseObj, course.offerings, termId);
             
             updateRequirementsUI();
             
@@ -1828,7 +1857,7 @@
             makeDrag('#' + termId + course.cName);
             
             addCourseToDraggables(termId, course);
-            
+                        
             // removeSelect($('#' + courseTableID).find('select'), units);
             
             // 
@@ -1872,8 +1901,11 @@
 				
 				
 			});
-				
-				
+			
+			console.log('adding...');
+			console.log(plan.getTermById(termId).getCourse('CS145'));
+            
+								
         }
         
         
@@ -2002,7 +2034,7 @@
 									if ($.inArray(course.cName, group) != -1) {
 										var result = checkBackwardForMissingPrereq(i, j, c, course);
 										if (result) {
-											if (!violations) violations = new Array();
+											if (!violations) violations = [];
 											violations.push(result);
 										}
 									}
@@ -2111,7 +2143,7 @@
                     (($(event.target).closest('li').attr('id') != null) && 
                         ($(event.target).closest('li').attr('id').indexOf('blevel') != -1))
                     ) {             
-                        cancelAddCourse(courseObj, offerings);
+                        cancelAddCourse(courseObj, offerings, false);
                         var liElem = $(classLinkItem).closest('li');
                         liElem.removeClass('active');
                         // liElem.find('icon-ok').tooltip('hide');
@@ -2270,14 +2302,14 @@
         
                 
         
-        function cancelAddCourse(courseObj, offerings) {
+        function cancelAddCourse(courseObj, offerings, currentTermId) {
            
             for (var i in offerings) {
              
                 var termId = termNames[parseInt(offerings[i].fields.term)] + 
                     convertYearToLongForm(parseInt(offerings[i].fields.year));
                     
-                if (plan.getTermById(termId) == undefined) {
+                if (plan.getTermById(termId) == undefined || termId == currentTermId) {
                     continue;
                 }
 
@@ -2285,7 +2317,7 @@
                     
                 // Don't delete if course is already in the plan
                 if (!course.isAdded) {
-                        continue;
+                    continue;
                 }
                 
                 $('#' + termId + course.cName).remove();
@@ -2535,7 +2567,7 @@
         function getReqByBreadcrumb(courseName) {
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var reqName = $(bElems[bElems.length - 1]).html();
+            var reqName = $(bElems[bElems.length - 1]).find('.longName').html();
             
             var req = false;
             if (bElems.length == 3) {
@@ -2548,7 +2580,7 @@
             } else if (bElems.length == 4) {
                 req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
             }
-            
+                        
             return req;
         }
         
@@ -3149,7 +3181,7 @@
 
 
 
-<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil5.jpg');"> 
+<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil23.jpg');"> 
 <!-- <body style="margin: 50px"> -->
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
