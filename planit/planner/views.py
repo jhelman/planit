@@ -312,7 +312,7 @@ def create_plan(request):
     major = Major.objects.filter(name=major_name)[0]
     tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major)
     univ = University.objects.filter(name='Stanford')[0]
-    user = User.objects.filter(username=request.user)
+    user = User.objects.filter(username=request.user)[0]
     plan = Plan(name=plan_name, user=user, university=univ, major=major, start_year=2008, num_years=4)
     if len(tracks) == 1:
         plan.track = tracks[0]
