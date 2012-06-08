@@ -172,14 +172,18 @@ def filldb():
     for i in range(3):
         t=Term(i)
         t.save()
-    fnames = ['all2.xml'] #cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
+    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
     for fname in fnames:
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
     u.save()
     m=Major(name='CS')
     m.save()
-    p=Plan(name='Dan Vinegrad', university=u,
+    user = User.objects.create_user('ls', 'ls@ls.ls', 'ls')
+    user.first_name='Dan'
+    user.last_name='Vinegrad'
+    user.save()
+    p=Plan(user=user, name='Dan Vinegrad', university=u,
         major=m,start_year=2008,num_years=4)
     prefixes=['EC', 'HUM','ME'] 
     p.save()
