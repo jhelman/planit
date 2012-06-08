@@ -994,8 +994,8 @@
         }
         
         function doQDivMouseOver(elem) {
-            elem.css('background-color', '#d9edf7'); 
-            turnHeadingsColor(elem.attr('id'), '#d9edf7');
+            // elem.css('background-color', '#d9edf7'); 
+            //     turnHeadingsColor(elem.attr('id'), '#d9edf7');
             var events = collectDatesForTerm(elem.attr('id'));
             if (events.length != 0) {
                 elem.find('.calendar-over').show();
@@ -1003,11 +1003,11 @@
         }
         
         function doQDivMouseOut(elem) {
-            var yearIndex = getYearArrayIndex(elem.attr('id'));
-            elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
-            $('#' + years[yearIndex]).css('background-color', 
-               (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
-           $('#' + getTermName(elem.attr('id'))).css('background-color', 'white');
+            // var yearIndex = getYearArrayIndex(elem.attr('id'));
+            //           elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+            //           $('#' + years[yearIndex]).css('background-color', 
+            //              (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+            //          $('#' + getTermName(elem.attr('id'))).css('background-color', 'white');
            elem.find('.calendar-over').hide();
         }
         
@@ -1298,6 +1298,12 @@
                     majorsJSON[i].fields.name + '</option>');
             }
             
+            var year = new Date().getFullYear();
+            for (var j = 0; j < 4; j++) {
+                $('#graduation-year').append('<option value="' + (year + j) + '">' + 
+                    (year + j) + '</option>');
+            }
+            
             
             $('#new-plan-modal').modal('show');  
     		
@@ -1344,6 +1350,7 @@
             var track = $('#track-select').attr('value');
             
             
+            
             var flag = 0;
             
             if (planName.length == 0) {
@@ -1355,8 +1362,7 @@
                 $('#plan-name-help-block').hide();
                 
             }
-             
-             
+            
             if (major.length == 0) {
                 $('#major').closest('.control-group').addClass('error');
                 $('#major-help-block').show();
@@ -1365,9 +1371,9 @@
                 $('#major').closest('.control-group').removeClass('error');
                 $('#major-help-block').hide();
                 
-            }   
-           
-           
+            }
+             
+
             if (tracksShown) {
                 
                 if (track.length == 0) {
@@ -1393,12 +1399,7 @@
             if (validateNewPlan() == false) {
                 return;
             }
-             
-            var planName = $('#plan-name').attr('value');
-            var major = $('#major').attr('value');
-            var track = $('#track-select').attr('value');
-            
-             
+                          
              // TODO: Dan make a new track here
 			 $("#new-plan-form").submit();
 			 
@@ -3147,7 +3148,8 @@
 
 
 
-<body style="margin: 35px;"> 
+<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil5.jpg');"> 
+<!-- <body style="margin: 50px"> -->
     
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
@@ -3214,6 +3216,16 @@
                          </div>
                     </div>
                 </fieldset>
+                
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="graduation-year">Graduation Year</label>
+                        <div class="controls">
+                            <select name="gradYear" id="graduation-year">
+                            </select>
+                        </div>
+                   </div>
+               </fieldset>
                    
                    
                  <fieldset>
@@ -3267,23 +3279,6 @@
                         </div>
                    </div>
                </fieldset>
-
-
-                <fieldset>
-                    <div class="control-group">
-                        <label class="control-label" for="graduation-year">Graduation Year</label>
-                        <div class="controls">
-                            <select id="graduation-year">
-                                <option value="2012">2012</option>
-                                <option value="2013">2013</option>
-                                <option value="2014">2014</option>
-                                <option value="2015">2015</option>
-                                <option value="2016">2016</option>
-                            </select>
-                        </div>
-                   </div>
-               </fieldset>
-
            </form>
        </div>
 
@@ -3313,53 +3308,42 @@
 
     </div>
     
-    <table style="margin-left: -35px"><tr>
+    <div class="cover-inner-table">&nbsp;</div>
+
+    <table class="inner-table"><tr>
         
         <td>
     
-	        <table id="plan-table" style="padding: 0px; margin: -10px;">
+	        <table id="plan-table">
                 <tr style="height: 30px">
-                    <td style="border-bottom: 2px solid;" class="top-left-corner">&nbsp;</td>
+                    <td class="top-left-corner">&nbsp;</td>
                     <td id="Autumn" class="quarter-label"><h4>Autumn Quarter</h4></td>
                     <td id="Winter" class="quarter-label"><h4>Winter Quarter</h4></td>
-                    <td id="Spring" class="quarter-label top-right-corner"><h4>Spring Quarter</h4></td>
+                    <td id="Spring" class="quarter-label"><div><h4>Spring Quarter</h4></div></td>
                 </tr>
 		
 		
         		{% for year in years %}
         		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-                    <tr style="background-color: #{% cycle eaeaea,f7f7f7 %}">
-                    <!-- <tr> -->
-						{% if forloop.last %}
-						<td id="{{ year.year }}" class="year-label bottom-left-corner"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
-						{% else %}
-        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.name }}<br/>({{ year.year }})</h4></td>
-						{% endif %}
+                    <!-- <tr style="background-color: #{% cycle ffffff, ffffff %}"> -->
+                    <tr>
+        				<td id="{{ year.year }}" class="year-label"><h4>{{ year.year }}</h4></td>
 			
         				{% for term in year.terms %}
-							{% if forloop.last and forloop.parentloop.last %}
-    					    <td class="quarter-td bottom-right-corner">
-							{% else %}
 							<td class="quarter-td">
-							{% endif %}
-								
-        					    
 								<div class="quarter-div" id="{{ term.condensedName }}">
 			    	                <div class="quarter-div-cover-drag" id="{{ term.condensedName }}-drag-cover"></div>
         						    <div class="quarter-div cover"></div>
-
             				        <div class="alert alert-error delete-alert">
                                 	    <a class="close" href="#" onclick="cancelDeleteCourse('{{ term.condensedName }}');">&times;</a>
                                 	    <h4 class="alert-heading"></h4>
                                 	    <span class="alert-body"></span>
                                 	    <span class="alert-delete-course-id" style="display: none; visibility; hidden;"></span>
                                 	    <span class="alert-delete-course-name" style="display: none; visibility; hidden;"></span>
-                                	    
                                 	    <br />
                                 	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
                                 	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                                     </div>
-			    	
 			    	                <div class="courses-div" id="{{ term.condensedName }}-courses">
         							    {% for course in term.courses %}
             				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
@@ -3377,7 +3361,6 @@
             				                </div>
             							{% endfor %}
             						</div>
-            						
             						<div class="units-div" id="{{ term.condensedName }}-units-div">
             						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
             						    <span class="calendar-over" onclick="openCalendar('{{ term.condensedName }}', this);">
@@ -3385,9 +3368,7 @@
                                         </span>
                                         &nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" style="display: none"></span>
             						</div>
-            						
         						</div>
-						
         					</td>
         				{% endfor %}
         			</tr>
@@ -3451,9 +3432,10 @@
             
         </td>
         
+        
+        
     </tr></table>    
-    
-    
+        
 </body>
 
 
