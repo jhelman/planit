@@ -29,11 +29,15 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request, plan_name=None):
-    plan = None  
-    if plan_name:
-        plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
-    else:
-        plan = Plan.objects.filter(user__username=request.user)[0]
+    plan = None
+    try:
+        if plan_name:
+            plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
+        else:
+            plan = Plan.objects.filter(user__username=request.user)[0]
+    except:
+        return HttpResponse("No such plan could be found")
+    
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
     for course in plan.aps.all():
@@ -46,7 +50,7 @@ def index(request, plan_name=None):
     args = {}
     args['plan'] = plan
     args['exempt'] = exempt
-    args['allPlans'] = Plan.objects.all() # TODO only current user's plans
+    args['allPlans'] = Plan.objects.filter(user__username=request.user)
     args['majors'] = simplejson.dumps(serializers.serialize('json', Major.objects.all(), use_natural_keys=True))
     years = [{}, {}, {}, {}]
     years[0]['name'] = 'Freshman'
@@ -232,8 +236,7 @@ def add_course(request):
     offerings = CourseOffering.objects.filter(course__identifier=course_name, year=year_num, term=term_num)
     if len(offerings) > 0:
         to_add = offerings[0]
-        # TODO correct Plan lookup
-        plan = Plan.objects.filter(name=plan_name)[0]
+        plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
         enrollment = Enrollment(course=to_add, plan=plan, units=units)
         enrollment.save()
     
@@ -245,8 +248,7 @@ def delete_course(request):
     year_num = params['year']
     term_num = params['term']
     plan_name = params['plan']
-    # TODO correct plan lookup
-    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__name=plan_name)
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=year_num, course__term=term_num, plan__name=plan_name, plan__user__username=request.user)
     if len(enrollments) == 1:
         to_delete = enrollments[0]
         to_delete.delete()
@@ -260,14 +262,13 @@ def move_course(request):
     new_year = params['new_year']
     new_term = params['new_term']
     plan_name = params['plan']
-    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__name=plan_name)
+    enrollments = Enrollment.objects.filter(course__course__identifier=course_name, course__year=old_year, course__term=old_term, plan__name=plan_name, plan__user__username=request.user)
     if len(enrollments) == 1:
         to_switch = enrollments[0]
         offerings = CourseOffering.objects.filter(course__identifier=course_name, year=new_year, term=new_term)
         if len(offerings) > 0:
             offering = offerings[0]
-            # TODO correct Plan lookup
-            plan = Plan.objects.filter(name=plan_name)[0]
+            plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
             to_switch.course = offering
             to_switch.save()
         
@@ -281,8 +282,7 @@ def set_exemption(request):
     courses = Course.objects.filter(identifier=identifier)
     if len(courses) == 1:
         course = courses[0]
-        # TODO correct Plan lookup
-        plan = Plan.objects.filter(name=plan_name)[0]
+        plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
         if add == 'true':
             plan.aps.add(course)
         else:
@@ -310,7 +310,8 @@ def create_plan(request):
     major = Major.objects.filter(name=major_name)[0]
     tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major)
     univ = University.objects.filter(name='Stanford')[0]
-    plan = Plan(name=plan_name, university=univ, major=major, start_year=2008, num_years=4)
+    user = User.objects.filter(username=request.user)
+    plan = Plan(name=plan_name, user=user, university=univ, major=major, start_year=2008, num_years=4)
     if len(tracks) == 1:
         plan.track = tracks[0]
     plan.save()
