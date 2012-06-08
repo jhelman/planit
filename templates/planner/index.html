@@ -1,7 +1,6 @@
 {% load planner_extras %}
 
 <!DOCTYPE html>
-<html>
 
 <head>
     <title>PlanIt</title>
@@ -787,8 +786,9 @@
         }
         
         function returnCellToColor(elem) {
-            var yearIndex = getYearArrayIndex(elem.attr('id'));
-            elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
+            elem.css('background-color', '#fdfdfd');
+            // var yearIndex = getYearArrayIndex(elem.attr('id'));
+            //           elem.css('background-color', (((yearIndex % 2) == 0) ? '#eaeaea': '#f7f7f7'));
         }
         
         
@@ -1063,8 +1063,9 @@
             
             var course = plan.getTermById(qDiv.attr('id')).getCourse(courseName);
             
+            doQDivMouseOut(qDiv);
             turnOffQDivMouse(qDiv);
-            turnHeadingsColor(qDiv.attr('id'), '#f2dede');
+            // turnHeadingsColor(qDiv.attr('id'), '#f2dede');
             // qDiv.css('background-color', '#f2dede');
                         
             courseElem.find('.info-over').hide();
@@ -1079,8 +1080,8 @@
             alertBox.find('.alert-delete-course-id').html(courseElem.attr('id'));
             alertBox.find('.alert-delete-course-name').html(courseName);
                         
-            alertBox.css('left', qDiv.position().left);
-            alertBox.css('top', qDiv.position().top + 15);
+            alertBox.css('left', qDiv.position().left + 25);
+            alertBox.css('top', qDiv.position().top + 25);
             cover.css('left', qDiv.position().left);
             cover.css('top', qDiv.position().top);
                         
@@ -1128,7 +1129,7 @@
             qDiv.find('.delete-alert').hide();
             qDiv.find('.cover').hide();
             
-            turnHeadingsColor(qDiv.attr('id'), '#d9edf7');
+            // turnHeadingsColor(qDiv.attr('id'), '#d9edf7');
             // qDiv.css('background-color', '#d9edf7');
             turnOnQDivMouse(qDiv);
             
@@ -1795,7 +1796,7 @@
                 '<div class="grab-line" style="top: -15px;"></div>' +
                 '</div>' + 
                 '<div class="info-over"><div class="info" onclick="removeCourse(this);">' + 
-                '<i style="position: relative; top: 2px;" class="icon-remove"></i>' + 
+                '<i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>' + 
                 '</div></div></div>');                 
                 
             $('#' + termId + makeCondensedName(courseName)).on('mouseover', function () {
@@ -3355,7 +3356,7 @@
         				                        </div>
             				                    <div class="info-over">
             				                        <div class="info" onclick="removeCourse(this);">
-                                                        <i style="position: relative; top: 2px;" class="icon-remove"></i>
+                                                        <i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>
                                                     </div>
                                                 </div>
             				                </div>
