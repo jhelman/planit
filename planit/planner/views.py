@@ -31,9 +31,9 @@ def get_python_dict_for_reqs(requirement_groups):
 def index(request, plan_name=None):
     plan = None  
     if plan_name:
-        plan = Plan.objects.filter(name=plan_name)[0]
+        plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
     else:
-        plan = Plan.objects.all()[0]
+        plan = Plan.objects.filter(user__username=request.user)[0]
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
     for course in plan.aps.all():

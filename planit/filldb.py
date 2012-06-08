@@ -179,7 +179,7 @@ def filldb():
     u.save()
     m=Major(name='CS')
     m.save()
-    user = User.objects.create_user('ls', 'ls@ls.ls', 'ls')
+    user = User.objects.create_user('dv', 'dv@dv.dv', 'dv')
     user.first_name='Dan'
     user.last_name='Vinegrad'
     user.save()
