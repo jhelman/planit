@@ -1438,18 +1438,36 @@
         }
         
         function saveAccountSettings() {
-            var fullname = $('#account-settings-fullname').attr('value');
-            if (fullname.length == 0) {
-                fullname = $('#account-settings-fullname').attr('placeholder');
+            var firstname = $('#account-settings-firstname').attr('value');
+            if (firstname.length == 0) {
+                firstname = $('#account-settings-firstname').attr('placeholder');
             }
-            
-            var gradYear = $('#graduation-year').attr('value');
-            console.log(gradYear);
+			
+            var lastname = $('#account-settings-lastname').attr('value');
+            if (lastname.length == 0) {
+                lastname = $('#account-settings-lastname').attr('placeholder');
+            }
 
             $('#account-settings-modal').modal('hide');
             
-            
-            // TODO Dan do stuff with account settings (change years of four year plan??)
+			var data = new Object();
+			data['first'] = firstname;
+			data['last'] = lastname;
+			console.log(data);
+			$.ajax({
+				type: 'POST',
+				url: '/editSettings/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					ajaxMessage("Settings saved", SUCCESS);
+				},
+				
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("An error occurred editing account settings" , ERROR);
+				}
+				
+				
+			});
             
         }
         
@@ -3301,10 +3319,16 @@
 
                 <fieldset>
                     <div class="control-group">
-                        <label class="control-label" for="account-settings-fullname">Full Name</label>
+                        <label class="control-label" for="account-settings-firstname">First Name</label>
                         <div class="controls">
-                            <input type="text" id="account-settings-fullname" placeholder="Jonathan Helman"></input>
+                            <input type="text" id="account-settings-firstname" placeholder="{{ user.first_name }}"></input>
                         </div>
+						<br />
+                        <label class="control-label" for="account-settings-lastname">Last Name</label>
+                        <div class="controls">
+                            <input type="text" id="account-settings-lastname" placeholder="{{ user.last_name }}"></input>
+                        </div>
+						
                    </div>
                </fieldset>
            </form>

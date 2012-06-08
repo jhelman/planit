@@ -318,6 +318,16 @@ def create_plan(request):
         plan.track = tracks[0]
     plan.save()
     return HttpResponseRedirect('/' + plan_name + '/')
+
+def edit_settings(request):
+    params = request.POST.dict()
+    user = User.objects.filter(username=request.user)[0]
+    first_name = params['first']
+    last_name = params['last']
+    user.first_name = first_name
+    user.last_name = last_name
+    user.save()
+    return HttpResponse()
     
     
     
