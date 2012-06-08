@@ -29,14 +29,19 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request, plan_name=None):
+    user = User.objects.filteR(username=request.user)
     plan = None
+    args = {}
+    args['user'] = user
+    args['allPlans'] = Plan.objects.filter(user=user)
+    args['majors'] = simplejson.dumps(serializers.serialize('json', Major.objects.all(), use_natural_keys=True))
     try:
         if plan_name:
             plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
         else:
             plan = Plan.objects.filter(user__username=request.user)[0]
     except:
-        return HttpResponse("No such plan could be found")
+        return render_to_response('planner/toolbar.html', args, context_instance=RequestContext(request))
     
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
@@ -47,11 +52,8 @@ def index(request, plan_name=None):
         setattr(course, 'reqs', serializers.serialize('json', requirements))
         exempt.append(course)
     
-    args = {}
     args['plan'] = plan
     args['exempt'] = exempt
-    args['allPlans'] = Plan.objects.filter(user__username=request.user)
-    args['majors'] = simplejson.dumps(serializers.serialize('json', Major.objects.all(), use_natural_keys=True))
     years = [{}, {}, {}, {}]
     years[0]['name'] = 'Freshman'
     years[1]['name'] = 'Sophomore'

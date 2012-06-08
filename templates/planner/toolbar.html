@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<head><title>planit</title>
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
+
+<script type="text/javascript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
+
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
+
+
+<script type="text/javascript">
+
+$(document).ready(function () {
+   	console.log('hello');
+    $('.dropdown-toggle').dropdown();            
+    $('#new-plan-modal').modal({'show': false});
+    $('#account-settings-modal').modal({'show': false});
+    
+});
+
+{% autoescape off %}
+var majorsJSON = jQuery.parseJSON({{ majors }});
+console.log(majorsJSON);
+{% endautoescape %}
+
+
+function closeNewPlanModal() {
+        
+    $('#plan-name').attr('value', '');
+    $('#major').attr('value', '');
+    $('#track-select').closest('.control-group').hide();
+        
+    $('#new-plan-modal').modal('hide');
+}
+    
+        
+function openNewPlanModal() {
+    
+    tracksShown = false;
+        
+    for (var i in majorsJSON) {
+        $('#major').append('<option value="' + majorsJSON[i].fields.name + '">' + 
+            majorsJSON[i].fields.name + '</option>');
+    }
+    
+    var year = new Date().getFullYear();
+    for (var j = 0; j < 4; j++) {
+        $('#graduation-year').append('<option value="' + (year + j) + '">' + 
+            (year + j) + '</option>');
+    }
+    
+    
+    $('#new-plan-modal').modal('show');  
+	
+              
+}
+
+var tracksShown = false;
+
+function getTracksForMajor(elem) {
+    
+    tracksShown = true;
+    
+    var majorName = $(elem).attr('value');
+    
+    if (majorName == "") {
+        $('#track-select').closest('.control-group').hide();
+        return;
+    }
+    
+    var tracks;
+    for (var i in majorsJSON) {
+        if (majorsJSON[i].fields.name == majorName) {
+            tracks = majorsJSON[i].fields.tracks;
+            break;
+        }
+    }
+    
+    
+    $('#track-select').html('<option value="">Choose a track</option>');
+    for (var j in tracks) {
+        $('#track-select').append('<option value="' + tracks[j] + '">' + 
+            tracks[j] + '</option>');
+    }
+    $('#track-select').closest('.control-group').show();
+}
+
+
+
+
+function validateNewPlan() {
+                
+    var planName = $('#plan-name').attr('value');
+    var major = $('#major').attr('value');
+    var track = $('#track-select').attr('value');
+    
+    
+    
+    var flag = 0;
+    
+    if (planName.length == 0) {
+        $('#plan-name').closest('.control-group').addClass('error');
+        $('#plan-name-help-block').show();
+        flag = 1;
+    } else {
+        $('#plan-name').closest('.control-group').removeClass('error');
+        $('#plan-name-help-block').hide();
+        
+    }
+    
+    if (major.length == 0) {
+        $('#major').closest('.control-group').addClass('error');
+        $('#major-help-block').show();
+        flag = 1;
+    } else {
+        $('#major').closest('.control-group').removeClass('error');
+        $('#major-help-block').hide();
+        
+    }
+     
+
+    if (tracksShown) {
+        
+        if (track.length == 0) {
+            $('#track-select').closest('.control-group').addClass('error');
+            $('#track-help-block').show();
+            flag = 1;
+        } else {
+            $('#track-select').closest('.control-group').removeClass('error');
+            $('#track-help-block').hide();
+
+        }
+        
+    }
+   
+    return (flag == 0 ? true : false);
+    
+}
+
+
+
+function createNewPlan() {
+    
+    if (validateNewPlan() == false) {
+        return;
+    }
+                  
+	 $("#new-plan-form").submit();
+	 
+}
+
+
+
+
+function openAccountSettingsModal() {
+    $('#account-settings-modal').modal('show');
+}
+
+function saveAccountSettings() {
+    var fullname = $('#account-settings-fullname').attr('value');
+    if (fullname.length == 0) {
+        fullname = $('#account-settings-fullname').attr('placeholder');
+    }
+    
+    var gradYear = $('#graduation-year').attr('value');
+    console.log(gradYear);
+
+    $('#account-settings-modal').modal('hide');
+    
+    
+    // TODO Dan do stuff with account settings (change years of four year plan??)
+    
+}
+
+</script>
+</head>
+
+
+
+<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil5.jpg');"> 
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+            <div class="container-fluid">
+            
+            <a href="#" class="brand"><font color="white">planit</font></a>
+
+                                
+            <ul class="nav pull-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        Select a Plan&nbsp;<b class="caret"></b>  
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                        <li class="divider"></li>
+                        {% for p in allPlans %}
+                        <li><a href="/{{ p.name }}"> 
+                        {{ p.name }}&nbsp;
+                        {% if p.name == plan.name %}
+                        <i class="icon-ok"></i>
+                        {% endif %}
+                        </a></li>
+                        {% endfor %}
+                    </ul>
+                 </li>
+                <li class="divider-vertical"></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="icon-user icon-white"></i>&nbsp;Jonathan Helman&nbsp;<b class="caret"></b>  
+                    </a>
+                    <ul class="dropdown-menu">
+                    
+                        <li><a href="#" onclick="openAccountSettingsModal()">Account Settings</a></li>
+
+                        <li><a href="#">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+     
+            
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="new-plan-modal">
+    <div class="modal-header">
+        <button class="close" data-dismiss="modal">&times;</button>
+        <h3>Create New Four-Year Plan</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" id="new-plan-form" action="/createPlan/" method="POST">
+             {% csrf_token %}
+             <fieldset>
+                 <div class="control-group">
+                     <label class="control-label" for="plan-name">Four-Year Plan Name</label>
+                     <div class="controls">
+                         <input type="text" id="plan-name" name="planName"></input>
+                         <p class="help-inline" id="plan-name-help-block" style="display: none;">Required</p>
+                     </div>
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="graduation-year">Graduation Year</label>
+                    <div class="controls">
+                        <select name="gradYear" id="graduation-year">
+                        </select>
+                    </div>
+               </div>
+           </fieldset>
+               
+               
+             <fieldset>
+                 <div class="control-group">
+                     <label class="control-label" for="major">Major</label>
+                     <div class="controls">
+                         <select id="major" onchange="getTracksForMajor(this);" name="major">
+                             <option value="">Choose a major</option>
+                         </select>
+                         <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
+                     </div>
+                </div>
+            </fieldset>
+            
+            
+             <fieldset>
+                 <div class="control-group" style="display: none">
+                     <label class="control-label" for="track">Track</label>
+                     <div class="controls">
+                         <select id="track-select" name="track"></select>
+                         <p class="help-inline" id="track-help-block" style="display: none;">Required</p>
+                     </div>
+                </div>
+            </fieldset>
+            
+
+        </form>
+    </div>
+    
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" onclick="createNewPlan()">Create Plan</button>
+    </div>
+    
+</div>   
+
+
+<div class="modal fade" id="account-settings-modal">
+    <div class="modal-header">
+       <button class="close" data-dismiss="modal">&times;</button>
+       <h3>Account Settings: jhelman@stanford.edu</h3>
+    </div>
+    <div class="modal-body">
+       <form class="form-horizontal" id="account-settings-form">
+
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="account-settings-fullname">Full Name</label>
+                    <div class="controls">
+                        <input type="text" id="account-settings-fullname" placeholder="Jonathan Helman"></input>
+                    </div>
+               </div>
+           </fieldset>
+       </form>
+   </div>
+
+   <div class="modal-footer">
+       <button class="btn" data-dismiss="modal">Cancel</button>
+       <button class="btn btn-primary" onclick="saveAccountSettings()">Save Account Settings</button>
+   </div>
+
+</div>
+
+</body>
+</html>
