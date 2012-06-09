@@ -158,12 +158,12 @@ def add_tags(arr):
             print cname
             tm = TagMapping(tag=tag,course=c[0])
             tm.save()
-def add_requirement_group(m, rg_name, n, classes):
+def add_requirement_group(m, rg_name, n, classes, exclusive=False):
     rg = RequirementGroup(major=m, name=rg_name, n_prereqs=n)
     rg.save()
 
     tags = [add_tag(c, [c]) for c in classes]
-    reqs = [Requirement(name=t.name, fulfillers=t,n_class=1, group=rg) for t in tags]
+    reqs = [Requirement(name=t.name, fulfillers=t,n_class=1, group=rg, exclusive=exclusive) for t in tags]
     for r in reqs:
         r.save()
     return rg
@@ -216,32 +216,31 @@ def filldb():
 ########################
     tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['STS101','STS112', 'STS115', 'BIOE131', 'CS181', 'CS181W', 'ENGR145', 'HUMBIO174', 'MSE181', 'MSE193', 'POLISCI114S', 'PUBLPOL194']) 
 ######################
-    ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"]) 
+    ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"], True) 
 
     cs_intro = add_tag('CS106', ['CS106B', 'CS106X'])
-    cs_intro = Requirement(name='CS106', fulfillers=cs_intro, n_class=1, group=ef_core)
+    cs_intro = Requirement(name='CS106', fulfillers=cs_intro, n_class=1, group=ef_core, exclusive=True)
     cs_intro.save()
 
     ef_electives = ['ENGR10', 'ENGR14','ENGR15', 'ENGR20','ENGR25B','ENGR25E','ENGR30','ENGR40','ENGR40N','ENGR40P',
                     'ENGR50','ENGR50E','ENGR50M','ENGR60','ENGR62','ENGR80', 'ENGR90']
-    ef_electives = add_requirement_group(m, "Engineering Electives", 1, ef_electives) 
+    ef_electives = add_requirement_group(m, "Engineering Electives", 1, ef_electives, True) 
 ##########################
-    cs_core = add_requirement_group(m, "CS Core", 3, ["CS107", "CS110", "CS161"]) 
-##########################
-
-##########################
+    cs_core = add_requirement_group(m, "CS Core", 3, ["CS107", "CS110", "CS161"], True) 
 ##########################
 
-    sys_core = add_requirement_group(m, "Track Depth (Systems)", 4, ["CS140"]) 
+##########################
+##########################
+
+    sys_core = add_requirement_group(m, "Track Depth (Systems)", 4, ["CS140"], True) 
     sys_core.is_track=True
     sys_core.save()
     sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
-    sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=sys_core)
-
+    sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=sys_core, exclusive=True)
     sys_ass.save()
     
     track_electives = add_tag('Track Electives (Systems)', ['CS144', 'CS145', 'CS149', 'CS155', 'CS240', 'CS242', 'CS243', 'CS244', 'CS245', 'EE271', 'CS282'])		
-    track_electives = Requirement(name='Track Electives', fulfillers=track_electives, n_class=2, group=sys_core)
+    track_electives = Requirement(name='Track Electives', fulfillers=track_electives, n_class=2, group=sys_core, exclusive=True)
     track_electives.save()
 		
     gen_elecs = ['CS240E', 'CS244C', 'CS244E', 'CS315A', 'CS315B', 'CS341', 'CS343', 'CS344', 'CS344E', 'CS345', 'CS346', 'CS347', 
@@ -252,7 +251,7 @@ def filldb():
 								 'CS249A', 'CS249B', 'CS254', 'CS255', 'CS256', 'CS257', 'CS258', 'CS261', 'CS262', 'CS270', 'CS271', 'CS272', 'CS273A', 'CS274', 
 								 'CS276', 'CS277', 'CS295', 'CME108', 'EE108B', 'CS282']
     gen_elecs = add_tag('General Electives', gen_elecs)
-    gen_elecs = Requirement(name='General Electives', fulfillers=gen_elecs, n_class=3, group=sys_core)
+    gen_elecs = Requirement(name='General Electives', fulfillers=gen_elecs, n_class=3, group=sys_core, exclusive=True)
     gen_elecs.save()
 
     m.tracks.add(sys_core)		

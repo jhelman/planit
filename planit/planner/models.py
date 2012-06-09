@@ -105,6 +105,7 @@ class Requirement(models.Model):
     n_class = models.IntegerField();
     group = models.ForeignKey(RequirementGroup)
     bypassable = models.BooleanField(default=True)
+    exclusive = models.BooleanField(default=False)
     def __unicode__(self):
         return self.name + ", " + str(self.fulfillers) + ", " + str(self.n_class)
 
