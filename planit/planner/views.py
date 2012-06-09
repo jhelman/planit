@@ -18,6 +18,7 @@ def get_python_dict_for_reqs(requirement_groups):
             req_info = {}
             req_info['num_courses_to_fulfill'] = req.n_class
             req_info['bypassable'] = req.bypassable
+            req_info['exclusive'] = req.exclusive
             fulfillers = []
             for course in Course.objects.filter(tags=req.fulfillers):
                 fulfillers.append(course.identifier)
