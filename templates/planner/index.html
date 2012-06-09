@@ -3216,7 +3216,7 @@
                             <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
                             <li class="divider"></li>
 							{% for p in allPlans %}
-							<li><a href="/{{ p.name }}"> 
+							<li><a href="/plan/{{ p.name }}"> 
 							{{ p.name }}&nbsp;
 							{% if p.name == plan.name %}
 							<i class="icon-ok"></i>

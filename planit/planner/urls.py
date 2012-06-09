@@ -15,5 +15,5 @@ urlpatterns = patterns('planner.views',
     url(r'^moveCourse/$', 'move_course'),
     url(r'^createPlan/$', 'create_plan'),
     url(r'^editSettings/$', 'edit_settings'),
-    url(r'^(?P<plan_name>.+)/$', 'index'),
+    url(r'^plan/(?P<plan_name>.+)/$', 'index'),
 )
