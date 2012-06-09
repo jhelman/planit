@@ -205,6 +205,7 @@ def search(request, prefix, limit='0'):
     
 def course_info(request):
     course_names = request.POST.getlist('courseNames[]')
+    print course_names
     response_data = {}
     response_data["query"] = course_names
     results = []

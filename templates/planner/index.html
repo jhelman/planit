@@ -2494,6 +2494,15 @@
         
         var currentSearch;
         var cancelNext = false;
+		
+		var updatedSearchData = false;
+		
+		function switchSearchData() {
+			/* 
+				TODO Jon switch the search results with 'updatedSearchData'
+				this is in the same format as the data in the search success callbacks
+			*/
+		}
         
         function cancelNextFn() {
             removeSpinner();
@@ -2529,9 +2538,9 @@
             cancelNext = false;
                 
             moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue, true);
-                        
+			                        
             $.ajax({
-				url: '/search/' + encodeURI(searchValue) + '/10',
+				url: '/search/' + encodeURI(searchValue) + '/15',
                 success: function (data, textStatus, jqXHR) {
                     if (cancelNext == true) {
                         return;
@@ -2551,8 +2560,28 @@
                     $('#content-div').html(html);
                     addButtonsToSearchResults();
                     refreshScroll(1);
+					updatedSearchData = false;
+					
+					if (data.numResults > 15) {
+						$.ajax({
+							url: '/search/' + encodeURI(searchValue),
+						
+							success: function (data, textStatus, jqXHR) {
+								updatedSearchData = data;
+								console.log(updatedSearchData);
+								/* TODO Jon, make a 'more results' button visible */
+							},
+						
+							error: function (data, textStatus, jqXHR) {
+								updatedSearchData = false;
+							}
+						
+						});
+					}
+					
                 },
                 error: function (data, textStatus, jqXHR) {
+					updatedSearchData = false;
                     if (cancelNext == true) {
                         return;
                     }
@@ -2748,9 +2777,8 @@
             cancelNext = false;
                         
             makeNewSpinner();
-                                    
             $.ajax({
-				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()) + '/10',
+				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()) + '/15',
                 success: function (data, textStatus, jqXHR) {                    
                     if (cancelNext == true) {
                         return;
@@ -2766,8 +2794,29 @@
                     addButtonsToSearchResults();
                     refreshScroll(3);
                     removeSpinner();
+					updatedSearchData = false;
+					
+					if (data.numResults > 15) {
+						$.ajax({
+							url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()),
+						
+							success: function (data, textStatus, jqXHR) {
+								updatedSearchData = data;
+								console.log(updatedSearchData);
+								/* TODO Jon, make a 'more results' button visible */
+							},
+						
+							error: function (data, textStatus, jqXHR) {
+								updatedSearchData = false;
+							}
+						
+						});
+					}
+					
+					
                 }, 
                 error: function(data, textStatus, jqXHR) {
+					updatedSearchData = false;
 				    if (cancelNext == true) {
                         return;
                     }
