@@ -241,8 +241,8 @@
 		}
 		
 		FourYearPlan.prototype.addExemption = function(courseName, exemption, req, tlGroup) {
-		    courseName = makeCondensedName(courseName);
-		    addCourseReqs(exemption, true, req, tlGroup);			
+		    courseName = makeCondensedName(courseName);		    
+		    addCourseReqs(exemption, true, req, tlGroup);
 			this.exemptions[courseName] = exemption;
 			if ($.inArray(courseName, this.exemptCourseName) == -1) {
 				this.exemptCourseNames.push(courseName);
@@ -427,7 +427,7 @@
         // }
 
         function addCourseReqs(course, isExemption, req, tlGroup) {
-         			            			   
+         			      
          	var cName = makeCondensedName(course.name);
          			   
             // Course already in schedule
@@ -527,8 +527,9 @@
         }
         
         
-        function ReqGroup(name, reqGroup) {
+        function ReqGroup(name, reqGroup, tlName) {
             this.name = name;
+            this.tlName = tlName;
             this.numReqsToFulfill = parseInt(reqGroup.num_reqs_to_fulfill);
             this.reqs = [];
             this.numFulfilled = 0;
@@ -559,8 +560,6 @@
             this.reqGroup = reqGroup;
             this.bypassable = req.bypassable;
             this.usedToFulfill = [];
-            console.log(this.name);
-            console.log(this.numFulfilled);
         }
         
         Req.prototype.isFulfilled = function() {
@@ -586,7 +585,7 @@
         {% autoescape off %}
 		var generalReqs = {{ general_reqs }};
 		for (var i in generalReqs) {
-		    var rg = new ReqGroup(i, generalReqs[i]);
+		    var rg = new ReqGroup(i, generalReqs[i], 'General');
 		    for (var j in generalReqs[i].requirements) {
 		        var r = new Req(j, generalReqs[i].requirements[j], rg);
 		        rg.addReq(r);
@@ -595,16 +594,14 @@
 	    }
         var majorReqs = {{ major_reqs }};	    
         for (var i in majorReqs) {
-		    var rg = new ReqGroup(i, majorReqs[i]);
+		    var rg = new ReqGroup(i, majorReqs[i], 'Major');
 		    for (var j in majorReqs[i].requirements) {
 		        var r = new Req(j, majorReqs[i].requirements[j], rg);
-		        console.log(r);
 		        rg.addReq(r);
 	        }
 	        plan.majorReqs.push(rg);
 	    }
         {% endautoescape %}
-	    console.log(plan.majorReqs);
     	{% for year in years %}
     	{% for term in year.terms %}
     	var t = plan.getTerm({{ term.num }}, {{ year.year_index }});
@@ -956,6 +953,8 @@
             $('#new-plan-modal').modal({'show': false});
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
+            $('#reqs-modal').modal({'show': false});
+            
 			
             // $('#schedule-modal-calendar').fullCalendar({ 
             //                 firstDay: 1,
@@ -1803,33 +1802,15 @@
             plan.getTermById(courseTermId).removeDraggable(course.cName);
             
         }
-            
-        function confirmAddCourse(courseTableID) {
-            
-            var courseName = $('#' + courseTableID).find('.courseName').html();
-            var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
+        
+        
+        function confirmReqAddCourse(course, courseTableID, termId) {
+         
+            var courseName = course.name;
             var units = parseInt($('#' + courseTableID).find('select').attr('value'));
-            
-            var course = plan.getTermById(termId).getCourse(courseName);
-                                    
-            // $('#' + courseTableID).find('.icon-ok').tooltip('hide');
-            //             $('#' + courseTableID).find('.info').empty();
-            //             
-            //             // Remember to redraw the dragging for this course!
-            //             
-            //             var infoTD = $('#' + courseTableID).find('.info');
-            //             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
-            //                 '<i class="icon-trash" onclick="removeCourse(this);"></i>');
-            //                 
-            //             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            //             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            //          
-                        
-            $('#' + courseTableID).find('.icon-ok').tooltip('hide');
-            $('#' + courseTableID).popover('hide');
             $('#' + courseTableID).popover('disable');
             $('#' + courseTableID).remove();
-            
+
             $('#' + termId + '-courses').prepend('<div id="' + termId + makeCondensedName(courseName) + '" ' + 
                 'class="course"><div class="courseName">' + courseName + '</div>' +
                 '<div class="grab-over">' +
@@ -1840,44 +1821,44 @@
                 '<div class="info-over"><div class="info" onclick="removeCourse(this);">' + 
                 '<i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>' + 
                 '</div></div></div>');                 
-                
+
             $('#' + termId + makeCondensedName(courseName)).on('mouseover', function () {
                  $(this).find('.info-over').show();
                  $(this).find('.grab-over').show();
             });
- 
+
             $('#' + termId + makeCondensedName(courseName)).on('mouseout', function () {
                 $(this).find('.info-over').hide();
                 $(this).find('.grab-over').hide();
             });
-            
+
             makePopoverForCourse(termId, course);
-                                                                           
+
             // resetAddedUnits(termId);
-                        
+
             // console.log(course);            
-            
+
             var req = getReqByBreadcrumb(makeCondensedName(courseName));
-            
+
             course.confirmCourse(req, getTopLevelByBreadcrumb());
-                                    
+
             cancelAddCourse(course.courseObj, course.offerings, termId);
-            
+
             updateRequirementsUI();
-            
+
             updateQuarterUnitsUI(termId, units, true);
-            
+
             makeDrag('#' + termId + course.cName);
-            
+
             addCourseToDraggables(termId, course);
-                        
+
             // removeSelect($('#' + courseTableID).find('select'), units);
-            
+
             // 
             // $('#' + courseTableID).removeClass('possible-course');
             // $('#' + courseTableID).removeClass('possible-course-warning');
             // $('#' + courseTableID).css('background-color', 'none');
-                        
+
             var liElem = $('#' + makeCondensedName(courseName) + '-search-result');
                         // td class="search-result-info" align="middle">' + 
                         // (courseDict[makeCondensedName(courseShortName)] != undefined ? '<i class="icon-ok"></i>'
@@ -1886,7 +1867,7 @@
             liElem.parent().removeClass('active');
             liElem.find('.search-result-info').html('<i class="icon-ok"></i>');
             liElem.find('.search-result-info i').tooltip({title: 'Course in schedule'});
-            
+
             liElem.unbind('mousedownoutside');
 
 			var termYear = convertFromCondensedName(termId).split(" ");
@@ -1906,18 +1887,48 @@
 				success: function(data, textStatus, jqXHR) {
 					ajaxMessage(courseName +  " Added", SUCCESS);
 				},
-				
+
 				error: function(jqXHR, textStatus, errorThrown) {
 					ajaxMessage("An error occurred adding "
 						+ courseName, ERROR);
 				}
-				
-				
+
+
 			});
-			
-			console.log('adding...');
-			console.log(plan.getTermById(termId).getCourse('CS145'));
             
+        }
+        
+        
+            
+        function confirmAddCourse(courseTableID, classLinkItem) {
+            
+            var courseName = $('#' + courseTableID).find('.courseName').html();
+            var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
+            var course = plan.getTermById(termId).getCourse(courseName);
+                                    
+            // $('#' + courseTableID).find('.icon-ok').tooltip('hide');
+            //             $('#' + courseTableID).find('.info').empty();
+            //             
+            //             // Remember to redraw the dragging for this course!
+            //             
+            //             var infoTD = $('#' + courseTableID).find('.info');
+            //             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
+            //                 '<i class="icon-trash" onclick="removeCourse(this);"></i>');
+            //                 
+            //             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
+            //             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
+            //          
+                        
+            $('#' + courseTableID).find('.icon-ok').tooltip('hide');
+            $('#' + courseTableID).popover('hide');
+            
+            var req = getReqByBreadcrumb(makeCondensedName(courseName));
+            
+            if (req == "search" || isGeneralReq()) {
+                openRequirementsModal(course, courseTableID, classLinkItem, termId);
+            } else {
+                confirmReqAddCourse(course, courseTableID, termId);
+            }
 								
         }
         
@@ -2113,6 +2124,27 @@
             $('#content-div').find('a').off('mouseover');
             $('#content-div').find('a').off('mouseout');
         }
+               
+        
+        function unclickSearch(courseName, classLinkItem) {
+            var courseObj = getJSONForCourse(courseName);
+            var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
+            cancelAddCourse(courseObj, offerings, false);
+            var liElem = $(classLinkItem).closest('li');
+            liElem.removeClass('active');
+            // liElem.find('icon-ok').tooltip('hide');
+            liElem.find('.btn').tooltip('hide');
+            var courseDict = plan.getCourseDictionary();
+            liElem.find('.search-result-info').html(
+                (courseDict[makeCondensedName(courseName)] != undefined ? '<i class="icon-ok"></i>'
+                    : (plan.hasExemption(courseName) ? '<i class="icon-check"></i>' : '')));
+            liElem.find('.icon-check').tooltip({title: 'Exempt from course', placement: 'top'});
+            // liElem.find('.icon-ok').tooltip({'title': 'Course in schedule'});
+            $(classLinkItem).unbind('mousedownoutside');
+            $(classLinkItem).tooltip('hide');  
+            $(classLinkItem).off('mouseover');
+        }
+               
                 
         function addCourse(classLinkItem) {
             
@@ -2125,21 +2157,16 @@
             $(classLinkItem).closest('li').addClass('active');
                                                 
             var courseName = $(classLinkItem).closest('li').find('.shortName').html();
-                          
-            var courseObj = getJSONForCourse(courseName);
-                                                            
-            var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
             
+            var courseObj = getJSONForCourse(courseName);
+            var offerings = jQuery.parseJSON(offeringsJSON[courseName]);
+                                      
             $(classLinkItem).bind('mousedownoutside', function (event) {
                                                                                                 
                 if ($(event.target).hasClass('confirm-add-class')) {
                     var cName = $(event.target).closest('.course').find('.courseName').html();
                     var termId = $(event.target).closest('.quarter-div').attr('id');
-                    confirmAddCourse(termId + makeCondensedName(cName));
-                    $(classLinkItem).parent().removeClass('active');
-                    $(this).unbind('mousedownoutside');
-                    $(classLinkItem).off('mouseover');   
-                    turnOnCourseHighlight(cName);            
+                    confirmAddCourse(termId + makeCondensedName(cName), this);
                                         
                 } else if ($(event.target).prop('tagName') == "BODY" ||
                     $(event.target).prop('tagName') == "HTML" ||
@@ -2155,23 +2182,11 @@
                         ($(event.target).attr('id') == "course-search")) ||
                     (($(event.target).closest('li').attr('id') != null) && 
                         ($(event.target).closest('li').attr('id').indexOf('blevel') != -1))
-                    ) {             
-                        cancelAddCourse(courseObj, offerings, false);
-                        var liElem = $(classLinkItem).closest('li');
-                        liElem.removeClass('active');
-                        // liElem.find('icon-ok').tooltip('hide');
-                        liElem.find('.btn').tooltip('hide');
-                        var courseDict = plan.getCourseDictionary();
-                        var courseName = liElem.find('a').attr('id').substring(0, liElem.find('a').attr('id').indexOf('-search-result'));
-                        liElem.find('.search-result-info').html(
-                            (courseDict[makeCondensedName(courseName)] != undefined ? '<i class="icon-ok"></i>'
-                                : (plan.hasExemption(courseName) ? '<i class="icon-check"></i>' : '')));
-                        liElem.find('.icon-check').tooltip({title: 'Exempt from course', placement: 'top'});
-                        // liElem.find('.icon-ok').tooltip({'title': 'Course in schedule'});
-                        $(this).unbind('mousedownoutside');
-                        $(classLinkItem).tooltip('hide');  
-                        $(classLinkItem).off('mouseover');
-                        turnOnCourseHighlight(courseName);          
+                    ) {        
+                             
+                        unclickSearch(courseName, classLinkItem);
+                        turnOnCourseHighlight(courseName);  
+                                
                 }
                 
                 
@@ -2343,6 +2358,7 @@
         }
         
         function highlightCourse(courseName, cssClassName, warning) {
+            
             var courseArr = (plan.getCourseDictionary())[courseName];
                         
             for (var x in courseArr) {
@@ -2468,43 +2484,41 @@
         }
         
         
-        function addExemption(elem) {
-            
-            var btn = $(elem).closest('.btn');            
-            var td = btn.closest('.search-result-info');
-            var courseName = btn.attr('id').substring(0, btn.attr('id').indexOf('-button'));
-                        
-            var adding = false;
-            if (btn.find('.icon-check').length > 0) {
-                adding = true;
-            } 
-                                    
-            btn.tooltip('hide');  
-            
+        function confirmReqAddExemption(elem, e, req) {
+             var btn = $(elem);
+             var courseName = btn.attr('id').substring(0, btn.attr('id').indexOf('-button'));  
+             var td = $(elem).closest('.search-result-info');
+             
+             var adding = false;
+             if (btn.find('.icon-check').length > 0) {
+                 adding = true;
+             }
+
             td.html('<button class="btn btn-default ' +
                 (adding ? 'remove-exemption' : 'add-exemption') + '" id="' + 
                 makeCondensedName(courseName) + '-button" onclick="addExemption(this);"><i class="icon-' + 
                 (adding ? 'remove-circle' : 'check') + '" id="' + makeCondensedName(courseName) +
                 '-icon"></i></button>');
-            
+
             var data = new Object();
 			data['course'] = courseName;
 			data['plan'] = plan.planName;
-			data['add'] = adding;
-			
-			var req = getReqByBreadcrumb(makeCondensedName(courseName));
-            
-			
+			data['add'] = adding;  
+		
 			if (adding) {
-			    var e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
-				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
+			    if (e == false) {
+			        e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
+    				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
+		        }
                 plan.addExemption(makeCondensedName(courseName), e, req, getTopLevelByBreadcrumb());
 		    } else {
 		        plan.removeExemption(courseName, req, getTopLevelByBreadcrumb());
 	        }
-	        	
+
+            unclickSearch(courseName, td.closest('a'));
+
 	        updateRequirementsUI();
-	        			
+
 			$.ajax({
 				type: 'POST',
 				url: '/setExemption/',
@@ -2513,12 +2527,40 @@
 					ajaxMessage((adding ? "Added exemption for " : "Removed exemption for ")
 					    + courseName, SUCCESS);
 				},
-				
+
 				error: function(jqXHR, textStatus, errorThrown) {
 					ajaxMessage("An error occurred " + (adding ? "adding" : "removing")
 						+ " the exemption for " + courseName, ERROR);
 				}
 			});
+        }
+        
+        
+        function addExemption(elem) {
+            
+            var btn = $(elem).closest('.btn');      
+            btn.tooltip('hide');        
+            var td = btn.closest('.search-result-info');
+            var courseName = btn.attr('id').substring(0, btn.attr('id').indexOf('-button'));
+                        
+            var adding = false;
+            if (btn.find('.icon-check').length > 0) {
+                adding = true;
+            } 
+            
+            var req = getReqByBreadcrumb(makeCondensedName(courseName));
+			
+			var e = false;
+			if (adding && (req == "search" || isGeneralReq())) {
+			    e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
+				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
+				    console.log(e);
+			    openRequirementsModal(e, false, $(elem).closest('a'), false);
+			    return;
+		    } 
+              
+            confirmReqAddExemption(elem, e, req);   
+           
         }
         
         
@@ -2581,6 +2623,9 @@
             
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var reqName = $(bElems[bElems.length - 1]).find('.longName').html();
+            if (reqName.indexOf('Search: ') != -1) {
+                return "search";
+            }
             
             var req = false;
             if (bElems.length == 3) {
@@ -2596,6 +2641,16 @@
                         
             return req;
         }
+        
+        function isGeneralReq() {
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            
+            if ($(bElems[1]).find('.longName').html() == 'General') {
+                return true;
+            }
+            return false;
+        }
+        
         
         function addButtonsToSearchResults() {
 
@@ -2846,7 +2901,6 @@
             var total = r.numCoursesToFulfill - r.numFulfilled;
             return (total >= 0 ? total : 0);           
         }
-        
         
         
         function getReqGroups(tlName) {
@@ -3181,8 +3235,67 @@
                 animateBackward(num);
             }
             
-
-
+        }
+        
+        
+        function selectedRequirements(course, courseTableID, termId, classLinkItem) {
+            $(classLinkItem).parent().removeClass('active');
+            $(classLinkItem).unbind('mousedownoutside');
+            $(classLinkItem).off('mouseover');
+            $('#reqs-modal').modal('hide');
+            if (courseTableID) {
+                confirmReqAddCourse(course, courseTableID, termId);
+            } else {
+                confirmReqAddExemption(classLinkItem, course, false);
+            }
+        }
+        
+        function openRequirementsModal(course, courseTableID, classLinkItem, termId) {
+            
+            $('#reqs-modal').find('.reqs-modal-course-name').html(course.name);
+            
+            var majorHTML = "";
+            var generalHTML = "";
+            
+            for (var i in course.reqGroups) {
+                var rg = course.reqGroups[i];
+                for (var j in rg.reqs) {
+                    var req = rg.reqs[j];
+                    if ($.inArray(course.cName, req.fulfillers) == -1) {
+                        continue;
+                    }
+                    var html = '<label class="checkbox"><input type="checkbox">' + 
+                            ((rg.name == req.name) ? rg.name : (rg.name + " - " + req.name)) + '</input></label>';
+                    if (rg.tlName == 'Major') {
+                       majorHTML +=  html;
+                    } else {
+                       generalHTML +=  html;
+                    }
+                }
+                
+            }
+            
+            if (majorHTML != "") {
+                $('#reqs-major-modal-form').find('.control-group').html(majorHTML);
+            } 
+            if (generalHTML != "") {
+                $('#reqs-general-modal-form').find('.control-group').html(generalHTML);
+            }
+            
+            
+            $('#reqs-modal').find('.btn-primary').on('click', function() {
+                // if (courseTableID) {
+                //     
+                //     turnOnCourseHighlight(course.cName);
+                // } else {
+                //     
+                // }
+                $('#reqs-modal').find('.btn-primary').off('click');
+                selectedRequirements(course, courseTableID, termId, classLinkItem);
+               
+            });
+            $('#reqs-modal').modal('show');
+            
             
         }
         
@@ -3342,6 +3455,52 @@
     </div>   
     
     
+    <div class="modal fade" id="reqs-modal">
+          <div class="modal-header">
+             <button class="close" data-dismiss="modal">&times;</button>
+             <h3>Requirement Selection for <span class="reqs-modal-course-name"></span></h3>
+          </div>
+          <div class="modal-body">
+              
+              <h4>Select requirements to fulfill with <span class="reqs-modal-course-name"></span>:</h4>
+              <br/>
+              
+              <b>General Requirements:</b>
+             <form class="form-horizontal" id="reqs-general-modal-form">
+
+                  <fieldset>
+                      <div class="control-group">
+                          <label class="checkbox">
+                              None
+                          </label>
+                     </div>
+                 </fieldset>
+             </form>
+             
+             
+             <b>Major Requirements:</b>
+              <form class="form-horizontal" id="reqs-major-modal-form">
+
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="checkbox">
+                                None
+                            </label>
+                       </div>
+                   </fieldset>
+              </form>
+             
+             
+         </div>
+
+         <div class="modal-footer">
+             <button class="btn" data-dismiss="modal">Cancel</button>
+             <button class="btn btn-primary">Select Requirements</button>
+         </div>
+
+      </div>
+    
+    
     
     <div class="modal fade" id="schedule-modal">
         <div class="modal-header">
@@ -3468,7 +3627,7 @@
                                  <h4><u>Plan information:</u></h4>
                              </div> -->
                             <div class="plan-info-div-inner">
-                                <b>Major</b>: Computer Science
+                                <b>Major</b>: <span id="plan-info-major">Computer Science</span>
                                 <br/>
                                 <b>Total Units</b>: <span id="total-units"></span>
                                     <span id="total-units-icon"></span>
