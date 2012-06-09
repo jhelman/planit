@@ -2572,6 +2572,10 @@
 							url: '/search/' + encodeURI(searchValue),
 						
 							success: function (data, textStatus, jqXHR) {
+			                    if (data.query != $('#course-search').attr('value')) {
+			                        return;
+			                    }
+								
 								updatedSearchData = data;
 								console.log(updatedSearchData);
 								/* TODO Jon, make a 'more results' button visible with switchClassSearchData() onclick */
