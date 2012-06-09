@@ -2497,11 +2497,16 @@
 		
 		var updatedSearchData = false;
 		
-		function switchSearchData() {
-			/* 
-				TODO Jon switch the search results with 'updatedSearchData'
-				this is in the same format as the data in the search success callbacks
-			*/
+		function switchClassSearchData() {
+            classesJSON = jQuery.parseJSON(updatedSearchData.classes);
+            offeringsJSON = updatedSearchData.offerings;
+			prereqsJSON = updatedSearchData.prereq_groups;
+			reqsJSON = updatedSearchData.reqs;
+			reqGroupsJSON = updatedSearchData.req_groups;
+            var html = createSearchResults(classesJSON, false, false, 0);
+            $('#content-div').css('left', '0px');
+            $('#content-div').html(html);
+            addButtonsToSearchResults();
 		}
         
         function cancelNextFn() {
@@ -2569,7 +2574,7 @@
 							success: function (data, textStatus, jqXHR) {
 								updatedSearchData = data;
 								console.log(updatedSearchData);
-								/* TODO Jon, make a 'more results' button visible */
+								/* TODO Jon, make a 'more results' button visible with switchClassSearchData() onclick */
 							},
 						
 							error: function (data, textStatus, jqXHR) {
@@ -2769,6 +2774,18 @@
             
         }
         
+		function switchReqSearchData() {
+            classesJSON = jQuery.parseJSON(updatedSearchData.classes);
+            offeringsJSON = updatedSearchData.offerings;
+			prereqsJSON = updatedSearchData.prereq_groups;
+			reqsJSON = updatedSearchData.reqs;
+			reqGroupsJSON = updatedSearchData.req_groups;
+			var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length);
+            addClassesCDiv(html, 3, elem.find('.req-name').html());
+            addButtonsToSearchResults();
+			
+		}
         
         
         function getReqClasses(elem) {
@@ -2803,7 +2820,7 @@
 							success: function (data, textStatus, jqXHR) {
 								updatedSearchData = data;
 								console.log(updatedSearchData);
-								/* TODO Jon, make a 'more results' button visible */
+								/* TODO Jon, make a 'more results' button visible with switchReqSearchData() onclick */
 							},
 						
 							error: function (data, textStatus, jqXHR) {
