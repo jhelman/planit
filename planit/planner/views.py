@@ -30,7 +30,11 @@ def get_python_dict_for_reqs(requirement_groups):
     
 @ensure_csrf_cookie
 def index(request, plan_name=None):
-    user = User.objects.filter(username=request.user)[0]
+    user = None
+    try:
+        user = User.objects.filter(username=request.user)[0]
+    except:
+        return HttpResponseRedirect('/accounts/login')
     plan = None
     args = {}
     args['user'] = user
