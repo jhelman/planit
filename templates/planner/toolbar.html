@@ -1,0 +1,212 @@
+<html>
+<head><title>planit</title></head>
+
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css"/>
+
+<script type="text/javascript" src="jquery-1.7.2.js"></script>
+<script type="text/javascript" src="bootstrap/js/bootstrap-dropdown.js"></script>
+<script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+
+
+<script type="text/javascript">
+
+function closeNewPlanModal() {
+        
+    $('#plan-name').attr('value', '');
+    $('#major').attr('value', '');
+    $('#track-select').closest('.control-group').hide();
+        
+    $('#new-plan-modal').modal('hide');
+}
+    
+        
+function openNewPlanModal() {
+    
+    tracksShown = false;
+    
+    for (var i in majorsJSON) {
+        $('#major').append('<option value="' + majorsJSON[i].fields.name + '">' + 
+            majorsJSON[i].fields.name + '</option>');
+    }
+    
+    var year = new Date().getFullYear();
+    for (var j = 0; j < 4; j++) {
+        $('#graduation-year').append('<option value="' + (year + j) + '">' + 
+            (year + j) + '</option>');
+    }
+    
+    
+    $('#new-plan-modal').modal('show');  
+	
+              
+}
+
+var tracksShown = false;
+
+function getTracksForMajor(elem) {
+    
+    tracksShown = true;
+    
+    var majorName = $(elem).attr('value');
+    
+    if (majorName == "") {
+        $('#track-select').closest('.control-group').hide();
+        return;
+    }
+    
+    var tracks;
+    for (var i in majorsJSON) {
+        if (majorsJSON[i].fields.name == majorName) {
+            tracks = majorsJSON[i].fields.tracks;
+            break;
+        }
+    }
+    
+    
+    $('#track-select').html('<option value="">Choose a track</option>');
+    for (var j in tracks) {
+        $('#track-select').append('<option value="' + tracks[j] + '">' + 
+            tracks[j] + '</option>');
+    }
+    $('#track-select').closest('.control-group').show();
+}
+
+
+
+
+function validateNewPlan() {
+                
+    var planName = $('#plan-name').attr('value');
+    var major = $('#major').attr('value');
+    var track = $('#track-select').attr('value');
+    
+    
+    
+    var flag = 0;
+    
+    if (planName.length == 0) {
+        $('#plan-name').closest('.control-group').addClass('error');
+        $('#plan-name-help-block').show();
+        flag = 1;
+    } else {
+        $('#plan-name').closest('.control-group').removeClass('error');
+        $('#plan-name-help-block').hide();
+        
+    }
+    
+    if (major.length == 0) {
+        $('#major').closest('.control-group').addClass('error');
+        $('#major-help-block').show();
+        flag = 1;
+    } else {
+        $('#major').closest('.control-group').removeClass('error');
+        $('#major-help-block').hide();
+        
+    }
+     
+
+    if (tracksShown) {
+        
+        if (track.length == 0) {
+            $('#track-select').closest('.control-group').addClass('error');
+            $('#track-help-block').show();
+            flag = 1;
+        } else {
+            $('#track-select').closest('.control-group').removeClass('error');
+            $('#track-help-block').hide();
+
+        }
+        
+    }
+   
+    return (flag == 0 ? true : false);
+    
+}
+
+
+
+function createNewPlan() {
+    
+    if (validateNewPlan() == false) {
+        return;
+    }
+                  
+     // TODO: Dan make a new track here
+	 $("#new-plan-form").submit();
+	 
+}
+
+
+
+
+function openAccountSettingsModal() {
+    $('#account-settings-modal').modal('show');
+}
+
+function saveAccountSettings() {
+    var fullname = $('#account-settings-fullname').attr('value');
+    if (fullname.length == 0) {
+        fullname = $('#account-settings-fullname').attr('placeholder');
+    }
+    
+    var gradYear = $('#graduation-year').attr('value');
+    console.log(gradYear);
+
+    $('#account-settings-modal').modal('hide');
+    
+    
+    // TODO Dan do stuff with account settings (change years of four year plan??)
+    
+}
+
+</script>
+
+
+
+<body>
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+            <div class="container-fluid">
+            
+            <a href="#" class="brand"><font color="white">planit</font></a>
+
+                                
+            <ul class="nav pull-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        Jon plan&nbsp;<b class="caret"></b>  
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                        <!-- <li class="divider"></li>
+                                                {% for p in allPlans %}
+                                                <li><a href="/{{ p.name }}"> 
+                                                {{ p.name }}&nbsp;
+                                                {% if p.name == plan.name %}
+                                                <i class="icon-ok"></i>
+                                                {% endif %}
+                                                </a></li>
+                                                {% endfor %} -->
+                    </ul>
+                 </li>
+                <li class="divider-vertical"></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="icon-user icon-white"></i>&nbsp;<span id="navbar-fullname">Jonathan Helman</span>&nbsp;<b class="caret"></b>  
+                    </a>
+                    <ul class="dropdown-menu">
+                    
+                        <li><a href="#" onclick="openAccountSettingsModal()">Account Settings</a></li>
+
+                        <li><a href="#">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+     
+            
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
