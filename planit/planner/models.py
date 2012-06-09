@@ -113,6 +113,8 @@ class Requirement(models.Model):
 class TagMapping(models.Model):
     tag = models.ForeignKey(Tag)
     course = models.ForeignKey(Course)
+    def __unicode__(self):
+        return self.tag.__unicode__() + ", " + self.course.identifier
 
 class PrereqGroup(models.Model):
     for_course = models.ForeignKey(Course, related_name='prereqs')
