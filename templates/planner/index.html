@@ -1452,15 +1452,13 @@
 			var data = new Object();
 			data['first'] = firstname;
 			data['last'] = lastname;
-			console.log(data);
 			$.ajax({
 				type: 'POST',
 				url: '/editSettings/',
 				data: data,
 				success: function(data, textStatus, jqXHR) {
 				    
-				    // TODO: Dan change this to work
-        		    $('#navbar-fullname').html(data.first_name + " " + data.last_name);
+        		    $('#navbar-fullname').html(firstname + " " + lastname);
 				    
 					ajaxMessage("Settings saved", SUCCESS);
 				},
