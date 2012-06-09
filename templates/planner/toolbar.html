@@ -1,16 +1,28 @@
 <!DOCTYPE html>
-	<head><title>planit</title>
-
-	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
-
-	<script type="text/javascript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
-
-	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
+    <title>PlanIt</title>
+    
+    
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}jquery-ui/js/jquery-ui-1.8.20.custom.min.js"></script>
+    <!-- <script type="text/javascript" src="jquery-ui/development-bundle/ui/jquery.ui.droppable.js"></script> -->
+    
+    
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}nanoscroller/nanoscroller.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}main.css"/>
+    
+    
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}clickoutside/clickoutside.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}nanoscroller/jquery.nanoscroller.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}spin/spin.min.js"></script>
+	
 
 
 	<script type="text/javascript">
@@ -238,6 +250,10 @@
 
 
 		</script>
+		
+		{% block extra_head %}
+		{% endblock %}
+		
 	</head>
 
 
@@ -383,6 +399,9 @@
 		   </div>
 
 		</div>
+		
+		{% block content %}
+		{% endblock %}
 
 	</body>
 </html>

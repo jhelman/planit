@@ -317,7 +317,7 @@ def create_plan(request):
     if len(tracks) == 1:
         plan.track = tracks[0]
     plan.save()
-    return HttpResponseRedirect('/' + plan_name + '/')
+    return HttpResponseRedirect('/plan/' + plan_name + '/')
 
 def edit_settings(request):
     params = request.POST.dict()
