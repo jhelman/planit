@@ -12,13 +12,21 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+<<<<<<< HEAD
         'NAME': '/Users/jhelman/Desktop/Spring/CS194W/planit/planit/sqlite3.db',                      # Or path to database file if using sqlite3.
+=======
+        'NAME': '/Users/Dan/Documents/Classes/Spring1112/cs194/PlanIt/planit/sqlite3.db',                      # Or path to database file if using sqlite3.
+>>>>>>> fb9d4d611c346143cd49141d09cd97de9dc99458
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
+<<<<<<< HEAD
+=======
+AUTH_PROFILE_MODULE = "planner.UserData"
+>>>>>>> fb9d4d611c346143cd49141d09cd97de9dc99458
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -44,7 +52,11 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
+<<<<<<< HEAD
 USE_TZ = True
+=======
+USE_TZ = False
+>>>>>>> fb9d4d611c346143cd49141d09cd97de9dc99458
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -59,7 +71,11 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
+<<<<<<< HEAD
 STATIC_ROOT = '/Users/jhelman/Desktop/Spring/CS194W/planit/static/'
+=======
+STATIC_ROOT = '/Users/Dan/Documents/Classes/Spring1112/cs194/PlanIt/static/'
+>>>>>>> fb9d4d611c346143cd49141d09cd97de9dc99458
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -109,7 +125,11 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+<<<<<<< HEAD
     '/Users/jhelman/Desktop/Spring/CS194W/planit/templates',
+=======
+    '/Users/Dan/Documents/Classes/Spring1112/cs194/PlanIt/templates',
+>>>>>>> fb9d4d611c346143cd49141d09cd97de9dc99458
 )
 
 INSTALLED_APPS = (
@@ -124,8 +144,27 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'planner',
+<<<<<<< HEAD
 )
 
+=======
+    'registration',
+)
+
+##############################
+########REGISRATION###########
+##############################
+ACCOUNT_ACTIVATION_DAYS=7
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 9999
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'ls@ls.ls'
+LOGIN_REDIRECT_URL = '/'
+##############################
+##############################
+
+>>>>>>> fb9d4d611c346143cd49141d09cd97de9dc99458
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.

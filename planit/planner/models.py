@@ -16,9 +16,6 @@ import datetime
 
 TRIMESTER = 0
 SEMESTER = 1
-class UserData(models.Model):
-    user = models.ForeignKey(User, unique=True)
-    name = models.CharField(max_length=64)
 
 class Major(models.Model):
     name = models.CharField(max_length=128)
@@ -90,6 +87,7 @@ class Course(models.Model):
         return self.identifier
 
 class RequirementGroup(models.Model):
+    is_track = models.BooleanField(default=False)
     major = models.ForeignKey(Major, null=True)
     name = models.CharField(max_length=64)
     is_track = models.BooleanField(default=False)
@@ -124,8 +122,8 @@ class PrereqGroup(models.Model):
         return self.for_course.identifier
 
 class Plan(models.Model):
+    user = models.ForeignKey(User)
     name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
-    user = models.ForeignKey(UserData, null=True)
     university = models.ForeignKey(University)
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()

@@ -167,7 +167,7 @@ def add_requirement_group(m, rg_name, n, classes):
     for r in reqs:
         r.save()
     return rg
-
+#
 def filldb():
     for i in range(3):
         t=Term(i)
@@ -179,7 +179,11 @@ def filldb():
     u.save()
     m=Major(name='CS')
     m.save()
-    p=Plan(name='Dan Vinegrad', university=u,
+    user = User.objects.create_user('dv', 'dv@dv.dv', 'dv')
+    user.first_name='Dan'
+    user.last_name='Vinegrad'
+    user.save()
+    p=Plan(user=user, name='Dan Vinegrad', university=u,
         major=m,start_year=2008,num_years=4)
     prefixes=['EC', 'HUM','ME'] 
     p.save()
@@ -227,11 +231,13 @@ def filldb():
 
 ##########################
 ##########################
+
     sys_core = add_requirement_group(m, "Track Depth (Systems)", 4, ["CS140"]) 
     sys_core.is_track=True
     sys_core.save()
     sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
     sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=sys_core)
+
     sys_ass.save()
     
     track_electives = add_tag('Track Electives (Systems)', ['CS144', 'CS145', 'CS149', 'CS155', 'CS240', 'CS242', 'CS243', 'CS244', 'CS245', 'EE271', 'CS282'])		
@@ -248,10 +254,10 @@ def filldb():
     gen_elecs = add_tag('General Electives', gen_elecs)
     gen_elecs = Requirement(name='General Electives', fulfillers=gen_elecs, n_class=3, group=sys_core)
     gen_elecs.save()
+
     m.tracks.add(sys_core)		
     m.save()
 
-##########################
 
     p.track = sys_core
     p.save()
