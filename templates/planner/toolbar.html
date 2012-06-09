@@ -222,6 +222,10 @@ function saveAccountSettings() {
 		url: '/editSettings/',
 		data: data,
 		success: function(data, textStatus, jqXHR) {
+		    
+		    // TODO: Dan change this to work
+		    $('#navbar-fullname').html(data.first_name + " " + data.last_name);
+		    
 			ajaxMessage("Settings saved", SUCCESS);
 		},
 				
@@ -269,7 +273,7 @@ function saveAccountSettings() {
                 <li class="divider-vertical"></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="icon-user icon-white"></i>&nbsp;{{ user.first_name }}&nbsp;{{ user.last_name }}&nbsp;<b class="caret"></b>  
+                        <i class="icon-user icon-white"></i>&nbsp;<span id="navbar-fullname">{{ user.first_name }}&nbsp;{{ user.last_name }}</span>&nbsp;<b class="caret"></b>  
                     </a>
                     <ul class="dropdown-menu">
                     
