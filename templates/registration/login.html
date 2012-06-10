@@ -8,7 +8,7 @@
     {% csrf_token %}
 	
     {% if form.errors %}
-	<div align="center">
+	<div style="text-align: center">
     <span><b><font color="#bd362f">Username or password incorrect.</font></b></span>
 	</div>
 	<br />
@@ -27,7 +27,7 @@
         </tr>
     </table>
     <br/>
-	<div align="center">
+	<div style="text-align: center">
     <button class="btn btn-primary" type="submit">Login</button>
 	</div>
     <input type="hidden" name="next" value="{{ next }}" />
