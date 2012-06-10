@@ -247,11 +247,12 @@ def add_course(request):
         to_add = offerings[0]
         plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
         enrollment = Enrollment(course=to_add, plan=plan, units=units)
-        mutex_req = params['mutexReq']
-        reqs = Requirement.objects.filter(name=mutex_req)
-        if len(reqs) == 1:
-            req = reqs[0]
-            enrollment.mutex_req_fulfilled = req
+        if 'mutexReq' in params:
+            mutex_req = params['mutexReq']
+            reqs = Requirement.objects.filter(name=mutex_req)
+            if len(reqs) == 1:
+                req = reqs[0]
+                enrollment.mutex_req_fulfilled = req
         enrollment.save()
     
     return HttpResponse()
