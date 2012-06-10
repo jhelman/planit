@@ -1569,6 +1569,12 @@
         }
         
         
+        function getReqString(req) {
+            
+            
+            
+        }
+        
         function confirmReqAddCourse(course, courseTableID, termId, req) {
          
             var courseName = course.name;
@@ -1641,6 +1647,9 @@
 			data['course'] = course.name;
 			data['plan'] = plan.planName;
 			data['units'] = units;
+			if (req != false) {
+			    data['mutexReq'] = req.name;
+		    }
 			$.ajax({
 				type: 'POST',
 				url: '/addCourse/',
@@ -2268,11 +2277,6 @@
                 makeCondensedName(courseName) + '-button" onclick="addExemption(this);"><i class="icon-' + 
                 (adding ? 'remove-circle' : 'check') + '" id="' + makeCondensedName(courseName) +
                 '-icon"></i></button>');
-
-            var data = new Object();
-			data['course'] = courseName;
-			data['plan'] = plan.planName;
-			data['add'] = adding;  
 		
 			if (adding) {
 			    if (e == false) {
@@ -2287,6 +2291,14 @@
             unclickSearch(courseName, td.closest('a'));
 
 	        updateRequirementsUI();
+	        
+	        var data = new Object();
+			data['course'] = courseName;
+			data['plan'] = plan.planName;
+			data['add'] = adding;  
+			if (req != false) {
+			    data['mutexReq'] = req.name;
+		    }
 
 			$.ajax({
 				type: 'POST',
