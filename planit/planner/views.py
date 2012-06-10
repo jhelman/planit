@@ -90,6 +90,7 @@ def index(request, plan_name=None):
                 setattr(course, 'units', e.units)
                 setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
                 setattr(course, 'reqs', serializers.serialize('json', requirements))
+                setattr(course, 'mutex_req_fulfilled', e.mutex_req_fulfilled)
                 prereq_groups = PrereqGroup.objects.filter(for_course=course)
                 groups = []
                 for group in prereq_groups:
