@@ -40,7 +40,7 @@
                 'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
                 'title': courseName,
                 'allDay': false,
-                'color': (isWarning ? '#ffc40d' : (isAdded ? '#54cc33' : 'none'))
+                'color': (isWarning ? '#FFA359' : (isAdded ? '#5DC456' : 'none'))
             };
             
         }
@@ -640,6 +640,9 @@
                     // $('.course').off('mouseover');
                     // $('.course').off('mouseout');
                     
+                    $('#' + dragTerm).css('background-color', '#77beff');
+                    
+                    
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
@@ -677,7 +680,7 @@
                                warningStr = warningStr.substring(0, pos);
                            }
                            
-                           $('#' + termStr).css('background-color', '#f3eed2');
+                           $('#' + termStr).css('background-color', '#ffb64f');
                            $('#' + termStr + '-units-div').empty();
                            $('#' + termStr + '-units-div').html('<div class="units">' + warningStr + '</div>');
                                                       
@@ -701,14 +704,14 @@
                                var termStr = termNames[i] + years[j];
                                $('#' + termStr + '-drag-cover').hide();
                                // if ($('#' + termStr + '-added-units').length == 0 || dragTerm == termStr) {
-                                   returnCellToColor($('#' + termStr));
-                                   $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
-                                        '</span>' +
-       						            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
-                                        '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
-                                        '</span>&nbsp;<span class="added-units" id="' + termStr + 
-                                        '-added-units" style="display: none"></span>');
-                                   
+                               returnCellToColor($('#' + termStr));
+                               $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
+                                    '</span>' +
+   						            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
+                                    '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                    '</span>&nbsp;<span class="added-units" id="' + termStr + 
+                                    '-added-units" style="display: none"></span>');
+                               
                                    // $('#' + termStr + '-units-div').html('<span class="units" ' + 
                                    //                                     'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
                                    //                                     '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
@@ -758,7 +761,7 @@
 				
 				over: function (event, ui) {
 				    if ($(this).find('.added-units').length > 0) { 
-				        $(this).css('background-color', '#dff0d8');
+				        $(this).css('background-color', '#95f5ad');
                     }
 					var violations = prereqViolations['{{ term.condensedName }}'];
 					if (violations) {
@@ -1710,7 +1713,7 @@
             } else if (isWarning) {
                 $('#' + quarterID + '-added-units').css('color', '#fc9c00');
             } else {
-                $('#' + quarterID + '-added-units').css('color', '#54cc33');
+                $('#' + quarterID + '-added-units').css('color', '#5DC456');
             }         
             $('#' + quarterID + '-added-units').html('(' + sign + units + ')');        
             $('#' + quarterID + '-added-units').show();
@@ -2072,7 +2075,7 @@
                         if ((offeringST >= startTime && offeringST < endTime) ||
                             (offeringET > startTime && offeringET <= endTime)) {
     
-                            courseEvents[k].color = '#ffc40d';
+                            courseEvents[k].color = '#FFA359';
                             // flag = couses[i].name;
                             flag = courses[i].name;
     
