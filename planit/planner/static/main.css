@@ -2,6 +2,13 @@
   display: none;
 }
 
+/* Login page boxes */
+
+div.outer-floating-box {
+  margin-left: auto;
+  margin-right: auto;
+  width: 350px;
+}
 
 
 /* Course CSS */
@@ -514,7 +521,7 @@ div.course-missing-prereq {
 	border: 1px solid #ddd;
 	background-color: #fdfdfd;
 	width: 325px;
-	height: 530px;
+	height: 515px;
 	padding-bottom: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
