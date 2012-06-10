@@ -158,6 +158,7 @@ class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
     units = models.IntegerField()
+    mutex_req_fulfilled = models.ForeignKey(Requirement, null=True)
 
     class Meta:
         pass
