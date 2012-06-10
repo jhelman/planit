@@ -2176,7 +2176,7 @@
             
         }
         
-        function createSearchResults(courses, isReq, reqName, num) {
+        function createSearchResults(courses, isReq, reqName, num, isRefresh, hasMoreResults) {
                 
                 
             var numRequired = "all";        
@@ -2199,16 +2199,18 @@
                         'px; ' + 'top: 0px">') : '>') + 
                     '<div id="search-scroll-content' + num +'" class="content">';
                         
-            var html = scroller + '<div class="cdiv" id="cdiv' + num + '">' +
-                        '<div class="requirement-heading">' +
+            var html = scroller + '<div class="cdiv" id="cdiv' + num + '">';
+                        
+            var reqHTML = '<div class="requirement-heading">' +
                         (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
                             : 'Select ' + numRequired + ' of the following:') +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
 
+            // Can't ever have a refresh button
             if (courses.length == 0) {
-                html += '</ul></div></div></div>';
-                return html;
+                reqHTML += '</ul></div></div></div>';
+                return html + reqHTML;
             }
             			            			
             for (var i in courses) {
@@ -2216,7 +2218,7 @@
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
                 var courseLongName = courses[i].fields.title;
                 
-                html += '<li class="search-result"><a href="#" id="' + 
+                reqHTML += '<li class="search-result"><a href="#" id="' + 
                     makeCondensedName(courseShortName)
                     + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
                     '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
@@ -2239,12 +2241,15 @@
                 
             }
             
-            html += '</ul></div></div></div>';
-			
-			
-                                     
-            return html;      
-             
+            if (!isRefresh) {
+                reqHTML += '</ul>' + 
+                (hasMoreResults ? '<button class="btn btn-primary load-btn disabled">Loading more results...</button>'
+                    : '') + '</div></div></div>';
+                return html + reqHTML;
+            }
+
+            reqHTML += '</ul>';
+            return reqHTML;
         }
         
         
@@ -2417,14 +2422,14 @@
         }
         
         
-        function addButtonsToSearchResults() {
+        function addButtonsToSearchResults(level) {
 
             $('.search-result-info').find('.icon-ok').tooltip({'title': 'Course in schedule', placement: 'top'});
             $('.search-result-info').find('.icon-check').tooltip({title: 'Exempt from course', placement: 'top'});
                         
             turnOnCourseHighlight(false);
 
-            $('.search-result').find('a').on('click', function (event) {
+            $('#cdiv' + level).find('.search-result a').on('click', function (event) {
                 if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-check') ||
                     $(event.target).hasClass('icon-remove-circle')) {
                     return;
@@ -2474,10 +2479,9 @@
 			prereqsJSON = updatedSearchData.prereq_groups;
 			reqsJSON = updatedSearchData.reqs;
 			reqGroupsJSON = updatedSearchData.req_groups;
-            var html = createSearchResults(classesJSON, false, false, 0);
-            $('#content-div').css('left', '0px');
-            $('#content-div').html(html);
-            addButtonsToSearchResults();
+            var html = createSearchResults(classesJSON, false, false, 0, true, false);
+            $('#cdiv1').html(html);
+            addButtonsToSearchResults(1);
 			refreshScroll(1);
 		}
         
@@ -2485,6 +2489,9 @@
             removeSpinner();
             cancelNext = true;
         }
+            
+            
+        var MAX_SEARCH = 15;
                 
         function runSearch(event) {
             
@@ -2517,7 +2524,7 @@
             moveToNextBreadcrumbLevel(1, 'Search: ' + searchValue, true);
 			                        
             $.ajax({
-				url: '/search/' + encodeURI(searchValue) + '/15',
+				url: '/search/' + encodeURI(searchValue) + '/' + MAX_SEARCH,
                 success: function (data, textStatus, jqXHR) {
                     if (cancelNext == true) {
                         return;
@@ -2532,14 +2539,18 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    var html = createSearchResults(classesJSON, false, false, 0);
+					var moreResults = false;
+					if (data.numResults > MAX_SEARCH) {                    
+                        moreResults = true;
+                    }
+                    var html = createSearchResults(classesJSON, false, false, 0, false, moreResults);
                     $('#content-div').css('left', '0px');
                     $('#content-div').html(html);
-                    addButtonsToSearchResults();
+                    addButtonsToSearchResults(1);
                     refreshScroll(1);
 					updatedSearchData = false;
 					
-					if (data.numResults > 15) {
+					if (data.numResults > MAX_SEARCH) {
 						$.ajax({
 							url: '/search/' + encodeURI(searchValue),
 						
@@ -2549,8 +2560,7 @@
 			                    }
 								
 								updatedSearchData = data;
-								console.log(updatedSearchData);
-								/* TODO Jon, make a 'more results' button visible with switchClassSearchData() onclick */
+								enableLoadMoreButton(1, false);
 							},
 						
 							error: function (data, textStatus, jqXHR) {
@@ -2750,20 +2760,35 @@
             
         }
         
-		function switchReqSearchData() {
+		function switchReqSearchData(elem) {
             classesJSON = jQuery.parseJSON(updatedSearchData.classes);
             offeringsJSON = updatedSearchData.offerings;
 			prereqsJSON = updatedSearchData.prereq_groups;
 			reqsJSON = updatedSearchData.reqs;
 			reqGroupsJSON = updatedSearchData.req_groups;
 			var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length);
-            addClassesCDiv(html, 3, elem.find('.req-name').html());
-            addButtonsToSearchResults();
+            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, true, false);
+            $('#cdiv3').html(html);
+            addButtonsToSearchResults(3);
 			refreshScroll(3);
 		}
         
         
+        function enableLoadMoreButton(level, elem) {
+            var btn = $('#cdiv' + level).find('.load-btn');
+            btn.html('Refresh search box');
+            btn.removeClass('disabled');
+            btn.on('click', function(event) {
+                btn.remove();
+                if (level == 1) {
+                    switchClassSearchData();
+                } else if (level == 3) {
+                    switchReqSearchData(elem);
+                }
+            });
+        }
+        
+                
         function getReqClasses(elem) {
             elem = $(elem);
                         
@@ -2771,20 +2796,25 @@
                         
             makeNewSpinner();
             $.ajax({
-				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()) + '/15',
+				url: '/reqSearch/' + encodeURI(elem.find('.req-name').html()) + '/' + MAX_SEARCH,
                 success: function (data, textStatus, jqXHR) {                    
                     if (cancelNext == true) {
                         return;
                     }
+                    reqClassResult = true;
                     classesJSON = jQuery.parseJSON(data.classes);
                     offeringsJSON = data.offerings;
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
 					var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length);
+					var moreResults = false;
+					if (data.numResults > MAX_SEARCH) {                    
+                        moreResults = true;
+                    }
+                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, false, moreResults);
                     addClassesCDiv(html, 3, elem.find('.req-name').html());
-                    addButtonsToSearchResults();
+                    addButtonsToSearchResults(3);
                     refreshScroll(3);
                     removeSpinner();
 					updatedSearchData = false;
@@ -2795,8 +2825,7 @@
 						
 							success: function (data, textStatus, jqXHR) {
 								updatedSearchData = data;
-								console.log(updatedSearchData);
-								/* TODO Jon, make a 'more results' button visible with switchReqSearchData() onclick */
+								enableLoadMoreButton(3, elem);
 							},
 						
 							error: function (data, textStatus, jqXHR) {
@@ -2939,7 +2968,7 @@
                         cur.html('<a href="#" onclick="moveBackNLevels(this)">' + 
                               cur.find('a').html() + '</a><span class="divider">/</span>');
                         refreshScroll(num);
-                        addButtonsToSearchResults();        
+                        addButtonsToSearchResults(num);        
 
              });
         }
@@ -3045,7 +3074,7 @@
                     $('#search-scroll-div' + j).remove();
                 }
                 
-                addButtonsToSearchResults();        
+                addButtonsToSearchResults(num);        
                                 
             });
         }
@@ -3076,7 +3105,7 @@
         
         
         function selectedRequirements(course, courseTableID, termId, classLinkItem, req) {
-            console.log($(classLinkItem).parent());
+            // console.log($(classLinkItem).parent());
             $(classLinkItem).parent().removeClass('active');
             $(classLinkItem).unbind('mousedownoutside');
             $(classLinkItem).off('mouseover');
@@ -3102,7 +3131,7 @@
                     if ($.inArray(course.cName, req.fulfillers) == -1) {
                         continue;
                     }
-                    console.log(req.name + " " + req.exclusive);
+                    // console.log(req.name + " " + req.exclusive);
                     
                     if (!req.exclusive) {
                         continue;
