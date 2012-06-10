@@ -2,34 +2,6 @@
 {% load planner_extras %}
 
 <!DOCTYPE html>
-
-{# <head> #}
-{#     <title>PlanIt</title> #}
-{#      #}
-{#      #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}jquery-1.7.2.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}jquery-ui/js/jquery-ui-1.8.20.custom.min.js"></script> #}
-{#     <!-- <script type="text/javascript" src="jquery-ui/development-bundle/ui/jquery.ui.droppable.js"></script> --> #}
-{#      #}
-{#      #}
-{#     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/> #}
-{#     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.css"/> #}
-{#     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}nanoscroller/nanoscroller.css"/> #}
-{#     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}main.css"/> #}
-{#      #}
-{#      #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tooltip.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-popover.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-alert.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-tab.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap-dropdown.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}clickoutside/clickoutside.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}nanoscroller/jquery.nanoscroller.min.js"></script> #}
-{#     <script type="text/javascript" src="{{ STATIC_URL }}spin/spin.min.js"></script> #}
-{#      #}
-{#      #}
-{#      #}
     
     <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
     
@@ -68,7 +40,7 @@
                 'end': new Date(2012, 3, dayNum, parseInt(endTime.substring(0, 2), 10), parseInt(endTime.substring(3, 5), 10)), 
                 'title': courseName,
                 'allDay': false,
-                'color': (isWarning ? '#ffc40d' : (isAdded ? '#54cc33' : 'none'))
+                'color': (isWarning ? '#FFA359' : (isAdded ? '#5DC456' : 'none'))
             };
             
         }
@@ -418,12 +390,13 @@
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
                     var r = rg.reqs[j];
-                    // To stop double counting
-                    if (tlGroup == 'Major' && req.name != r.name) {
-                        continue;
-                    }
                     if ($.inArray(r.name, course.reqNames) == -1 ||
                         (isExemption && !r.bypassable)) {
+                        continue;
+                    }
+                    
+                    // To prevent double counting
+                    if (r.exclusive && r !== req) {
                         continue;
                     }
 
@@ -479,6 +452,7 @@
         
         function Exemption(courseName, reqGroups, reqs) {
             this.name = courseName;
+            this.cName = makeCondensedName(courseName);
             this.reqGroups = [];
     		var reqGroupNames = [];
 		    for (var i in reqGroups) {
@@ -522,6 +496,7 @@
             }
             this.numCoursesToFulfill = parseInt(req.num_courses_to_fulfill);
             this.numFulfilled = 0;
+            this.exclusive = req.exclusive;
             this.reqGroup = reqGroup;
             this.bypassable = req.bypassable;
             this.usedToFulfill = [];
@@ -665,6 +640,9 @@
                     // $('.course').off('mouseover');
                     // $('.course').off('mouseout');
                     
+                    $('#' + dragTerm).css('background-color', '#77beff');
+                    
+                    
                     for (var i in termNames) {
                        for (var j in years) {
                            var termStr = termNames[i] + years[j];
@@ -702,7 +680,7 @@
                                warningStr = warningStr.substring(0, pos);
                            }
                            
-                           $('#' + termStr).css('background-color', '#f3eed2');
+                           $('#' + termStr).css('background-color', '#ffb64f');
                            $('#' + termStr + '-units-div').empty();
                            $('#' + termStr + '-units-div').html('<div class="units">' + warningStr + '</div>');
                                                       
@@ -726,14 +704,14 @@
                                var termStr = termNames[i] + years[j];
                                $('#' + termStr + '-drag-cover').hide();
                                // if ($('#' + termStr + '-added-units').length == 0 || dragTerm == termStr) {
-                                   returnCellToColor($('#' + termStr));
-                                   $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
-                                        '</span>' +
-       						            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
-                                        '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
-                                        '</span>&nbsp;<span class="added-units" id="' + termStr + 
-                                        '-added-units" style="display: none"></span>');
-                                   
+                               returnCellToColor($('#' + termStr));
+                               $('#' + termStr + '-units-div').html('<span class="units">' + plan.getTerm(i, j).units + 
+                                    '</span>' +
+   						            '<span class="calendar-over" onclick="openCalendar(\'' + termStr + '\', this);">' + 
+                                    '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
+                                    '</span>&nbsp;<span class="added-units" id="' + termStr + 
+                                    '-added-units" style="display: none"></span>');
+                               
                                    // $('#' + termStr + '-units-div').html('<span class="units" ' + 
                                    //                                     'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
                                    //                                     '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
@@ -783,7 +761,7 @@
 				
 				over: function (event, ui) {
 				    if ($(this).find('.added-units').length > 0) { 
-				        $(this).css('background-color', '#dff0d8');
+				        $(this).css('background-color', '#95f5ad');
                     }
 					var violations = prereqViolations['{{ term.condensedName }}'];
 					if (violations) {
@@ -1041,9 +1019,6 @@
             
             var course = plan.getTermById(qDiv.attr('id')).getCourse(courseName);
             
-            console.log('removing...');
-			console.log(course);
-            
             doQDivMouseOut(qDiv);
             turnOffQDivMouse(qDiv);
             // turnHeadingsColor(qDiv.attr('id'), '#f2dede');
@@ -1101,10 +1076,7 @@
 				var courseName = deletionPrereqViolations[k];
 				highlightCourse(courseName, 'course-missing-prereq', true);
 			}	
-			
-			
-			console.log('2nd removing...');
-			console.log(course);		
+				
 			
         }
         
@@ -1199,9 +1171,6 @@
             var numUnits = course.units;
                         
             courseElem.remove();
-            
-            console.log('deleting...');
-            console.log(course);
                         
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
@@ -1362,7 +1331,7 @@
         }
         
         function makeCondensedName(longName) {
-            return longName.replace(" ", "");
+            return longName.replace(/ /g, "");
         }
         
         
@@ -1600,7 +1569,7 @@
         }
         
         
-        function confirmReqAddCourse(course, courseTableID, termId) {
+        function confirmReqAddCourse(course, courseTableID, termId, req) {
          
             var courseName = course.name;
             var units = parseInt($('#' + courseTableID).find('select').attr('value'));
@@ -1629,13 +1598,9 @@
             });
 
             makePopoverForCourse(termId, course);
-
-            // resetAddedUnits(termId);
-
-            // console.log(course);            
-
-            var req = getReqByBreadcrumb(makeCondensedName(courseName));
-
+                     
+            
+            // Req == false, means fulfill all requirements
             course.confirmCourse(req, getTopLevelByBreadcrumb());
 
             cancelAddCourse(course.courseObj, course.offerings, termId);
@@ -1721,9 +1686,12 @@
             var req = getReqByBreadcrumb(makeCondensedName(courseName));
             
             if (req == "search" || isGeneralReq()) {
-                openRequirementsModal(course, courseTableID, classLinkItem, termId);
+                var hasMutex = openRequirementsModal(course, courseTableID, classLinkItem, termId);
+                if (!hasMutex) {
+                    confirmReqAddCourse(course, courseTableID, termId, false);
+                }
             } else {
-                confirmReqAddCourse(course, courseTableID, termId);
+                confirmReqAddCourse(course, courseTableID, termId, req);
             }
 								
         }
@@ -1745,7 +1713,7 @@
             } else if (isWarning) {
                 $('#' + quarterID + '-added-units').css('color', '#fc9c00');
             } else {
-                $('#' + quarterID + '-added-units').css('color', '#54cc33');
+                $('#' + quarterID + '-added-units').css('color', '#5DC456');
             }         
             $('#' + quarterID + '-added-units').html('(' + sign + units + ')');        
             $('#' + quarterID + '-added-units').show();
@@ -1928,7 +1896,7 @@
             cancelAddCourse(courseObj, offerings, false);
             var liElem = $(classLinkItem).closest('li');
             liElem.removeClass('active');
-            // liElem.find('icon-ok').tooltip('hide');
+            liElem.find('icon-ok').tooltip('hide');
             liElem.find('.btn').tooltip('hide');
             var courseDict = plan.getCourseDictionary();
             liElem.find('.search-result-info').html(
@@ -2107,7 +2075,7 @@
                         if ((offeringST >= startTime && offeringST < endTime) ||
                             (offeringET > startTime && offeringET <= endTime)) {
     
-                            courseEvents[k].color = '#ffc40d';
+                            courseEvents[k].color = '#FFA359';
                             // flag = couses[i].name;
                             flag = courses[i].name;
     
@@ -2281,7 +2249,7 @@
         
         
         function confirmReqAddExemption(elem, e, req) {
-             var btn = $(elem);
+             var btn = $(elem).closest('.btn');
              var courseName = btn.attr('id').substring(0, btn.attr('id').indexOf('-button'));  
              var td = $(elem).closest('.search-result-info');
              
@@ -2333,7 +2301,7 @@
         
         
         function addExemption(elem) {
-            
+                        
             var btn = $(elem).closest('.btn');      
             btn.tooltip('hide');        
             var td = btn.closest('.search-result-info');
@@ -2350,12 +2318,13 @@
 			if (adding && (req == "search" || isGeneralReq())) {
 			    e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
 				    jQuery.parseJSON(reqsJSON[makeCondensedName(courseName)]));
-				    console.log(e);
-			    openRequirementsModal(e, false, $(elem).closest('a'), false);
-			    return;
-		    } 
-              
-            confirmReqAddExemption(elem, e, req);   
+			    var hasMutex = openRequirementsModal(e, false, $(elem).closest('a'), false);
+			    if (!hasMutex) {
+                    confirmReqAddExemption(elem, e, false);
+                }
+		    } else {
+              confirmReqAddExemption(elem, e, req);   
+            }
            
         }
         
@@ -2456,7 +2425,8 @@
             turnOnCourseHighlight(false);
 
             $('.search-result').find('a').on('click', function (event) {
-                if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-ok-circle')) {
+                if ($(event.target).hasClass('btn') || $(event.target).hasClass('icon-check') ||
+                    $(event.target).hasClass('icon-remove-circle')) {
                     return;
                 }
                 var courseName = $(this).find('.shortName').html();
@@ -3105,15 +3075,16 @@
         }
         
         
-        function selectedRequirements(course, courseTableID, termId, classLinkItem) {
+        function selectedRequirements(course, courseTableID, termId, classLinkItem, req) {
+            console.log($(classLinkItem).parent());
             $(classLinkItem).parent().removeClass('active');
             $(classLinkItem).unbind('mousedownoutside');
             $(classLinkItem).off('mouseover');
             $('#reqs-modal').modal('hide');
             if (courseTableID) {
-                confirmReqAddCourse(course, courseTableID, termId);
+                confirmReqAddCourse(course, courseTableID, termId, req);
             } else {
-                confirmReqAddExemption(classLinkItem, course, false);
+                confirmReqAddExemption(classLinkItem, course, req);
             }
         }
         
@@ -3121,9 +3092,8 @@
             
             $('#reqs-modal').find('.reqs-modal-course-name').html(course.name);
             
-            var majorHTML = "";
-            var generalHTML = "";
-            
+            var html = "";
+            var count = 0;
 
             for (var i in course.reqGroups) {
                 var rg = course.reqGroups[i];
@@ -3132,38 +3102,50 @@
                     if ($.inArray(course.cName, req.fulfillers) == -1) {
                         continue;
                     }
-                    var html = '<label class="checkbox"><input type="checkbox">' + 
-                            ((rg.name == req.name) ? rg.name : (rg.name + " - " + req.name)) + '</input></label>';
-                    if (rg.tlName == 'Major') {
-                       majorHTML +=  html;
-                    } else {
-                       generalHTML +=  html;
+                    console.log(req.name + " " + req.exclusive);
+                    
+                    if (!req.exclusive) {
+                        continue;
                     }
+                    var reqName = rg.tlName + '$$' + ((rg.name == req.name) ? rg.name : 
+                        (rg.name + "$$" + req.name));
+                    
+                    html += '<label class="radio"><input type="radio" name="mutex-req" value="' + reqName + '"' 
+                        + (count == 0 ? ' checked="checked"' : '') + '>' + 
+                        '<span class="tlName">' + rg.tlName + '</span> - ' + 
+                        '<span class="reqGroup">' + rg.name + '</span> - ' + 
+                        '<span class="req"' + ((rg.name == req.name) ? ' style="display:none"' : '') + '>' + 
+                        req.name + '</span>' +
+                        '</input></label>';
+                    count++;
                 }
                 
             }
-            
-            if (majorHTML != "") {
-                $('#reqs-major-modal-form').find('.control-group').html(majorHTML);
-            } 
-            if (generalHTML != "") {
-                $('#reqs-general-modal-form').find('.control-group').html(generalHTML);
+                        
+
+            if (count > 1) {
+                $('#reqs-modal-form').find('.control-group').html(html);
+            } else {
+                return false;
             }
             
             
             $('#reqs-modal').find('.btn-primary').on('click', function() {
-                // if (courseTableID) {
-                //     
-                //     turnOnCourseHighlight(course.cName);
-                // } else {
-                //     
-                // }
                 $('#reqs-modal').find('.btn-primary').off('click');
-                selectedRequirements(course, courseTableID, termId, classLinkItem);
-               
+                var selectedReqName = $('#reqs-modal-form').find('input[name=mutex-req][type=radio]:checked').attr('value');
+                
+                var pos1 = selectedReqName.indexOf('$$');
+                var pos2 = selectedReqName.indexOf('$$', pos1 + 2);
+                
+                var rgName = selectedReqName.substring(pos1 + 2, pos2);
+                var rName = selectedReqName.substring(pos2 + 2);
+                                
+                var req = plan.getRequirement(rName, [rgName]);
+                
+                selectedRequirements(course, courseTableID, termId, classLinkItem, req);
             });
             $('#reqs-modal').modal('show');
-            
+            return true;
             
         }
         
@@ -3193,27 +3175,10 @@
               <h4>Select requirements to fulfill with <span class="reqs-modal-course-name"></span>:</h4>
               <br/>
               
-              <b>General Requirements:</b>
-             <form class="form-horizontal" id="reqs-general-modal-form">
-
-                  <fieldset>
-                      <div class="control-group">
-                          <label class="checkbox">
-                              None
-                          </label>
-                     </div>
-                 </fieldset>
-             </form>
-             
-             
-             <b>Major Requirements:</b>
-              <form class="form-horizontal" id="reqs-major-modal-form">
+              <form class="form-horizontal" id="reqs-modal-form">
 
                     <fieldset>
                         <div class="control-group">
-                            <label class="checkbox">
-                                None
-                            </label>
                        </div>
                    </fieldset>
               </form>
@@ -3355,7 +3320,9 @@
                                  <h4><u>Plan information:</u></h4>
                              </div> -->
                             <div class="plan-info-div-inner">
-                                <b>Major</b>: <span id="plan-info-major">Computer Science</span>
+                                <b>Plan Name</b>: <span id="plan-info-name">{{ plan.name }}</span>
+                                <br/>
+                                <b>Major</b>: <span id="plan-info-major">{{ plan.major.name }}</span>
                                 <br/>
                                 <b>Total Units</b>: <span id="total-units"></span>
                                     <span id="total-units-icon"></span>
