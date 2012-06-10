@@ -15,17 +15,26 @@ information on how to display this in a template.
 {% block content %}
 
 
-<div class="outer-floating-box">
+<div class="outer-floating-box-reg">
 <div class="inner-floating-box">
 
 
-<form class="well" method="post" action="">
+<form class="well form-horizontal" method="post" action="">
 	
     {% csrf_token %}
-	<div style="text-align: center; font-size: 18px; margin-bottom: 10px"><b>Create New Account</b></div>
-    <table>
-        {{ form.as_table }}
-    </table>
+	<div style="text-align: center; font-size: 18px; margin-bottom: 10px"><b>Create New Account</b></div>		
+		<fieldset>
+			<div class="control-group">
+				{% for field in form %}
+					<div class="fieldWrapper" style="margin-top: 10px">
+	                     {{ field.label }}:&nbsp;<div class="controls">{{ field }}</div>
+						 <b><font color="#bd362f">{{ field.errors }}</font></b>
+	                </div>
+	            {% endfor %}
+				
+			</div>
+		</fieldset>
+		<b><font color="#bd362f">{{ form.non_field_errors }}</font></b>
 	<div align="center">
     <button class="btn btn-primary" type="submit">Submit</button>
 	</div>
