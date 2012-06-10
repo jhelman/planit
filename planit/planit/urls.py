@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
-from planner.name_reg import NameRegistrationForm
+from name_reg import NameRegistrationForm
 
 from django.views.generic.simple import direct_to_template
 from registration.views import activate
