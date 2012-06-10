@@ -7,6 +7,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from models import *
 import re
 from urllib import unquote
+from django.contrib.auth import logout as dj_logout
 
 def get_python_dict_for_reqs(requirement_groups):
     req_groups = {}
@@ -334,6 +335,10 @@ def edit_settings(request):
     user.save()
     return HttpResponse()
     
+def logout(request):
+    dj_logout(request)
+    return HttpResponseRedirect('/accounts/login')
+
     
     
     
