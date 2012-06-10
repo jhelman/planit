@@ -3,12 +3,11 @@
 {% block content %}
 
 {% if form.errors %}
-<p><br />Your username and password didn't match. Please try again.</p>
+<p>Your username and password didn't match. Please try again.</p>
 {% endif %}
 
 <form method="post" action="{% url django.contrib.auth.views.login %}">
     {% csrf_token %}
-	<br />
     <table>
         <tr>
             <td>{{ form.username.label_tag }}</td>
