@@ -309,7 +309,10 @@ div.course-missing-prereq {
 
 
 
-
+/* Requirements box CSS */
+.load-btn {
+  margin-left: 12px;
+}
 
 
 
