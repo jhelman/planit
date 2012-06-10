@@ -57,6 +57,7 @@ def index(request, plan_name=None):
         requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
         setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
         setattr(course, 'reqs', serializers.serialize('json', requirements))
+        setattr(course, 'mutex_req_fulfilled', exemption.mutex_req_fulfilled)
         exempt.append(course)
     
     args['plan'] = plan
@@ -301,6 +302,12 @@ def set_exemption(request):
         plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
         if add == 'true':
             exemption = Exemption(course=course)
+            if 'mutexReq' in params:
+                mutex_req = params['mutexReq']
+                reqs = Requirement.objects.filter(name=mutex_req)
+                if len(reqs) == 1:
+                    req = reqs[0]
+                    exemption.mutex_req_fulfilled = req
             exemption.save()
             plan.aps.add(exemption)
         else:
