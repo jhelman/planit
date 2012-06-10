@@ -13,14 +13,21 @@ information on how to display this in a template.
 {% endcomment %}
 
 {% block content %}
-<div align="center">
+
+
+<div class="outer-floating-box">
+<div class="inner-floating-box">
+
 <h1>Create new account</h1>
-<form action="" method="POST">
+<form class="well" method="post" action="">
     {% csrf_token %}
     <table>
         {{ form.as_table }}
     </table>
-    <button class="btn" type="submit">Submit</button>
+	<div align="center">
+    <button class="btn btn-primary" type="submit">Submit</button>
+	</div>
 </form>
+</div>
 </div>
 {% endblock %}
