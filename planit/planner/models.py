@@ -124,6 +124,12 @@ class PrereqGroup(models.Model):
     def __unicode__(self):
         return self.for_course.identifier
 
+class Exemption(models.Model):
+    course = models.ForeignKey(Course)
+    mutex_req_fulfilled = models.ForeignKey(Requirement, null=True)
+    def __unicode__(self):
+        return self.course.__unicode__()
+
 class Plan(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
@@ -131,7 +137,7 @@ class Plan(models.Model):
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()
     num_years = models.IntegerField(default=4)
-    aps = models.ManyToManyField(Course)
+    aps = models.ManyToManyField(Exemption)
     track = models.ForeignKey(RequirementGroup, null=True)
     
     def __unicode__(self):

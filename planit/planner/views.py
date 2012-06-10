@@ -51,7 +51,8 @@ def index(request, plan_name=None):
     
     enrolled = Enrollment.objects.filter(plan=plan)
     exempt = []
-    for course in plan.aps.all():
+    for exemption in plan.aps.all():
+        course = exemption.course
         requirement_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()).distinct()
         requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
         setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
@@ -299,9 +300,12 @@ def set_exemption(request):
         course = courses[0]
         plan = Plan.objects.filter(name=plan_name, user__username=request.user)[0]
         if add == 'true':
-            plan.aps.add(course)
+            exemption = Exemption(course=course)
+            exemption.save()
+            plan.aps.add(exemption)
         else:
-            plan.aps.remove(course)
+            exemption = plan.aps.filter(course=course)[0]
+            plan.aps.remove(exemption)
         plan.save()
         
     return HttpResponse()
