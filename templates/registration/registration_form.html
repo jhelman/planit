@@ -18,9 +18,11 @@ information on how to display this in a template.
 <div class="outer-floating-box">
 <div class="inner-floating-box">
 
-<h1>Create new account</h1>
+
 <form class="well" method="post" action="">
+	
     {% csrf_token %}
+	<div style="text-align: center; font-size: 18px; margin-bottom: 10px"><b>Create New Account</b></div>
     <table>
         {{ form.as_table }}
     </table>
