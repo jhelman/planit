@@ -2508,6 +2508,7 @@
             $('#content-div').css('left', '0px');
             $('#content-div').html(html);
             addButtonsToSearchResults();
+			refreshScroll(1);
 		}
         
         function cancelNextFn() {
@@ -2789,7 +2790,7 @@
             var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length);
             addClassesCDiv(html, 3, elem.find('.req-name').html());
             addButtonsToSearchResults();
-			
+			refreshScroll(3);
 		}
         
         
