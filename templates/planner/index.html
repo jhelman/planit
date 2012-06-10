@@ -34,6 +34,7 @@
     <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
     
 	{% block extra_head %}
+	{{ block.super }}
     <script type="text/javascript" src="{{ STATIC_URL }}fullcalendar/fullcalendar/fullcalendar.js"></script>
     
         
@@ -3178,9 +3179,7 @@
     <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
     
     {% block content %}
-
-
-    </div>   
+	{{ block.super }}
     
     
     <div class="modal fade" id="reqs-modal">
