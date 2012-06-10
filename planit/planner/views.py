@@ -57,7 +57,7 @@ def index(request, plan_name=None):
         requirements = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
         setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
         setattr(course, 'reqs', serializers.serialize('json', requirements))
-        setattr(course, 'mutex_req_fulfilled', exemption.mutex_req_fulfilled)
+        setattr(course, 'mutex_req_fulfilled', serializers.serialize('json', exemption.mutex_req_fulfilled, use_natural_keys=True)))
         exempt.append(course)
     
     args['plan'] = plan
@@ -92,7 +92,7 @@ def index(request, plan_name=None):
                 setattr(course, 'units', e.units)
                 setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
                 setattr(course, 'reqs', serializers.serialize('json', requirements))
-                setattr(course, 'mutex_req_fulfilled', e.mutex_req_fulfilled)
+                setattr(course, 'mutex_req_fulfilled', serializers.serialize('json', e.mutex_req_fulfilled, use_natural_keys=True))
                 prereq_groups = PrereqGroup.objects.filter(for_course=course)
                 groups = []
                 for group in prereq_groups:
