@@ -103,12 +103,12 @@ def find_prereqs(desc, dept):
             for m in ms:
                 req = m.group('dept') + m.group('num') 
                 req = 'CS106B'if req == 'CS106' else req
-                reqs.append(req)
+                reqs.append(req.upper())
         else:
             for m in re.finditer('(?P<num>\d{1,3}[A-Z]?)', pat_str):
                 req = dept + m.group('num') 
                 req = 'CS106B'if req == 'CS106' else req
-                reqs.append(req)
+                reqs.append(req.upper())
     return reqs
 
 def parse_course(course_elem):
@@ -266,7 +266,7 @@ def filldb():
                     make_rg(major_obj, trackname, trackdata, True)
                 continue
             print rg_dict
-            add_requirement_group(major_obj, rg_name, rg_dict["n"], rg_dict["classes"])
+            add_requirement_group(major_obj, major + " " + rg_name, rg_dict["n"], rg_dict["classes"])
             #rg = RequirementGroup(
 
     ecs = Tag.objects.filter(name__startswith='GER:EC')
@@ -286,14 +286,14 @@ def filldb():
         r.save()
     #other_gers.remove("WritingSLE")
 
-def make_rg(m, name, rgdata, track):
+def make_rg(m, name, rgdata, track, exclusive):
     rg = RequirementGroup(major=m, name=name, n_prereqs=rgdata["n"])
     rg.save()
     del rgdata["n"]
     for reqname, reqdata in rgdata.iteritems():
         classes = reqdata["classes"]
         tag = add_tag(reqname, classes)
-        req = Requirement(name=name + " " + tag.name, fulfillers=tag, n_class=reqdata["n"], group=rg)
+        req = Requirement(name=name + " " + tag.name, fulfillers=tag, n_class=reqdata["n"], group=rg, exclusive=exclusive)
         req.save()
         rg.save()
 
