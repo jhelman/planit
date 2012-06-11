@@ -402,11 +402,14 @@
 		   for (var i in reqGroups) {
 		       var rg = plan.getRequirementGroup(reqGroups[i].fields.name);
 		       this.reqGroups.push(rg);
+			   console.log(name);
 		       for (var j in rg.reqs) {
 		           for (var k in reqs) {
 		               if (rg.reqs[j].name == reqs[k].fields.name) {
 		                   this.reqs.push(rg.reqs[j]);
+						   console.log(rg.reqs[j]);
 		                   this.reqNames.push(reqs[k].fields.name);
+						   break;
 	                   }
                    }
 	           }
@@ -1694,11 +1697,16 @@
 				} else {
 					content += '<br /><b>Requirements:</b> ';
 					var fulfilled = course.getFulfilledReqsForCourse(true);
-					console.log(course.name + ' ' + fulfilled);
-					for (var i in course.reqNames) {
-						var reqName = course.reqNames[i];
+					for (var i in course.reqs) {
+						var req = course.reqs[i];
+						var reqName = req.name;
+						var displayName = reqName;
+						if (reqName == course.name) {
+							displayName = req.reqGroup.name;
+						}
+						
 						if ($.inArray(reqName, fulfilled) != -1) {
-							content += '<b><font color="#1d2a93">' + reqName + '</font></b>';
+							content += '<b><font color="#1d2a93">' + displayName + '</font></b>';
 						} else {
 							content += reqName;
 						}

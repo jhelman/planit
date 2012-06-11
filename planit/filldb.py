@@ -255,6 +255,8 @@ def filldb():
         except Exception:
             pass
 
+    json.loads(open("cs_major.json").read())
+		
     majors = json.loads(open("cs_major.json").read())
     for major, rgs in majors.iteritems():
         print major

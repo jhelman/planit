@@ -150,10 +150,10 @@ def index(request, plan_name=None):
             offered_terms.append((offering.term.num, offering.year))
         offerings[str(course.identifier)] = course_offerings
         
-    major_reqs = list(RequirementGroup.objects.filter(major=plan.major, is_track=False))
-    major_reqs.extend(list(RequirementGroup.objects.filter(major=plan.major, is_track=True, name=plan.track)))
+    major_reqs = list(RequirementGroup.objects.filter(major=plan.major, is_track=False).distinct())
+    major_reqs.extend(list(RequirementGroup.objects.filter(major=plan.major, is_track=True, name=plan.track).distinct()))
     major_req_groups = get_python_dict_for_reqs(major_reqs)
-    general_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major__isnull=True))
+    general_req_groups = get_python_dict_for_reqs(RequirementGroup.objects.filter(major__isnull=True).distinct())
             
     args['years'] = years
     args['totalUnits'] = totalUnits
@@ -232,7 +232,7 @@ def req_search(request, requirement_name, limit='0'):
     limit = int(limit)
     response_data = {}
     response_data["query"] = requirement_name
-    reqs = Requirement.objects.filter(name=requirement_name)
+    reqs = Requirement.objects.filter(name=requirement_name).distinct()
     results = []
     if len(reqs) == 1:
         response_data["numResults"] = Course.objects.filter(tags=reqs[0].fulfillers).count()
@@ -257,7 +257,7 @@ def add_course(request):
         enrollment = Enrollment(course=to_add, plan=plan, units=units)
         if 'mutexReq' in params:
             mutex_req = params['mutexReq']
-            reqs = Requirement.objects.filter(name=mutex_req)
+            reqs = Requirement.objects.filter(name=mutex_req).distinct()
             if len(reqs) == 1:
                 req = reqs[0]
                 enrollment.mutex_req_fulfilled = req
@@ -310,7 +310,7 @@ def set_exemption(request):
             exemption = Exemption(course=course)
             if 'mutexReq' in params:
                 mutex_req = params['mutexReq']
-                reqs = Requirement.objects.filter(name=mutex_req)
+                reqs = Requirement.objects.filter(name=mutex_req).distinct()
                 if len(reqs) == 1:
                     req = reqs[0]
                     exemption.mutex_req_fulfilled = req
@@ -343,7 +343,7 @@ def create_plan(request):
     major = Major.objects.filter(name=major_name)[0]
     if 'track' in params:
         track_name = params['track']
-        tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major)
+        tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major).distinct()
     else:
         tracks = []
     univ = University.objects.filter(name='Stanford')[0]
