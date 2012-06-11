@@ -189,14 +189,26 @@ def add_tags(arr):
             print cname
             tm = TagMapping(tag=tag,course=c[0])
             tm.save()
+
 def add_requirement_group(m, rg_name, n, classes, exclusive=False):
     rg = RequirementGroup(major=m, name=rg_name, n_prereqs=n)
     rg.save()
 
-    tags = [add_tag(c, [c]) for c in classes]
-    reqs = [Requirement(name=t.name, fulfillers=t,n_class=1, group=rg, exclusive=exclusive) for t in tags]
-    for r in reqs:
-        r.save()
+    tags = None
+    r_n = 1
+    r_name = ""
+    for c in classes:
+        if c.find(",") != -1:
+            c = c.split(',')
+            r_n = int(c.pop())        
+            r_name = "+".join(c)
+        else:
+            r_name = c
+            c = [c]
+            
+        tag = add_tag(r_name, c)
+        req = Requirement(name=tag.name, fulfillers=tag, n_class=r_n, group=rg, exclusive=exclusive)
+        req.save()
     return rg
 
 def filldb():
@@ -208,6 +220,8 @@ def filldb():
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
     u.save()
+    m=Major(name='ECON')
+    m.save()
     m=Major(name='CS')
     m.save()
     user = User.objects.create_user('dv', 'dv@dv.dv', 'dv')
@@ -228,7 +242,7 @@ def filldb():
      
                 e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
-    print prereqs['ECON50']
+
     for cname, pl in prereqs.iteritems():
         try:
             c = course=Course.objects.get(identifier=cname)
@@ -242,83 +256,41 @@ def filldb():
             pass
 
     json.loads(open("cs_major.json").read())
-"""    
-    math_corerg = add_requirement_group(m, "Math Core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
-    math_electives = ['MATH51', 'MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
-    math_electives = add_requirement_group(m, "Math Electives", 2, math_electives) 
-
-    fiftiest = add_tag('MATH52_53', ['MATH52', 'MATH53'])
-    fiftiesr = Requirement(name='MATH52+53', fulfillers=fiftiest, n_class=2, group=math_electives)
-    fiftiesr.save()
-########################
-    sci_corerg = add_requirement_group(m, "Science Core", 2, ['PHYSICS41','PHYSICS43']) 
-    sci_electives = ['BIO41', 'BIO42', 'BIO43', 'CEE63', 'CEE64', 'CEE70', 'CHEM31A', 'CHEM31B', 'CHEM33', 'CHEM35',
-                     'CHEM36', 'CHEM131', 'CHEM135', 'EARTHSYS10', 'ENGR31', 'GES1A', 'GES1B', 'GES1C', 'PHYSICS21',
-                     'PHYSICS23', 'PHYSICS25', 'PHYSICS45', 'PHYSICS61', 'PHYSICS63', 'PHYSICS65']
-    sci_electives = add_requirement_group(m, "Science Electives", 1, sci_electives) 
-########################
-    win_corerg = add_requirement_group(m, "Writing in the Major", 1, ['CS191W','CS194W', 'CS210B', 'CS294W', 'CS181W']) 
-########################
-    tis_corerg = add_requirement_group(m, "Technology in Society", 1, ['STS101','STS112', 'STS115', 'BIOE131', 'CS181', 'CS181W', 'ENGR145', 'HUMBIO174', 'MSE181', 'MSE193', 'POLISCI114S', 'PUBLPOL194']) 
-######################
-    ef_core = add_requirement_group(m, "Engineering Fundamentals", 2, ["ENGR40"], True) 
-
-    cs_intro = add_tag('CS106', ['CS106B', 'CS106X'])
-    cs_intro = Requirement(name='CS106', fulfillers=cs_intro, n_class=1, group=ef_core, exclusive=True)
-    cs_intro.save()
-
-    ef_electives = ['ENGR10', 'ENGR14','ENGR15', 'ENGR20','ENGR25B','ENGR25E','ENGR30','ENGR40','ENGR40N','ENGR40P',
-                    'ENGR50','ENGR50E','ENGR50M','ENGR60','ENGR62','ENGR80', 'ENGR90']
-    ef_electives = add_requirement_group(m, "Engineering Electives", 1, ef_electives, True) 
-##########################
-    cs_core = add_requirement_group(m, "CS Core", 3, ["CS107", "CS110", "CS161"], True) 
-##########################
-
-##########################
-##########################
-
-    sys_core = add_requirement_group(m, "Track Depth (Systems)", 4, ["CS140"], True) 
-    sys_core.is_track=True
-    sys_core.save()
-    sys_ass = add_tag('EE108B/CS143', ['EE108B', 'CS143'])
-    sys_ass = Requirement(name='Track Requirements (Systems)', fulfillers=sys_ass, n_class=1, group=sys_core, exclusive=True)
-    sys_ass.save()
-    
-    track_electives = add_tag('Track Electives (Systems)', ['CS144', 'CS145', 'CS149', 'CS155', 'CS240', 'CS242', 'CS243', 'CS244', 'CS245', 'EE271', 'CS282'])		
-    track_electives = Requirement(name='Track Electives', fulfillers=track_electives, n_class=2, group=sys_core, exclusive=True)
-    track_electives.save()
 		
-    gen_elecs = ['CS240E', 'CS244C', 'CS244E', 'CS315A', 'CS315B', 'CS341', 'CS343', 'CS344', 'CS344E', 'CS345', 'CS346', 'CS347', 
-								 'CS448', 'EE382A', 'EE382C', 'EE384A', 'EE384B', 'EE384C', 'EE384S', 'EE384X', 'EE384Y', 'CS108', 'CS121'  'CS221', 'CS124', 
-								 'CS142', 'CS143', 'CS144', 'CS145', 'CS147', 'CS148', 'CS149', 'CS154', 'CS155', 'CS156', 'CS157', 'CS151', 'CS164', 'CS205A', 
-								 'CS205B', 'CS210A', 'CS222', 'CS223A', 'CS223B', 'CS224M', 'CS24N', 'CS224S', 'CS224U', 'CS224W', 'CS225A', 'CS225B', 'CS226', 
-								 'CS227', 'CS228', 'CS228T', 'CS229', 'CS240', 'CS241', 'CS242', 'CS243', 'CS244', 'CS244B', 'CS245', 'CS246', 'CS247', 'CS248', 
-								 'CS249A', 'CS249B', 'CS254', 'CS255', 'CS256', 'CS257', 'CS258', 'CS261', 'CS262', 'CS270', 'CS271', 'CS272', 'CS273A', 'CS274', 
-								 'CS276', 'CS277', 'CS295', 'CME108', 'EE108B', 'CS282']
-    gen_elecs = add_tag('General Electives', gen_elecs)
-    gen_elecs = Requirement(name='General Electives', fulfillers=gen_elecs, n_class=3, group=sys_core, exclusive=True)
-    gen_elecs.save()
+    majors = json.loads(open("cs_major.json").read())
+    for major, rgs in majors.iteritems():
+        print major
+        major_obj = Major.objects.get(name=major)
+        for rg_name, rg_dict in rgs.iteritems():
+            print rg_name
+            if rg_name == u"tracks":
+                for trackname, trackdata in rg_dict.iteritems():
+                    make_rg(major_obj, trackname, trackdata, True)
+                    print "WAAAAHLOOOOO"
+                continue
+            print rg_dict
+            add_requirement_group(major_obj, rg_name, rg_dict["n"], rg_dict["classes"])
+            #rg = RequirementGroup(
 
-    m.tracks.add(sys_core)		
+def make_rg(m, name, rgdata, track):
+    rg = RequirementGroup(major=m, name=name, n_prereqs=rgdata["n"])
+    rg.save()
+    del rgdata["n"]
+    for reqname, reqdata in rgdata.iteritems():
+        classes = reqdata["classes"]
+        tag = add_tag(reqname, classes)
+        req = Requirement(name=name + " " + tag.name, fulfillers=tag, n_class=reqdata["n"], group=rg)
+        req.save()
+        rg.save()
+
+    m.tracks.add(rg)
     m.save()
+    rg.is_track=track
+    rg.save()
+    return rg
 
-
-    p.track = sys_core
-    p.save()
-    ecs = Tag.objects.filter(name__startswith='GER:EC')
-    ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
-    ecrg.save()
-    for ec in ecs:
-        r = Requirement(name=ec.name, fulfillers=ec, n_class=1, group=ecrg, bypassable=False)
-        r.save()
-
-    other_gers = (set(Tag.objects.filter(name__startswith='GER:')) | set(Tag.objects.filter(name__startswith='Writing'))) - set(ecs)
-    for ger in other_gers:
-        gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
-        gerg.save()
-        r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg, bypassable=False)
-        r.save()"""
-
+    
+    
 
 def main():
     print "Wrong wrong wrong (not that there's anyway you'd know that...)"

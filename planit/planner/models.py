@@ -90,7 +90,6 @@ class RequirementGroup(models.Model):
     is_track = models.BooleanField(default=False)
     major = models.ForeignKey(Major, null=True, blank=True)
     name = models.CharField(max_length=64)
-    is_track = models.BooleanField(default=False)
     n_prereqs = models.IntegerField() #gonna change the name of this
      
     def __unicode__(self):
