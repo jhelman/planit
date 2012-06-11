@@ -162,11 +162,23 @@ div.course-missing-prereq {
 
 /* Quarter div CSS */
 .quarter-div {
-    width: 300px;
-    height: 150px;
-    padding: 0px;
-		margin: 0px;
-		overflow: hidden;
+  width: 300px;
+  height: 150px;
+  padding: 10px;
+	margin: 0px;
+	overflow: hidden;
+}
+
+.quarter-nano {
+  padding: 0px;
+  margin: 0px;
+  height: 130px;
+  margin-top: 10px;
+}
+
+.quarter-nano .content {
+  margin: 0px;
+  padding: 0px;
 }
 
 .quarter-div-cover-drag {
@@ -207,18 +219,20 @@ div.course-missing-prereq {
 
 
 .courses-div {
-	height: 130px;
-	overflow: scroll;
-	border-bottom: 1px dashed #bbb;
+
+	overflow: hidden;
 }
 
 .units-div {
 	height: 20px;
+	width: 300px;
 	display: table;
 	margin-left: auto;
 	margin-right: auto;
 	font-weight: bold;
 	text-align: center;
+	border-top: 1px dashed #bbb;
+	
 }
 
 .units-text-div {
@@ -333,7 +347,7 @@ div.course-missing-prereq {
 
 
 .icon-trash, .icon-ok, .icon-calendar, .icon-info-sign,
-  .icon-exclamation-sign {
+  .icon-exclamation-sign, .icon-remove-sign {
     cursor: pointer;
 }
 
