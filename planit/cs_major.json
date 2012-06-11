@@ -68,8 +68,8 @@
       },
       "ECON" : {
             "Core Economics"                : { "n" : 7, "classes" : ["ECON1A", "ECON1B", "ECON102A", "ECON102B", "ECON50", "ECON51", "ECON52"] }, 
-            "Field Courses"                 : { "n" : 4, "classes" : ["ECON111", "ECON115", "ECON118", "ECON126", "ECON137", "ECON140", "ECON141", "ECON144", "ECON145", "ECON147", "ECON149", "ECON153", "ECON157", "ECON158", "ECON160", "ECON164", "ECON165", "ECON166", "ECON179"] },
+            "Field Courses"                 : { "n" : 4, "classes" : ["ECON111", "ECON118", "ECON126", "ECON137", "ECON140", "ECON141", "ECON145", "ECON147", "ECON149", "ECON153", "ECON157", "ECON158", "ECON160", "ECON165", "ECON166", "ECON179"] },
             "Policy Writing"                : { "n" : 1, "classes" : ["ECON101"] }, 
-            "Economics General Electives"   : { "n" : 1, "classes" : ["ECON102C", "ECON106", "ECON111", "ECON113", "ECON114", "ECON116", "ECON118", "ECON119", "ECON126", "ECON127", "ECON135", "ECON136", "ECON136", "ECON137", "ECON138", "ECON139D", "ECON140", "ECON141", "ECON145", "ECON146", "ECON147", "ECON149", "ECON150", "ECON152", "ECON153", "ECON154", "ECON155", "ECON156", "ECON157", "ECON158", "ECON160", "ECON162", "ECON165", "ECON166", "ECON168", "ECON179"] }
+            "Economics General Electives"   : { "n" : 4, "classes" : ["ECON102C", "ECON106", "ECON111", "ECON113", "ECON114", "ECON116", "ECON118", "ECON119", "ECON126", "ECON127", "ECON135", "ECON136", "ECON136", "ECON137", "ECON138", "ECON139D", "ECON140", "ECON141", "ECON145", "ECON146", "ECON147", "ECON149", "ECON150", "ECON152", "ECON153", "ECON154", "ECON155", "ECON156", "ECON157", "ECON158", "ECON160", "ECON162", "ECON165", "ECON166", "ECON168", "ECON179"] }
       }
  }

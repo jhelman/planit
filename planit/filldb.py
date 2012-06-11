@@ -246,9 +246,9 @@ def filldb():
     for cname, pl in prereqs.iteritems():
         try:
             c = course=Course.objects.get(identifier=cname)
-            pg=PrereqGroup(for_course=c, mandatory=cname.startswith('ECON'))
-            pg.save()
             for p in pl:
+                pg=PrereqGroup(for_course=c, mandatory=cname.startswith('ECON'))
+                pg.save()
                 pc = Course.objects.get(identifier=p)
                 pg.satisfiers.add(pc)
                 pg.save()
@@ -264,7 +264,6 @@ def filldb():
             if rg_name == u"tracks":
                 for trackname, trackdata in rg_dict.iteritems():
                     make_rg(major_obj, trackname, trackdata, True)
-                    print "WAAAAHLOOOOO"
                 continue
             print rg_dict
             add_requirement_group(major_obj, rg_name, rg_dict["n"], rg_dict["classes"])
@@ -279,10 +278,13 @@ def filldb():
 
     other_gers = (set(Tag.objects.filter(name__startswith='GER:')) | set(Tag.objects.filter(name__startswith='Writing'))) - set(ecs)
     for ger in other_gers:
+        if ger.name=='WritingSLE':
+            continue
         gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
         gerg.save()
         r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg, bypassable=False)
         r.save()
+    #other_gers.remove("WritingSLE")
 
 def make_rg(m, name, rgdata, track):
     rg = RequirementGroup(major=m, name=name, n_prereqs=rgdata["n"])
