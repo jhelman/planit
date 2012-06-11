@@ -254,9 +254,10 @@
                     var r = rg.reqs[j];
                     var pos = $.inArray(course, r.usedToFulfill);
                     // To stop double deletion
-                    if (tlGroup == 'Major' && pos == -1) {
+                    if (r.exclusive && r !== req) {
                         continue;
                     }
+                    
                     if ($.inArray(r.name, course.reqNames) == -1 ||
                         (isExemption && !course.bypassable)) {
                         continue;
@@ -396,11 +397,6 @@
                     }
                     
                     // To prevent double counting
-                    console.log(course);
-                    console.log(r.name + " " + r.exclusive);
-                    console.log(r);
-                    console.log(req);
-                    console.log("------");
                     if (r.exclusive && r !== req) {
                         continue;
                     }
@@ -576,19 +572,18 @@
 		{% endfor %}
     	t.addCourse(c);
     	var req = false;
-    	var reqStr = {{ course.mutex_req_fulfilled }};
-    	console.log(reqStr);
-        
-        if (reqStr != "None") {
-            console.log(reqStr);
-            var pos1 = reqStr.indexOf(',');
-        	var pos2 = reqStr.indexOf(',', pos1 + 1);
-        	var rgName = reqStr.substring(0, pos1);
-        	var rName = reqStr.substring(pos1 + 2, pos2); 
-        	console.log(rName);
-        	console.log(rgName);
-            var req = plan.getRequirement(rName, [rgName]);
-            console.log(req);
+    	
+    	{% autoescape off %}
+    	var reqObj;
+    	{% if course.mutex_req_fulfilled %}
+    	    reqObj = {{ course.mutex_req_fulfilled }};
+    	{% else %}
+    	    reqObj = false;
+    	{% endif %}
+    	{% endautoescape %}
+    	        
+        if (reqObj != false) {
+            var req = plan.getRequirement(reqObj[0].fields.name, [reqObj[0].fields.group]);
 	    }
 	    addCourseReqs(c, false, req, false);
     	{% endfor %}
@@ -598,7 +593,20 @@
 		{% autoescape off %}
 		{% for course in exempt %}
 		var e = new Exemption('{{ course.identifier }}', {{ course.req_groups }}, {{ course.reqs }});
-		plan.addExemption('{{ course.identifier }}', e);
+		{% autoescape off %}
+    	var reqObj;
+    	{% if course.mutex_req_fulfilled %}
+    	    reqObj = {{ course.mutex_req_fulfilled }};
+    	{% else %}
+    	    reqObj = false;
+    	{% endif %}
+    	{% endautoescape %}
+    	        
+        if (reqObj != false) {
+            var req = plan.getRequirement(reqObj[0].fields.name, [reqObj[0].fields.group]);
+	    }
+		
+		plan.addExemption('{{ course.identifier }}', e, req, false);
 		{% endfor %}
 		{% endautoescape %}
 		

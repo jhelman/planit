@@ -69,7 +69,6 @@
 
 
 		$(document).ready(function () {
-		   	console.log('hello');
 		    $('.dropdown-toggle').dropdown();            
 		    $('#new-plan-modal').modal({'show': false});
 		    $('#account-settings-modal').modal({'show': false});
@@ -78,7 +77,6 @@
 
 		{% autoescape off %}
 		var majorsJSON = jQuery.parseJSON({{ majors }});
-		console.log(majorsJSON);
 		{% endautoescape %}
 
 
