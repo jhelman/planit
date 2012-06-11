@@ -90,10 +90,14 @@
 		}
     
         
+        
 		function openNewPlanModal() {
     
 		    tracksShown = false;
-        
+		    
+		    
+		    $('#major').empty();
+		    $('#major').append('<option value="">Choose a major</option>');
 		    for (var i in majorsJSON) {
 		        $('#major').append('<option value="' + majorsJSON[i].fields.name + '">' + 
 		            majorsJSON[i].fields.name + '</option>');
@@ -138,6 +142,7 @@
 	        }    
     
 		    $('#track-select').html('<option value="">Choose a track</option>');
+		    $('#track-select').empty();
 		    for (var j in tracks) {
 		        $('#track-select').append('<option value="' + tracks[j] + '">' + 
 		            tracks[j] + '</option>');
@@ -345,9 +350,7 @@
 		                 <div class="control-group">
 		                     <label class="control-label" for="major">Major</label>
 		                     <div class="controls">
-		                         <select id="major" onchange="getTracksForMajor(this);" name="major">
-		                             <option value="">Choose a major</option>
-		                         </select>
+		                         <select id="major" onchange="getTracksForMajor(this);" name="major"></select>
 		                         <p class="help-inline" id="major-help-block" style="display: none;">Required</p>
 		                     </div>
 		                </div>
