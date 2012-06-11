@@ -248,41 +248,68 @@
             }
                                                   
             // Check for reqs and reqGroups
-            for (var i in course.reqGroups) {
-                var rg = course.reqGroups[i];
-                for (var j in rg.reqs) {
-                    var r = rg.reqs[j];
-                    var pos = $.inArray(course, r.usedToFulfill);    
-                    
+            for (var j in course.reqs) {
+                var r = course.reqs[j];
+                
+                var r = rg.reqs[j];
+                var pos = $.inArray(course, r.usedToFulfill);    
+                
+                                
+                if ($.inArray(r.name, course.reqNames) == -1) {
+                    continue;
+                }
+
+                if (pos == -1) {
+                    continue;
+                }
+                
+                
+                var oldF = r.isFulfilled();
+                r.numFulfilled--;
+                r.usedToFulfill.splice(pos, 1);
                                     
-                    if ($.inArray(r.name, course.reqNames) == -1) {
-                        continue;
-                    }
-                                        
-                    // To stop double deletion
-                    // var fulfiller = false;
-                    //                     var usedToFulfill = r.usedToFulfill;
-                    //                     for (var x in usedToFulfill) {
-                    //                         if (usedToFulfill[x].cName == course.cName) {
-                    //                             fulfiller = true;
-                    //                             break;
-                    //                         }
-                    //                     }
-                    //                     if (fulfiller == false) {
-                    if (pos == -1) {
-                        continue;
-                    }
-                    
-                    
-                    var oldF = r.isFulfilled();
-                    r.numFulfilled--;
-                    r.usedToFulfill.splice(pos, 1);
-                                        
-                    if (!r.isFulfilled() && oldF) {
-                        rg.numFulfilled--;
-                    }
+                if (!r.isFulfilled() && oldF) {
+                    rg.numFulfilled--;
                 }
             }
+            
+            
+            
+            // for (var i in course.reqGroups) {
+            //                 var rg = course.reqGroups[i];
+            //                 for (var j in rg.reqs) {
+            //                     var r = rg.reqs[j];
+            //                     var pos = $.inArray(course, r.usedToFulfill);    
+            //                     
+            //                                     
+            //                     if ($.inArray(r.name, course.reqNames) == -1) {
+            //                         continue;
+            //                     }
+            //                                         
+            //                     // To stop double deletion
+            //                     // var fulfiller = false;
+            //                     //                     var usedToFulfill = r.usedToFulfill;
+            //                     //                     for (var x in usedToFulfill) {
+            //                     //                         if (usedToFulfill[x].cName == course.cName) {
+            //                     //                             fulfiller = true;
+            //                     //                             break;
+            //                     //                         }
+            //                     //                     }
+            //                     //                     if (fulfiller == false) {
+            //                     if (pos == -1) {
+            //                         continue;
+            //                     }
+            //                     
+            //                     
+            //                     var oldF = r.isFulfilled();
+            //                     r.numFulfilled--;
+            //                     r.usedToFulfill.splice(pos, 1);
+            //                                         
+            //                     if (!r.isFulfilled() && oldF) {
+            //                         rg.numFulfilled--;
+            //                     }
+            //                 }
+            //             }
         }
     
         Term.prototype.removeCourse = function(course) {
@@ -359,21 +386,33 @@
            this.courseObj = courseObj;  // This will be the JSON
 		   this.prereqGroups = prereqGroups;
 		   this.reqGroups = [];
-		   var reqGroupNames = [];
-		   for (var i in reqGroups) {
-		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
-		       reqGroupNames.push(reqGroups[i].fields.name);
-	       }
+		   this.reqs = [];
 		   this.reqNames = [];
-		   for (var i in reqs) {
-		       this.reqNames.push(reqs[i].fields.name);
-		   } 
+		   for (var i in reqGroups) {
+		       var rg = plan.getRequirementGroup(reqGroups[i].fields.name);
+		       this.reqGroups.push(rg);
+		       for (var j in rg.reqs) {
+		           for (var k in reqs) {
+		               if (rg.reqs[j].name == reqs[k].fields.name) {
+		                   this.reqs.push(rg.reqs[j]);
+		                   this.reqNames.push(reqs[k].fields.name);
+	                   }
+                   }
+	           }
+	       }
            this.isAdded = isAdded; 
         }
         
-        // Course.prototype.getTerm = function() {
-        //     console.log(offering);
-        // }
+
+        Course.prototype.getFulfilledReqsForCourse = function() {
+            var fReqs = [];
+            for (var x in this.reqs) {
+                if ($.inArray(this, this.reqs[x].usedToFulfill) != -1) {
+                    fReqs.push(this.reqs[x]);
+                }
+            }
+            return fReqs;
+        }
 
         function addCourseReqs(course, isExemption, req, tlGroup) {
          			      
@@ -397,30 +436,54 @@
                 return;
             }
                                     
-            // Check for reqs and reqGroups
-            for (var i in course.reqGroups) {
-                var rg = course.reqGroups[i];
-                for (var j in rg.reqs) {
-                    var r = rg.reqs[j];
-                    if ($.inArray(r.name, course.reqNames) == -1 ||
-                        (isExemption && !r.bypassable)) {
-                        continue;
-                    }
-                    
-                    // To prevent double counting
-                    if (r.exclusive && r !== req) {
-                        continue;
-                    }
-
-					var oldF = r.isFulfilled();
-					r.numFulfilled++;
-					r.usedToFulfill.push(course);
-					
-                    if (r.isFulfilled() && !oldF) {
-                        rg.numFulfilled++;
-                    }
+            // Check for reqs
+            for (var j in course.reqs) {
+                var r = course.reqs[j];
+                
+                if (isExemption && !r.bypassable) {
+                    continue;
                 }
-            }  
+                
+                // To prevent double counting
+                if (r.exclusive && r !== req) {
+                    continue;
+                }
+
+				var oldF = r.isFulfilled();
+				r.numFulfilled++;
+				r.usedToFulfill.push(course);
+				
+                if (r.isFulfilled() && !oldF) {
+                    rg.numFulfilled++;
+                }
+                
+                
+            }
+            
+            
+            // for (var i in course.reqGroups) {
+            //                 var rg = course.reqGroups[i];
+            //                 for (var j in rg.reqs) {
+            //                     var r = rg.reqs[j];
+            //                     if ($.inArray(r.name, course.reqNames) == -1 ||
+            //                         (isExemption && !r.bypassable)) {
+            //                         continue;
+            //                     }
+            //                     
+            //                     // To prevent double counting
+            //                     if (r.exclusive && r !== req) {
+            //                         continue;
+            //                     }
+            // 
+            //                  var oldF = r.isFulfilled();
+            //                  r.numFulfilled++;
+            //                  r.usedToFulfill.push(course);
+            //                  
+            //                     if (r.isFulfilled() && !oldF) {
+            //                         rg.numFulfilled++;
+            //                     }
+            //                 }
+            //             }  
             
             // console.log("------");
              
@@ -463,18 +526,23 @@
         
         
         function Exemption(courseName, reqGroups, reqs) {
-            this.name = courseName;
-            this.cName = makeCondensedName(courseName);
-            this.reqGroups = [];
-    		var reqGroupNames = [];
-		    for (var i in reqGroups) {
-		       this.reqGroups.push(plan.getRequirementGroup(reqGroups[i].fields.name));
-		       reqGroupNames.push(reqGroups[i].fields.name);
-	        }
-		    this.reqNames = [];
-		    for (var i in reqs) {
-		       this.reqNames.push(reqs[i].fields.name);
-    		}            
+           this.name = courseName;
+           this.cName = makeCondensedName(courseName);
+           this.reqGroups = [];
+ 		   this.reqs = [];
+ 		   this.reqNames = [];
+ 		   for (var i in reqGroups) {
+ 		       var rg = plan.getRequirementGroup(reqGroups[i].fields.name);
+ 		       this.reqGroups.push(rg);
+ 		       for (var j in rg.reqs) {
+ 		           for (var k in reqs) {
+ 		               if (rg.reqs[j].name == reqs[k].fields.name) {
+ 		                   this.reqs.push(rg.reqs[j]);
+ 		                   this.reqNames.push(reqs[k].fields.name);
+ 	                   }
+                    }
+ 	           }
+ 	       }
         }
         
         
