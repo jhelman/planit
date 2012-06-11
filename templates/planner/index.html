@@ -3126,7 +3126,7 @@
 
         }
         
-        function getReqsAndClasses(liName, reqJSON, reqDisplayCount, reqName, classJSON, isForward) {
+        function getReqsAndClasses(liName, reqJSON, reqDisplayCount, reqName, classJSON, isForward, isRefresh) {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             
                 var liGroupHTML = "";
@@ -3180,13 +3180,16 @@
 
                  var cDiv = $('#search-scroll-div0');
 
-                 var scroller = (isForward ? ('<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
-                     (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
-                     'top: 0px">' + 
-                     '<div id="search-scroll-content' + bElems.length +'" class="content">') : '');
+				 var html = "";
+                 if (!isRefresh) {
+					 var scroller = (isForward ? ('<div id="search-scroll-div' + bElems.length +'" class="nano" style="left: ' + 
+	                     (bElems.length * (parseInt(cDiv.width()) + SPACER)) + 'px; ' +
+	                     'top: 0px">' + 
+	                     '<div id="search-scroll-content' + bElems.length +'" class="content">') : '');
 
-                 var html = scroller + '<div class="cdiv" id="cdiv' + 
-                    (isForward ? bElems.length : (bElems.length - 1)) +'">';
+	                 html += scroller + '<div class="cdiv" id="cdiv' + 
+	                    (isForward ? bElems.length : (bElems.length - 1)) +'">';
+				  }
                                                                                      
                  if (liGroupHTML != "") {
                      html += '<div class="requirement-heading">Select ' + 
@@ -3203,14 +3206,19 @@
                         (classCount > reqJSON.num_reqs_to_fulfill ? reqJSON.num_reqs_to_fulfill
                             : 'all') + ' of the following courses:') + '</div>';
                      
-                 html += '<ul class="nav nav-pills nav-stacked">' + liClassHTML + 
-                    '</ul></div></div></div>';
-
-                 if (isForward) {
-                     $('#content-div').append(html);
-                 } else {
-                     $('#search-scroll-content' + (bElems.length - 1)).html(html);
-                 }
+                 html += '<ul class="nav nav-pills nav-stacked">' + liClassHTML + '</ul>';
+				
+				if (isRefresh) {
+					return html;
+				} 
+				
+				html += '</div></div></div>';
+				
+	             if (isForward) {
+	                 $('#content-div').append(html);
+	             } else {
+	                 $('#search-scroll-content' + (bElems.length - 1)).html(html);
+	             }
 
                  
             
@@ -3231,6 +3239,34 @@
 
              });
         }
+		
+		function switchCourseInfoData(data, elemOrReqName, isForward) {
+            var reqName = "";
+            if (isForward) {
+                reqName = $(elemOrReqName).find('.req-name').html();  
+            } else {
+                reqName = elemOrReqName;
+            }
+			
+			var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var reqJSON = ($(bElems[1]).find('.longName').html() == "General" ? reqJSON = generalReqs : reqJSON = majorReqs);
+            reqJSON = reqJSON[reqName];
+			
+            var reqCount = 0;
+            for (var i in reqJSON.requirements) {
+                reqCount++;
+            }
+			
+            classesJSON = jQuery.parseJSON(data.classes);
+            offeringsJSON = data.offerings;
+			prereqsJSON = data.prereq_groups;
+			reqsJSON = data.reqs;
+			reqGroupsJSON = data.req_groups;
+            var html = getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, true);
+			$('#cdiv' + (bElems.length - 1)).html(html);
+			addButtonsToSearchResults(bElems.length - 1);
+			refreshScroll(bElems.length - 1);
+		}
         
         
         function getNextLevelOfReqs(elemOrReqName, isForward) {
@@ -3283,7 +3319,14 @@
             cancelNext = false;
                         
             var data = new Object();
-			data['courseNames'] = courseArr;
+			if (courseArr.length > 15) {
+				data['courseNames'] = [];
+				for (var i = 0; i < 15; i++) {
+					data['courseNames'].push(courseArr[i]);
+				}
+			} else {
+				data['courseNames'] = courseArr;
+			}
 			$.ajax({
 				type: 'POST',
 				url: '/courseInfo/',
@@ -3298,13 +3341,27 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward);
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, false);
                     if (isForward) {
                         moveToNextBreadcrumbLevel(bElems.length, reqName, false);
                         animateForward(bElems.length);
                     } else {
                         animateBackward(bElems.length - 1);
                     }
+					
+					if (courseArr.length > 15) {
+						var newData = new Object();
+						newData['courseNames'] = courseArr;
+						$.ajax({
+							type: 'POST',
+							url: '/courseInfo/',
+							data: newData,
+							success: function(data, textStatus, jqXHR) {
+								switchCourseInfoData(data, elemOrReqName, isForward);
+							}
+						});
+					}
+					
 				},
 				
 				error: function(data, textStatus, jqXHR) {
