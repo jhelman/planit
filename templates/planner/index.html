@@ -3126,7 +3126,8 @@
 
         }
         
-        function getReqsAndClasses(liName, reqJSON, reqDisplayCount, reqName, classJSON, isForward, isRefresh) {
+        function getReqsAndClasses(liName, reqJSON, reqDisplayCount, reqName, classJSON, isForward, isRefresh,
+                hasMoreResults) {
                 var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             
                 var liGroupHTML = "";
@@ -3212,7 +3213,8 @@
 					return html;
 				} 
 				
-				html += '</div></div></div>';
+				html += (hasMoreResults ? '<button class="btn btn-primary load-btn disabled">Loading more results...</button>'
+                    : '') + '</div></div></div>';
 				
 	             if (isForward) {
 	                 $('#content-div').append(html);
@@ -3262,7 +3264,7 @@
 			prereqsJSON = data.prereq_groups;
 			reqsJSON = data.reqs;
 			reqGroupsJSON = data.req_groups;
-            var html = getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, true);
+            var html = getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, true, false);
 			$('#cdiv' + (bElems.length - 1)).html(html);
 			addButtonsToSearchResults(bElems.length - 1);
 			refreshScroll(bElems.length - 1);
@@ -3341,7 +3343,7 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, false);
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, false, true);
                     if (isForward) {
                         moveToNextBreadcrumbLevel(bElems.length, reqName, false);
                         animateForward(bElems.length);
@@ -3357,7 +3359,13 @@
 							url: '/courseInfo/',
 							data: newData,
 							success: function(data, textStatus, jqXHR) {
-								switchCourseInfoData(data, elemOrReqName, isForward);
+							    var btn = $('#cdiv' + bElems.length).find('.load-btn');
+                                btn.html('Refresh search box');
+                                btn.removeClass('disabled');
+                                btn.on('click', function(event) {
+                                    btn.remove();
+								    switchCourseInfoData(data, elemOrReqName, isForward);
+							    });
 							}
 						});
 					}
