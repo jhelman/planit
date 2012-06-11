@@ -365,12 +365,10 @@
 		   for (var i in reqGroups) {
 		       var rg = plan.getRequirementGroup(reqGroups[i].fields.name);
 		       this.reqGroups.push(rg);
-			   console.log(name);
 		       for (var j in rg.reqs) {
 		           for (var k in reqs) {
 		               if (rg.reqs[j].name == reqs[k].fields.name) {
 		                   this.reqs.push(rg.reqs[j]);
-						   console.log(rg.reqs[j]);
 		                   this.reqNames.push(reqs[k].fields.name);
 						   break;
 	                   }
@@ -2481,9 +2479,8 @@
             $('#blevel0').addClass('active');
             
             $('#content-div').html(html); 
-                        
-        
-            
+            $('#content-div').css('left', 0);
+
             refreshScroll(0);
         }
                 
@@ -2624,14 +2621,15 @@
             makeNewSpinner();
             
             var searchValue = $('#course-search').attr('value');
-            
+                        
             if (searchValue.length == 0) {
                 removeSpinner();
+                cancelNextFn();
                 returnHome(false);
                 // $('#search-scroll-div').nanoScroller();
                 return;
             }
-            
+                        
             $('#breadcrumb-div').find('.breadcrumb').empty();
             $('#breadcrumb-div').find('.breadcrumb').html('<li class="active" id="blevel0">' + 
                 '<a href="#" onclick="cancelNextFn(); returnHome(false);">Home</a></li>');
