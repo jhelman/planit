@@ -188,6 +188,20 @@
 		        }
         
 		    }
+			
+			if (flag == 0) {
+				$.ajax({
+					url: '/checkPlanName/' + planName,
+					async: false,
+					success: function (data, textStatus, jqXHR) {
+						if (data == "exists") {
+							flag = 1;
+						}
+					}
+				});
+			} else {
+				return false;
+			}
    
 		    return (flag == 0 ? true : false);
     
