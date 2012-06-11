@@ -252,16 +252,27 @@
                 var rg = course.reqGroups[i];
                 for (var j in rg.reqs) {
                     var r = rg.reqs[j];
-                    var pos = $.inArray(course, r.usedToFulfill);
+                    var pos = $.inArray(course, r.usedToFulfill);    
+                    
+                                    
+                    if ($.inArray(r.name, course.reqNames) == -1) {
+                        continue;
+                    }
+                                        
                     // To stop double deletion
-                    if (r.exclusive && r !== req) {
+                    // var fulfiller = false;
+                    //                     var usedToFulfill = r.usedToFulfill;
+                    //                     for (var x in usedToFulfill) {
+                    //                         if (usedToFulfill[x].cName == course.cName) {
+                    //                             fulfiller = true;
+                    //                             break;
+                    //                         }
+                    //                     }
+                    //                     if (fulfiller == false) {
+                    if (pos == -1) {
                         continue;
                     }
                     
-                    if ($.inArray(r.name, course.reqNames) == -1 ||
-                        (isExemption && !course.bypassable)) {
-                        continue;
-                    }
                     
                     var oldF = r.isFulfilled();
                     r.numFulfilled--;
