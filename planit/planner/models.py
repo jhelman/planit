@@ -106,7 +106,7 @@ class Requirement(models.Model):
     bypassable = models.BooleanField(default=True)
     exclusive = models.BooleanField(default=False)
     def __unicode__(self):
-        return self.name + ", " + str(self.fulfillers) + ", " + str(self.n_class)
+        return self.name
 
 #through class for many to many, will change
 class TagMapping(models.Model):
