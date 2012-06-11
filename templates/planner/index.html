@@ -250,8 +250,7 @@
             // Check for reqs and reqGroups
             for (var j in course.reqs) {
                 var r = course.reqs[j];
-                
-                var r = rg.reqs[j];
+                                
                 var pos = $.inArray(course, r.usedToFulfill);    
                 
                                 
@@ -262,14 +261,24 @@
                 if (pos == -1) {
                     continue;
                 }
-                
-                console.log(r);
-                
-                
-                var oldF = r.isFulfilled();
-                r.numFulfilled--;
+                 
+                 
+                var oldF = r.isFulfilled();        
                 r.usedToFulfill.splice(pos, 1);
-                                    
+                
+                                 
+                var flag = false;
+			    for (var i in r.usedToFulfill) {
+			        if (course.cName == r.usedToFulfill[i].cName) {
+			            flag = true;
+			            break;
+		            }
+		        }
+		        if (!flag) {
+                    r.numFulfilled--;
+				}
+                
+                 
                 if (!r.isFulfilled() && oldF) {
                     rg.numFulfilled--;
                 }
@@ -455,11 +464,22 @@
                 if (r.exclusive && r !== req) {
                     continue;
                 }
-
+                
 				var oldF = r.isFulfilled();
-				r.numFulfilled++;
-				r.usedToFulfill.push(course);
 				
+				var flag = false;
+			    for (var i in r.usedToFulfill) {
+			        if (course.cName == r.usedToFulfill[i].cName) {
+			            flag = true;
+			            break;
+		            }
+		        }
+		        if (!flag) {
+		            r.numFulfilled++;
+				}
+				r.usedToFulfill.push(course);
+
+
                 if (r.isFulfilled() && !oldF) {
                     rg.numFulfilled++;
                 }
