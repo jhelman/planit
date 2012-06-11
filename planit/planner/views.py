@@ -58,7 +58,7 @@ def index(request, plan_name=None):
         setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
         setattr(course, 'reqs', serializers.serialize('json', requirements))
         if exemption.mutex_req_fulfilled:
-            setattr(course, 'mutex_req_fulfilled', serializers.serialize('json', exemption.mutex_req_fulfilled, use_natural_keys=True))
+            setattr(course, 'mutex_req_fulfilled', serializers.serialize('json', [exemption.mutex_req_fulfilled], use_natural_keys=True))
         else:
             setattr(course, 'mutex_req_fulfilled', False)
         exempt.append(course)
@@ -96,7 +96,7 @@ def index(request, plan_name=None):
                 setattr(course, 'req_groups', serializers.serialize('json', requirement_groups))
                 setattr(course, 'reqs', serializers.serialize('json', requirements))
                 if e.mutex_req_fulfilled:
-                    setattr(course, 'mutex_req_fulfilled', serializers.serialize('json', e.mutex_req_fulfilled, use_natural_keys=True))
+                    setattr(course, 'mutex_req_fulfilled', serializers.serialize('json', [e.mutex_req_fulfilled], use_natural_keys=True))
                 else:
                     setattr(course, 'mutex_req_fulfilled', False)
                 prereq_groups = PrereqGroup.objects.filter(for_course=course)
