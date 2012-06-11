@@ -3437,9 +3437,22 @@
         function confirmDeletePlan() {
              $('#delete-plan-modal').modal('hide');
             var planName = $('#delete-plan-modal').find('.delete-plan-modal-name').html();
-            console.log(planName);
+          	var data = new Object();
+			data['planName'] = planName;
+			$.ajax({
+				type: 'POST',
+				url: '/deletePlan/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					window.location.replace('/');
+				},
+						
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("Plan could not be deleted");
+				}
+						
+			});
             
-            // TODO Dan
             
             
         }

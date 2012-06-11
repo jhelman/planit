@@ -355,7 +355,7 @@ def delete_plan(request):
     plan_name = params['planName']
     plan = Plan.objects.filter(user=user, name=plan_name)
     plan.delete()
-    return HttpResponseRedirect("/")
+    return HttpResponse()
 
 def edit_settings(request):
     params = request.POST.dict()
