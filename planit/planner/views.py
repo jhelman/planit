@@ -338,6 +338,8 @@ def create_plan(request):
     params = request.POST.dict()
     plan_name = params['planName']
     major_name = params['major']
+    grad_year = params['gradYear']
+    start_year = int(grad_year) - 4
     major = Major.objects.filter(name=major_name)[0]
     if 'track' in params:
         track_name = params['track']
@@ -346,11 +348,12 @@ def create_plan(request):
         tracks = []
     univ = University.objects.filter(name='Stanford')[0]
     user = User.objects.filter(username=request.user)[0]
-    plan = Plan(name=plan_name, user=user, university=univ, major=major, start_year=2008, num_years=4)
+    plan = Plan(name=plan_name, user=user, university=univ, major=major, start_year=start_year, num_years=4)
     if len(tracks) == 1:
         plan.track = tracks[0]
     plan.save()
     return HttpResponseRedirect('/plan/' + plan_name + '/')
+
 
 
 def check_plan_name(request, plan_name):
