@@ -288,8 +288,10 @@
     
         Term.prototype.removeCourse = function(course) {
             this.courses[course.cName] = undefined;
-            this.units -= course.units;
-            this.plan.units -= course.units;
+			if (!course.isAdded) {
+            	this.units -= course.units;
+            	this.plan.units -= course.units;
+			}
             
             removeCourseReqs(course, false, false, false);
             
