@@ -178,7 +178,7 @@ def fill_response_info_for_courses(results, response_data):
         req_groups = RequirementGroup.objects.filter(requirement__fulfillers__in=course.tags.all()).distinct()
         requirement_groups[course.identifier] = serializers.serialize('json', req_groups)
         reqs = Requirement.objects.filter(fulfillers__in=course.tags.all()).distinct()
-        requirements[course.identifier] = serializers.serialize('json', reqs)
+        requirements[course.identifier] = serializers.serialize('json', reqs, use_natural_keys=True)
         course_prereqs = []
         for group in PrereqGroup.objects.filter(for_course=course):
             satisfiers = []
