@@ -118,10 +118,9 @@
 		    tracksShown = true;
     
 		    var majorName = $(elem).attr('value');
-        
+    
 		    if (majorName == "") {
 		        $('#track-select').closest('.control-group').hide();
-                tracksShown = false;
 		        return;
 		    }
     
@@ -132,12 +131,6 @@
 		            break;
 		        }
 		    }
-		    
-		    if (tracks.length == 0) {
-		        $('#track-select').closest('.control-group').hide();
-                tracksShown = false;
-		        return;
-	        }
     
     
 		    $('#track-select').html('<option value="">Choose a track</option>');
@@ -152,7 +145,7 @@
 
 
 		function validateNewPlan() {
-                
+            $('#new-plan-modal-error').html('');    
 		    var planName = $('#plan-name').attr('value');
 		    var major = $('#major').attr('value');
 		    var track = $('#track-select').attr('value');
@@ -202,6 +195,7 @@
 					async: false,
 					success: function (data, textStatus, jqXHR) {
 						if (data == "exists") {
+							$('#new-plan-modal-error').html("Error: Plan with that name already exists");
 							flag = 1;
 						}
 					}
@@ -368,6 +362,10 @@
             
 
 		        </form>
+				
+				<div id="new-plan-modal-error" style="color: #bd362f; font-weight: bold">
+				</div>
+				
 		    </div>
     
 		    <div class="modal-footer">
