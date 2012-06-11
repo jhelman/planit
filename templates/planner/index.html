@@ -1016,6 +1016,12 @@
                   
             updateTotalUnits(plan.units); 
             
+            for (var i in termNames) {
+                for (var j in years) {
+                  $('#' + termNames[i] + years[j] + '.nano').nanoScroller();
+                }
+            }
+            
             $('#account-settings-modal').on('hidden', function () {
                 $('#account-settings-modal').hide();
             });
@@ -1024,6 +1030,7 @@
                 $('#new-plan-modal').hide();
             });
                  
+            $('#remove-plan-btn').tooltip({title: 'Remove plan', placement: 'top'});
             
             // Static
             // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
@@ -1045,6 +1052,7 @@
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
             $('#reqs-modal').modal({'show': false});
+            $('#delete-plan-modal').modal({'show': false});
             
 			
             // $('#schedule-modal-calendar').fullCalendar({ 
@@ -1090,7 +1098,15 @@
                
            });
             
-        });       
+        });  
+        
+        function refreshTermScroll(termId) {
+            $('#' + termId + '.nano').find('.slider').animate({'top': 0});
+            $('#' + termId + '.nano').nanoScroller({preventPageScrolling: true});
+            $('#' + termId + '.nano').nanoScroller({scroll: 'top'});
+        }
+        
+             
         
         function turnHeadingsColor(id, color) {
             $('#' + years[getYearArrayIndex(id)]).css('background-color', color);
@@ -2547,7 +2563,7 @@
         
         
         function refreshScroll(num) {
-            $('.slider').animate({'top': 0});
+            $('#search-scroll-div' + num).find('.slider').animate({'top': 0});
             $('#search-scroll-div' + num).nanoScroller({preventPageScrolling: true});
             $('#search-scroll-div' + num).nanoScroller({scroll: 'top'});
         }
@@ -3411,6 +3427,24 @@
         }
         
         
+        function openDeletePlanModal(elem) {
+              var planName = $(elem).closest('.plan-info-div-inner').find('#plan-info-name').html();
+              $('#delete-plan-modal').find('.delete-plan-modal-name').html(planName);
+              $('#delete-plan-modal').modal('show');
+        }
+        
+        
+        function confirmDeletePlan() {
+             $('#delete-plan-modal').modal('hide');
+            var planName = $('#delete-plan-modal').find('.delete-plan-modal-name').html();
+            console.log(planName);
+            
+            // TODO Dan
+            
+            
+        }
+        
+        
     </script>    
     {% endblock %}
     
@@ -3453,6 +3487,24 @@
          </div>
 
       </div>
+      
+      <div class="modal fade" id="delete-plan-modal">
+            <div class="modal-header">
+               <button class="close" data-dismiss="modal">&times;</button>
+               <h3>Delete plan: <span class="delete-plan-modal-name"></span></h3>
+            </div>
+            <div class="modal-body">
+
+                <h4>Are you sure you want to delete plan <span class="delete-plan-modal-name"></span>?
+
+           </div>
+
+           <div class="modal-footer">
+               <button class="btn" data-dismiss="modal">Cancel</button>
+               <button class="btn btn-danger" onclick="confirmDeletePlan()">Delete Plan</button>
+           </div>
+
+        </div>
     
     
     
@@ -3509,23 +3561,25 @@
                                 	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
                                 	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                                     </div>
-			    	                <div class="courses-div" id="{{ term.condensedName }}-courses">
-        							    {% for course in term.courses %}
-            				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
-            				                    <div class="courseName">{{ course.identifier }}</div>
-            				                    <div class="grab-over">
-            				                        <div class="grab-line" style="top: -7px;"></div>
-            				                        <div class="grab-line" style="top: -11px;"></div>
-            				                        <div class="grab-line" style="top: -15px;"></div>
-        				                        </div>
-            				                    <div class="info-over">
-            				                        <div class="info" onclick="removeCourse(this);">
-                                                        <i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>
+                                    <div class="nano quarter-nano" id="{{ term.condensedName }}-nano">
+			    	                    <div class="courses-div content" id="{{ term.condensedName }}-courses">
+            							    {% for course in term.courses %}
+                				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
+                				                    <div class="courseName">{{ course.identifier }}</div>
+                				                    <div class="grab-over">
+                				                        <div class="grab-line" style="top: -7px;"></div>
+                				                        <div class="grab-line" style="top: -11px;"></div>
+                				                        <div class="grab-line" style="top: -15px;"></div>
+            				                        </div>
+                				                    <div class="info-over">
+                				                        <div class="info" onclick="removeCourse(this);">
+                                                            <i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>
+                                                        </div>
                                                     </div>
-                                                </div>
-            				                </div>
-            							{% endfor %}
-            						</div>
+                				                </div>
+                							{% endfor %}
+                						</div>
+        						    </div>
             						<div class="units-div" id="{{ term.condensedName }}-units-div">
             						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
             						    <span class="calendar-over" onclick="openCalendar('{{ term.condensedName }}', this);">
@@ -3582,6 +3636,7 @@
                              </div> -->
                             <div class="plan-info-div-inner">
                                 <b>Plan Name</b>: <span id="plan-info-name">{{ plan.name }}</span>
+                                <span onclick="openDeletePlanModal(this)" id="remove-plan-btn"><i class="icon-remove-sign"></i></span>
                                 <br/>
                                 <b>Major</b>: <span id="plan-info-major">{{ plan.major.name }}</span>
                                 <br/>
