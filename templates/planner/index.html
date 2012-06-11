@@ -1752,7 +1752,7 @@
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).popover('hide');
             
-            var req = getReqByBreadcrumb(makeCondensedName(courseName));
+            var req = getReqByBreadcrumb(makeCondensedName(courseName));            
             
             if (req == "search" || isGeneralReq()) {
                 var hasMutex = openRequirementsModal(course, courseTableID, classLinkItem, termId);
@@ -3012,6 +3012,8 @@
                             var req = plan.getRequirement(reqName, reqName);
                             liClassHTML += makeCourseIcon(courseDict, courseShortName, true, req);
                         } else {
+                            // console.log(reqJSON);
+                            
                             liClassHTML += (courseDict[makeCondensedName(courseShortName)] != undefined ? 
                                 '<i class="icon-ok"></i>'
                                 : (plan.hasExemption(courseShortName) ? '<i class="icon-check"></i>' : ''));
@@ -3124,6 +3126,7 @@
             offeringsJSON = data.offerings;
 			prereqsJSON = data.prereq_groups;
 			reqsJSON = data.reqs;
+			console.log(reqsJSON);
 			reqGroupsJSON = data.req_groups;
             var html = getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, true, false);
 			$('#cdiv' + (bElems.length - 1)).html(html);
