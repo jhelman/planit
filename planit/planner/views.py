@@ -351,7 +351,7 @@ def create_plan(request):
     
 def delete_plan(request):
     params = request.POST.dict()
-    user User.objects.filter(username=request.user)[0]
+    user = User.objects.filter(username=request.user)[0]
     plan_name = params['planName']
     plan = Plan.objects.filter(user=user, name=plan_name)
     plan.delete()
