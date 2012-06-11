@@ -961,6 +961,8 @@
                     updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
 					updateQuarterUnitsUI(dragTerm, -course.units, false);
 					
+					refreshTermScroll(dropTerm);
+					refreshTermScroll(dragTerm);
 						
 					var oldTermYear = convertFromCondensedName(dragTerm).split(" ");
 					var oldTermName = oldTermYear[0];
@@ -1015,12 +1017,6 @@
             returnHome(true);
                   
             updateTotalUnits(plan.units); 
-            
-            for (var i in termNames) {
-                for (var j in years) {
-                  $('#' + termNames[i] + years[j] + '.nano').nanoScroller();
-                }
-            }
             
             $('#account-settings-modal').on('hidden', function () {
                 $('#account-settings-modal').hide();
@@ -1097,13 +1093,20 @@
                $(this).find('.grab-over').hide();
                
            });
+           
+           
+           for (var i in termNames) {
+               for (var j in years) {
+                 $('#' + termNames[i] + years[j] + '-nano').nanoScroller({preventPageScrolling: true});
+               }
+           }
             
         });  
         
         function refreshTermScroll(termId) {
-            $('#' + termId + '.nano').find('.slider').animate({'top': 0});
-            $('#' + termId + '.nano').nanoScroller({preventPageScrolling: true});
-            $('#' + termId + '.nano').nanoScroller({scroll: 'top'});
+            $('#' + termId + '-nano').find('.slider').animate({'top': 0});
+            $('#' + termId + '-nano').nanoScroller({preventPageScrolling: true});
+            $('#' + termId + '-nano').nanoScroller({scroll: 'top'});
         }
         
              
@@ -1335,6 +1338,7 @@
             var numUnits = course.units;
                         
             courseElem.remove();
+            refreshTermScroll(quarterID);
                         
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
@@ -1586,10 +1590,12 @@
                 + '</td>' + '<td class="icons"><i class="icon-ok confirm-add-class"></i>' + 
                 (isWarning ? '&nbsp;&nbsp;<i class="icon-warning-sign"></i>' : '')
                 + '</td></tr></table>');
-                
+                                
             addToElem.find('#' + quarterID + makeCondensedName(courseObj.identifier)).width($('.course').width()); 
                  
             addToElem.find('td').width($('.course').width() / 3);
+                           
+            refreshTermScroll(quarterID);              
                                        
             addToElem.find('select').on('change', function(event) {
                 changeSelectedUnits($(this), quarterID, courseObj.identifier, false);
@@ -1752,7 +1758,9 @@
                 '</div>' + 
                 '<div class="info-over"><div class="info" onclick="removeCourse(this);">' + 
                 '<i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>' + 
-                '</div></div></div>');                 
+                '</div></div></div>');  
+                
+            refreshTermScroll(termId);              
 
             $('#' + termId + makeCondensedName(courseName)).on('mouseover', function () {
                  $(this).find('.info-over').show();
@@ -2283,6 +2291,8 @@
                 }
                 
                 $('#' + termId + course.cName).remove();
+                refreshTermScroll(termId);
+                    
                 plan.getTermById(termId).removeAddedCourse(course.name);
                 
                 // resetAddedUnits(termId);
