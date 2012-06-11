@@ -961,6 +961,8 @@
                     updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
 					updateQuarterUnitsUI(dragTerm, -course.units, false);
 					
+					refreshTermScroll(dropTerm);
+					refreshTermScroll(dragTerm);
 						
 					var oldTermYear = convertFromCondensedName(dragTerm).split(" ");
 					var oldTermName = oldTermYear[0];
@@ -1024,6 +1026,7 @@
                 $('#new-plan-modal').hide();
             });
                  
+            $('#remove-plan-btn').tooltip({title: 'Remove plan', placement: 'top'});
             
             // Static
             // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
@@ -1045,6 +1048,7 @@
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
             $('#reqs-modal').modal({'show': false});
+            $('#delete-plan-modal').modal({'show': false});
             
 			
             // $('#schedule-modal-calendar').fullCalendar({ 
@@ -1089,8 +1093,23 @@
                $(this).find('.grab-over').hide();
                
            });
+           
+           
+           for (var i in termNames) {
+               for (var j in years) {
+                 $('#' + termNames[i] + years[j] + '-nano').nanoScroller({preventPageScrolling: true});
+               }
+           }
             
-        });       
+        });  
+        
+        function refreshTermScroll(termId) {
+            $('#' + termId + '-nano').find('.slider').animate({'top': 0});
+            $('#' + termId + '-nano').nanoScroller({preventPageScrolling: true});
+            $('#' + termId + '-nano').nanoScroller({scroll: 'top'});
+        }
+        
+             
         
         function turnHeadingsColor(id, color) {
             $('#' + years[getYearArrayIndex(id)]).css('background-color', color);
@@ -1319,6 +1338,7 @@
             var numUnits = course.units;
                         
             courseElem.remove();
+            refreshTermScroll(quarterID);
                         
             var courseName = qDiv.find('.alert-delete-course-name').html();
             plan.getTermById(quarterID).addDraggable(course);
@@ -1570,10 +1590,12 @@
                 + '</td>' + '<td class="icons"><i class="icon-ok confirm-add-class"></i>' + 
                 (isWarning ? '&nbsp;&nbsp;<i class="icon-warning-sign"></i>' : '')
                 + '</td></tr></table>');
-                
+                                
             addToElem.find('#' + quarterID + makeCondensedName(courseObj.identifier)).width($('.course').width()); 
                  
             addToElem.find('td').width($('.course').width() / 3);
+                           
+            refreshTermScroll(quarterID);              
                                        
             addToElem.find('select').on('change', function(event) {
                 changeSelectedUnits($(this), quarterID, courseObj.identifier, false);
@@ -1753,7 +1775,9 @@
                 '</div>' + 
                 '<div class="info-over"><div class="info" onclick="removeCourse(this);">' + 
                 '<i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>' + 
-                '</div></div></div>');                 
+                '</div></div></div>');  
+                
+            refreshTermScroll(termId);              
 
             $('#' + termId + makeCondensedName(courseName)).on('mouseover', function () {
                  $(this).find('.info-over').show();
@@ -2285,6 +2309,8 @@
                 }
                 
                 $('#' + termId + course.cName).remove();
+                refreshTermScroll(termId);
+                    
                 plan.getTermById(termId).removeAddedCourse(course.name);
                 
                 // resetAddedUnits(termId);
@@ -2384,7 +2410,7 @@
         }
         
         
-        function createSearchResults(courses, isReq, reqName, num, isRefresh, hasMoreResults) {
+        function createSearchResults(courses, isReq, reqName, num, isRefresh, hasMoreResults, numResults) {
                 
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var req = false;
@@ -2408,7 +2434,7 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">';
                         
             var reqHTML = '<div class="requirement-heading">' +
-                        (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
+                        (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + numResults + '): ')
                             : 'Select ' + numRequired + ' of the following:') +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
@@ -2547,7 +2573,7 @@
         
         
         function refreshScroll(num) {
-            $('.slider').animate({'top': 0});
+            $('#search-scroll-div' + num).find('.slider').animate({'top': 0});
             $('#search-scroll-div' + num).nanoScroller({preventPageScrolling: true});
             $('#search-scroll-div' + num).nanoScroller({scroll: 'top'});
         }
@@ -2702,7 +2728,7 @@
 			prereqsJSON = updatedSearchData.prereq_groups;
 			reqsJSON = updatedSearchData.reqs;
 			reqGroupsJSON = updatedSearchData.req_groups;
-            var html = createSearchResults(classesJSON, false, false, 0, true, false);
+            var html = createSearchResults(classesJSON, false, false, 0, true, false, updatedSearchData.numResults);
             $('#cdiv1').html(html);
             addButtonsToSearchResults(1);
 			refreshScroll(1);
@@ -2766,7 +2792,7 @@
 					if (data.numResults > MAX_SEARCH) {                    
                         moreResults = true;
                     }
-                    var html = createSearchResults(classesJSON, false, false, 0, false, moreResults);
+                    var html = createSearchResults(classesJSON, false, false, 0, false, moreResults, data.numResults);
                     $('#content-div').css('left', '0px');
                     $('#content-div').html(html);
                     addButtonsToSearchResults(1);
@@ -2990,7 +3016,7 @@
 			reqsJSON = updatedSearchData.reqs;
 			reqGroupsJSON = updatedSearchData.req_groups;
 			var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, true, false);
+            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, true, false, updatedSearchData.numResults);
             $('#cdiv3').html(html);
             addButtonsToSearchResults(3);
 			refreshScroll(3);
@@ -3035,7 +3061,7 @@
 					if (data.numResults > MAX_SEARCH) {                    
                         moreResults = true;
                     }
-                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, false, moreResults);
+                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, false, moreResults, data.numResults);
                     addClassesCDiv(html, 3, elem.find('.req-name').html());
                     addButtonsToSearchResults(3);
                     refreshScroll(3);
@@ -3411,6 +3437,37 @@
         }
         
         
+        function openDeletePlanModal(elem) {
+              var planName = $(elem).closest('.plan-info-div-inner').find('#plan-info-name').html();
+              $('#delete-plan-modal').find('.delete-plan-modal-name').html(planName);
+              $('#delete-plan-modal').modal('show');
+        }
+        
+        
+        function confirmDeletePlan() {
+             $('#delete-plan-modal').modal('hide');
+            var planName = $('#delete-plan-modal').find('.delete-plan-modal-name').html();
+          	var data = new Object();
+			data['planName'] = planName;
+			$.ajax({
+				type: 'POST',
+				url: '/deletePlan/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					window.location.replace('/');
+				},
+						
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("Plan could not be deleted");
+				}
+						
+			});
+            
+            
+            
+        }
+        
+        
     </script>    
     {% endblock %}
     
@@ -3453,6 +3510,24 @@
          </div>
 
       </div>
+      
+      <div class="modal fade" id="delete-plan-modal">
+            <div class="modal-header">
+               <button class="close" data-dismiss="modal">&times;</button>
+               <h3>Delete plan: <span class="delete-plan-modal-name"></span></h3>
+            </div>
+            <div class="modal-body">
+
+                <h4>Are you sure you want to delete plan <span class="delete-plan-modal-name"></span>?
+
+           </div>
+
+           <div class="modal-footer">
+               <button class="btn" data-dismiss="modal">Cancel</button>
+               <button class="btn btn-danger" onclick="confirmDeletePlan()">Delete Plan</button>
+           </div>
+
+        </div>
     
     
     
@@ -3509,23 +3584,25 @@
                                 	    <button class="btn btn-danger" onclick="confirmDeleteCourse('{{ term.condensedName }}');">Delete</button>
                                 	    <button class="btn" onclick="cancelDeleteCourse('{{ term.condensedName }}');">Cancel</button>
                                     </div>
-			    	                <div class="courses-div" id="{{ term.condensedName }}-courses">
-        							    {% for course in term.courses %}
-            				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
-            				                    <div class="courseName">{{ course.identifier }}</div>
-            				                    <div class="grab-over">
-            				                        <div class="grab-line" style="top: -7px;"></div>
-            				                        <div class="grab-line" style="top: -11px;"></div>
-            				                        <div class="grab-line" style="top: -15px;"></div>
-        				                        </div>
-            				                    <div class="info-over">
-            				                        <div class="info" onclick="removeCourse(this);">
-                                                        <i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>
+                                    <div class="nano quarter-nano" id="{{ term.condensedName }}-nano">
+			    	                    <div class="courses-div content" id="{{ term.condensedName }}-courses">
+            							    {% for course in term.courses %}
+                				                <div id="{{ term.condensedName|add:course.condensedID }}" class="course">
+                				                    <div class="courseName">{{ course.identifier }}</div>
+                				                    <div class="grab-over">
+                				                        <div class="grab-line" style="top: -7px;"></div>
+                				                        <div class="grab-line" style="top: -11px;"></div>
+                				                        <div class="grab-line" style="top: -15px;"></div>
+            				                        </div>
+                				                    <div class="info-over">
+                				                        <div class="info" onclick="removeCourse(this);">
+                                                            <i style="position: relative; top: 2px;" class="icon-remove icon-white"></i>
+                                                        </div>
                                                     </div>
-                                                </div>
-            				                </div>
-            							{% endfor %}
-            						</div>
+                				                </div>
+                							{% endfor %}
+                						</div>
+        						    </div>
             						<div class="units-div" id="{{ term.condensedName }}-units-div">
             						    <span class="units" id="{{ term.condensedName }}-units">{{ term.units }}</span>
             						    <span class="calendar-over" onclick="openCalendar('{{ term.condensedName }}', this);">
@@ -3582,6 +3659,7 @@
                              </div> -->
                             <div class="plan-info-div-inner">
                                 <b>Plan Name</b>: <span id="plan-info-name">{{ plan.name }}</span>
+                                <span onclick="openDeletePlanModal(this)" id="remove-plan-btn"><i class="icon-remove-sign"></i></span>
                                 <br/>
                                 <b>Major</b>: <span id="plan-info-major">{{ plan.major.name }}</span>
                                 <br/>

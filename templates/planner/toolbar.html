@@ -145,7 +145,7 @@
 
 
 		function validateNewPlan() {
-                
+            $('#new-plan-modal-error').html('');    
 		    var planName = $('#plan-name').attr('value');
 		    var major = $('#major').attr('value');
 		    var track = $('#track-select').attr('value');
@@ -188,6 +188,21 @@
 		        }
         
 		    }
+			
+			if (flag == 0) {
+				$.ajax({
+					url: '/checkPlanName/' + planName,
+					async: false,
+					success: function (data, textStatus, jqXHR) {
+						if (data == "exists") {
+							$('#new-plan-modal-error').html("Error: Plan with that name already exists");
+							flag = 1;
+						}
+					}
+				});
+			} else {
+				return false;
+			}
    
 		    return (flag == 0 ? true : false);
     
@@ -347,6 +362,10 @@
             
 
 		        </form>
+				
+				<div id="new-plan-modal-error" style="color: #bd362f; font-weight: bold">
+				</div>
+				
 		    </div>
     
 		    <div class="modal-footer">
