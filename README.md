@@ -69,3 +69,5 @@ Requirements also have "bypassable" and "exclusive" boolean fields, which respec
 Additional Libraries Not Mentioned in Contract:
 
 - django-registration
+- spin.js
+- boostrap-typeahead-extension (included but not used)
