@@ -118,9 +118,10 @@
 		    tracksShown = true;
     
 		    var majorName = $(elem).attr('value');
-    
+        
 		    if (majorName == "") {
 		        $('#track-select').closest('.control-group').hide();
+                tracksShown = false;
 		        return;
 		    }
     
@@ -131,6 +132,12 @@
 		            break;
 		        }
 		    }
+		    
+		    if (tracks.length == 0) {
+		        $('#track-select').closest('.control-group').hide();
+                tracksShown = false;
+		        return;
+	        }
     
     
 		    $('#track-select').html('<option value="">Choose a track</option>');
