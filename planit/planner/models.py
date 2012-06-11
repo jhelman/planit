@@ -149,7 +149,7 @@ class CourseOffering(models.Model):
     start_time = models.TimeField(default=datetime.time(9,00))
     end_time = models.TimeField(default=datetime.time(9,50))
     weekdays = models.CharField(max_length=5,default="MWF")
-    instructor = models.ForeignKey(Instructor, null=True)
+    instructor = models.ForeignKey(Instructor, null=True, blank=True)
     ctype = models.IntegerField(default=1) #section or lecture
     #duration = models.IntegerField()
     class Meta:
