@@ -3,7 +3,6 @@
 
 <!DOCTYPE html>
     
-    <!-- <script type="text/javascript" src="{{ STATIC_URL }}jquery-week-calendar/jquery.weekcalendar.js"></script> -->
     
 	{% block extra_head %}
 	{{ block.super }}
@@ -250,6 +249,7 @@
             // Check for reqs and reqGroups
             for (var j in course.reqs) {
                 var r = course.reqs[j];
+                var rg = course.reqs[j].reqGroup;
                                 
                 var pos = $.inArray(course, r.usedToFulfill);    
                 
@@ -283,44 +283,7 @@
                     rg.numFulfilled--;
                 }
             }
-            
-            
-            
-            // for (var i in course.reqGroups) {
-            //                 var rg = course.reqGroups[i];
-            //                 for (var j in rg.reqs) {
-            //                     var r = rg.reqs[j];
-            //                     var pos = $.inArray(course, r.usedToFulfill);    
-            //                     
-            //                                     
-            //                     if ($.inArray(r.name, course.reqNames) == -1) {
-            //                         continue;
-            //                     }
-            //                                         
-            //                     // To stop double deletion
-            //                     // var fulfiller = false;
-            //                     //                     var usedToFulfill = r.usedToFulfill;
-            //                     //                     for (var x in usedToFulfill) {
-            //                     //                         if (usedToFulfill[x].cName == course.cName) {
-            //                     //                             fulfiller = true;
-            //                     //                             break;
-            //                     //                         }
-            //                     //                     }
-            //                     //                     if (fulfiller == false) {
-            //                     if (pos == -1) {
-            //                         continue;
-            //                     }
-            //                     
-            //                     
-            //                     var oldF = r.isFulfilled();
-            //                     r.numFulfilled--;
-            //                     r.usedToFulfill.splice(pos, 1);
-            //                                         
-            //                     if (!r.isFulfilled() && oldF) {
-            //                         rg.numFulfilled--;
-            //                     }
-            //                 }
-            //             }
+
         }
     
         Term.prototype.removeCourse = function(course) {
@@ -488,32 +451,6 @@
                 
             }
             
-            
-            // for (var i in course.reqGroups) {
-            //                 var rg = course.reqGroups[i];
-            //                 for (var j in rg.reqs) {
-            //                     var r = rg.reqs[j];
-            //                     if ($.inArray(r.name, course.reqNames) == -1 ||
-            //                         (isExemption && !r.bypassable)) {
-            //                         continue;
-            //                     }
-            //                     
-            //                     // To prevent double counting
-            //                     if (r.exclusive && r !== req) {
-            //                         continue;
-            //                     }
-            // 
-            //                  var oldF = r.isFulfilled();
-            //                  r.numFulfilled++;
-            //                  r.usedToFulfill.push(course);
-            //                  
-            //                     if (r.isFulfilled() && !oldF) {
-            //                         rg.numFulfilled++;
-            //                     }
-            //                 }
-            //             }  
-            
-            // console.log("------");
              
         }
 
@@ -783,12 +720,6 @@
                     $(this).find('.info-over').hide();
                     $(this).closest('.quarter-div').find('.calendar-over').hide();
                     
-                    // Need to try to stop any interaction (disable ALL rollovers)
-                    
-                    // $('.units-div').tooltip({'title': '', 'placement': 'top'});
-                    // $('.course').off('mouseover');
-                    // $('.course').off('mouseout');
-                    
                     $('#' + dragTerm).css('background-color', '#77beff');
                     
                     
@@ -838,16 +769,6 @@
                 },
 
                 stop: function (event, ui) {
-                    // $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
-                    // $('.course').on('mouseover', function () {
-                    //     $(this).find('.info-over').show();
-                    // });
-                    // 
-                    // $('.course').on('mouseout', function () {
-                    //     $(this).find('.info-over').hide();
-                    // });
-                    
-                    // alert($(event.currentTarget).attr('id'));
                     for (var i in termNames) {
                            for (var j in years) {
                                var termStr = termNames[i] + years[j];
@@ -860,21 +781,10 @@
                                     '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
                                     '</span>&nbsp;<span class="added-units" id="' + termStr + 
                                     '-added-units" style="display: none"></span>');
-                               
-                                   // $('#' + termStr + '-units-div').html('<span class="units" ' + 
-                                   //                                     'id="' + termStr + '-units">' + plan.getTerm(i, j).units + '</span>' +
-                                   //                                     '<span class="calendar-over" onclick="openCalendar(\'{{ term.condensedName }}\', this);>' + 
-                                   //                                     '<span class="calendar-button"><i class="icon-calendar"></i></span>' + 
-                                   //                                     '</span>' + 
-                                   //                                     '&nbsp;<span class="added-units" id="{{ term.condensedName }}-added-units" ' + 
-                                   //                                     'style="display: none"></span>');
-
-                               // }
 
                            }
                        }
                     
-                    // console.log("__________");
 
                     turnOnQDivMouse();
                     doQDivMouseOut($('#' + dragTerm));
@@ -957,7 +867,6 @@
                     plan.getTermById(dragTerm).addDraggable(course);
                     plan.getTermById('{{ term.condensedName }}').removeDraggable(courseName);
 					ui.draggable.attr('id', '{{ term.condensedName }}' + makeCondensedName(courseName));
-                    // $('#{{ term.condensedName }}')., course.units, false);
                     
                     updateQuarterUnitsUI('{{ term.condensedName }}', course.units, false);
 					updateQuarterUnitsUI(dragTerm, -course.units, false);
@@ -1010,7 +919,6 @@
 			{% for term in year.terms %}
 			{% for course in term.courses%}
 			makePopoverForCourse('{{ term.condensedName }}', plan.getTermById('{{ term.condensedName }}').getCourse('{{ course.condensedID }}'));
-            // $('#{{ term.condensedName|add:course.condensedID }}').popover({'title': '{{ course.identifier }}', 'content': '{{ course.title }}', 'placement': 'right'});
 			{% endfor %}
 			{% endfor %}
 			{% endfor %}
@@ -1029,17 +937,6 @@
                  
             $('#remove-plan-btn').tooltip({title: 'Remove plan', placement: 'top'});
             
-            // Static
-            // $('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            // $('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            // $('.icon-calendar').tooltip({'title': 'View Schedule', 'placement': 'right'});
-            // $('.icon-info-sign').tooltip({'title': 'Unit Count', 'placement': 'bottom'});
-            // $('.units-rollover').tooltip({'title': 'Change Units', 'placement': 'top'});
-                        
-            // $('.nano').nanoScroller({preventPageScrolling: true});
-            
-            
-            // $('.units').on('click', function(event) { clickChangeUnits(this) });
             
             $('.dropdown-toggle').dropdown();            
             makeDrag(false);
@@ -1049,20 +946,7 @@
             $('#account-settings-modal').modal({'show': false});
             $('#schedule-modal').modal({'show': false});
             $('#reqs-modal').modal({'show': false});
-            $('#delete-plan-modal').modal({'show': false});
-            
-			
-            // $('#schedule-modal-calendar').fullCalendar({ 
-            //                 firstDay: 1,
-            //                 weekends: false,
-            //                 header: false,
-            //                 defaultView: 'agendaWeek',
-            //                 slotMinutes: 30,
-            //                 height: 300,
-            //                 allDaySlot: false,
-            //                 columnFormat: {week: 'dddd'}
-            //             });
-			
+            $('#delete-plan-modal').modal({'show': false});			
             
 
             $('#schedule-modal').on('shown', function () {
@@ -1078,9 +962,7 @@
             });
             
            turnOnQDivMouse();
-           
-           // $('.units-div').tooltip({'title': 'Show Calendar', 'placement': 'top'});
-           
+                      
            
            // Show delete button           
            $('.course').on('mouseover', function () {
@@ -1694,7 +1576,7 @@
 				} else {
 					content += '<br /><b>Requirements:</b> ';
 					var fulfilled = course.getFulfilledReqsForCourse(true);
-					console.log(course.name + ' ' + fulfilled);
+                    // console.log(course.name + ' ' + fulfilled);
 					for (var i in course.reqNames) {
 						var reqName = course.reqNames[i];
 						if ($.inArray(reqName, fulfilled) != -1) {
@@ -1862,20 +1744,7 @@
             
             var courseName = $('#' + courseTableID).find('.courseName').html();
             var termId = $('#' + courseTableID).closest('.quarter-div').attr('id');
-            var course = plan.getTermById(termId).getCourse(courseName);
-                                    
-            // $('#' + courseTableID).find('.icon-ok').tooltip('hide');
-            //             $('#' + courseTableID).find('.info').empty();
-            //             
-            //             // Remember to redraw the dragging for this course!
-            //             
-            //             var infoTD = $('#' + courseTableID).find('.info');
-            //             infoTD.append('<i class="icon-move"></i>&nbsp;&nbsp;' + 
-            //                 '<i class="icon-trash" onclick="removeCourse(this);"></i>');
-            //                 
-            //             infoTD.find('.icon-move').tooltip({'title': 'Move Course', 'placement': 'top'});
-            //             infoTD.find('.icon-trash').tooltip({'title': 'Delete Course', 'placement': 'top'});
-            //          
+            var course = plan.getTermById(termId).getCourse(courseName);     
                         
             $('#' + courseTableID).find('.icon-ok').tooltip('hide');
             $('#' + courseTableID).popover('hide');
@@ -2463,18 +2332,7 @@
                 reqHTML += makeCourseIcon(courseDict, courseShortName, isReq, req);
                                 
                 reqHTML += '</td></tr></table></a></li>';
-                                        
-                // newHTMLObj.find('a').click(function (event) {
-                //                     alert('hi');
-                //                     addCourse(this);
-                //                 });
-                    
-                // $('#' + makeCondensedName(courseShortName) + '-search-result').popover({
-                //     title: courseShortName,
-                //     content: courseLongName,
-                //     placement: 'left'
-                // });
-                
+
             }
             
             if (!isRefresh) {
@@ -3539,13 +3397,7 @@
     </script>    
     {% endblock %}
     
-</head>
-
-
-
-<!-- <body style="margin: 50px"> -->
-    
-    <!-- <div class='alert alert-success ajax-alert'><a href='#' class='close' data-dismiss='alert'>&times;</a>hi</div> -->
+</head>    
     
     {% block content %}
 	{{ block.super }}
@@ -3632,8 +3484,6 @@
 		
 		
         		{% for year in years %}
-        		<!-- Row for quart7d15c7ee4c4f173af63368495069d52b033d6f84er boxes -->
-                    <!-- <tr style="background-color: #{% cycle ffffff, ffffff %}"> -->
                     <tr>
         				<td id="{{ year.year }}" class="year-label"><h4>{{ year.year }}</h4></td>
 			
@@ -3718,13 +3568,10 @@
                        
                     </td>
                 </tr>
-                <!-- <tr style="height: 30px"><td>&nbsp;</td></tr> -->
                 <tr>
                     <td>
                         <div id="plan-info-div">
-                            <!-- <div class="plan-info-div-title">
-                                 <h4><u>Plan information:</u></h4>
-                             </div> -->
+
                             <div class="plan-info-div-inner">
                                 <b>Plan Name</b>: <span id="plan-info-name">{{ plan.name }}</span>
                                 <span onclick="openDeletePlanModal(this)" id="remove-plan-btn"><i class="icon-remove-sign"></i></span>
