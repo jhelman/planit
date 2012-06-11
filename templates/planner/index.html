@@ -288,8 +288,10 @@
     
         Term.prototype.removeCourse = function(course) {
             this.courses[course.cName] = undefined;
-            this.units -= course.units;
-            this.plan.units -= course.units;
+			if (!course.isAdded) {
+            	this.units -= course.units;
+            	this.plan.units -= course.units;
+			}
             
             removeCourseReqs(course, false, false, false);
             
@@ -2208,7 +2210,7 @@
                 $('#' + termStr + course.cName).addClass(cssClassName);
 				
 				if (warning) {
-	                $('#' + termStr).css('background-color', '#f3eed2');
+	                $('#' + termStr).css('background-color', '#ffb64f');
 	                $('#' + termStr + '-units-div').empty();
 	                $('#' + termStr + '-units-div').html('<div class="units">' + courseName + ' is missing a prerequisite</div>');
 				}
