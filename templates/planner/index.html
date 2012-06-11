@@ -250,8 +250,7 @@
             // Check for reqs and reqGroups
             for (var j in course.reqs) {
                 var r = course.reqs[j];
-                
-                var r = rg.reqs[j];
+                                
                 var pos = $.inArray(course, r.usedToFulfill);    
                 
                                 
@@ -262,12 +261,24 @@
                 if (pos == -1) {
                     continue;
                 }
-                
-                
-                var oldF = r.isFulfilled();
-                r.numFulfilled--;
+                 
+                 
+                var oldF = r.isFulfilled();        
                 r.usedToFulfill.splice(pos, 1);
-                                    
+                
+                                 
+                var flag = false;
+			    for (var i in r.usedToFulfill) {
+			        if (course.cName == r.usedToFulfill[i].cName) {
+			            flag = true;
+			            break;
+		            }
+		        }
+		        if (!flag) {
+                    r.numFulfilled--;
+				}
+                
+                 
                 if (!r.isFulfilled() && oldF) {
                     rg.numFulfilled--;
                 }
@@ -453,11 +464,22 @@
                 if (r.exclusive && r !== req) {
                     continue;
                 }
-
+                
 				var oldF = r.isFulfilled();
-				r.numFulfilled++;
-				r.usedToFulfill.push(course);
 				
+				var flag = false;
+			    for (var i in r.usedToFulfill) {
+			        if (course.cName == r.usedToFulfill[i].cName) {
+			            flag = true;
+			            break;
+		            }
+		        }
+		        if (!flag) {
+		            r.numFulfilled++;
+				}
+				r.usedToFulfill.push(course);
+
+
                 if (r.isFulfilled() && !oldF) {
                     rg.numFulfilled++;
                 }
@@ -548,6 +570,20 @@
                     }
  	           }
  	       }
+        }
+        
+        Exemption.prototype.getFulfilledReqsForCourse = function(isGetName) {
+            var fReqs = [];
+            for (var x in this.reqs) {
+                if ($.inArray(this, this.reqs[x].usedToFulfill) != -1) {
+                    if (isGetName) {
+                        fReqs.push(this.reqs[x].name);
+                    } else {
+                        fReqs.push(this.reqs[x]);
+                    }
+                }
+            }
+            return fReqs;
         }
         
         
@@ -1700,11 +1736,6 @@
         }
         
         
-        function getReqString(req) {
-            
-            
-            
-        }
         
         function confirmReqAddCourse(course, courseTableID, termId, req) {
          
@@ -2317,14 +2348,50 @@
             
         }
         
+        
+        function makeCourseIcon(courseDict, courseShortName, isReq, req) {
+
+            if (courseDict[courseShortName] != undefined) {
+                var reqF = courseDict[courseShortName][0].getFulfilledReqsForCourse(false);
+                if (isReq) {
+                    for (var x in reqF) {
+                        if (req !== reqF[x] && reqF[x].exclusive && req.exclusive) {
+                            return '<span class="cert-req-icon"><i class="icon-certificate"></i>' + 
+                                '<span class="fulfilled-req-name" style="display: none;">' + reqF[x].name + '</span></span>';
+                        }
+                    }
+                }
+                
+                return '<i class="icon-ok"></i>';
+            }
+            
+            if (plan.hasExemption(courseShortName)) {
+                var reqF = plan.exemptions[courseShortName].getFulfilledReqsForCourse(false);
+                if (isReq) {
+                    for (var x in reqF) {
+                        if (req !== reqF[x] && reqF[x].exclusive && req.exclusive) {
+                            return '<span class="cert-req-icon"><i class="icon-certificate"></i>' + 
+                                '<span class="fulfilled-req-name" style="display: none;">' + reqF[x].name + '</span></span>';
+                        }
+                    }
+                }
+
+                return '<i class="icon-check"></i>';
+             }   
+            
+            return '';
+            
+        }
+        
+        
         function createSearchResults(courses, isReq, reqName, num, isRefresh, hasMoreResults) {
                 
-                
+            var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
+            var req = false;
             var numRequired = "all";        
             if (!isReq) {
                 num = 1;
             } else {
-                var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
                 req = plan.getRequirement(reqName, [$(bElems[2]).find('.longName').html()]);
                 // console.log(req);
                 if (courses.length != req.numCoursesToFulfill) {
@@ -2332,9 +2399,7 @@
                 }
             }
             // $('#search-scroll-content').empty();
-                          
-            var courseDict = plan.getCourseDictionary();
-                                    
+                                                              
             var scroller = '<div id="search-scroll-div' + num + '" class="nano"' + 
                     (isReq ? ('" style="left: ' + (num * (parseInt($('#search-scroll-div0').width()) + SPACER)) + 
                         'px; ' + 'top: 0px">') : '>') + 
@@ -2353,7 +2418,9 @@
                 reqHTML += '</ul></div></div></div>';
                 return html + reqHTML;
             }
-            			            			
+            
+            var courseDict = plan.getCourseDictionary();
+                        			            			
             for (var i in courses) {
                 
                 var courseShortName = makeCondensedName(courses[i].fields.identifier);
@@ -2363,11 +2430,12 @@
                     makeCondensedName(courseShortName)
                     + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
                     '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
-                    '</td><td class="search-result-info" align="middle">' + 
-                    (courseDict[courseShortName] != undefined ? '<i class="icon-ok"></i>'
-                        : (plan.hasExemption(courseShortName) ? '<i class="icon-check"></i>' : ''))
-                    + '</td>' + 
-                    '</tr></table></a></li>';
+                    '</td><td class="search-result-info" align="middle">';
+                    
+                    
+                reqHTML += makeCourseIcon(courseDict, courseShortName, isReq, req);
+                                
+                reqHTML += '</td></tr></table></a></li>';
                                         
                 // newHTMLObj.find('a').click(function (event) {
                 //                     alert('hi');
@@ -2462,7 +2530,7 @@
             } 
             
             var req = getReqByBreadcrumb(makeCondensedName(courseName));
-			
+						
 			var e = false;
 			if (adding && (req == "search" || isGeneralReq())) {
 			    e = new Exemption(courseName, jQuery.parseJSON(reqGroupsJSON[makeCondensedName(courseName)]), 
@@ -2609,7 +2677,18 @@
                 turnOffCourseHighlight();
                 
                 addCourse(this);
-            });   
+            });  
+            
+            if (level == 3) {
+                var iconArr = $('#cdiv' + level).find('.cert-req-icon');
+                for (var i = 0; i < iconArr.length; i++) {
+                    $(iconArr[i]).tooltip({title: ('Course already fulfills requirement: ' + 
+                        $(iconArr[i]).find('.fulfilled-req-name').html()), placement: 'top'});
+                }
+                
+            }
+            
+             
         }
         
         var currentSearch;
@@ -2850,7 +2929,7 @@
         
         function countReqs(tlName, reqGroupName) { 
             var rg = plan.getRequirementGroup(reqGroupName);
-            var total = rg.numReqsToFulfill - rg.numFulfilled;
+            var total = rg.numReqsToFulfill - rg.numFulfilled;            
             return (total >= 0 ? total : 0);
         }
         
@@ -3032,15 +3111,24 @@
                     var courseShortName = classJSON[i].fields.identifier;
                     var courseLongName = classJSON[i].fields.title;
                     var courseDict = plan.getCourseDictionary();
+                    var rg = plan.getRequirementGroup(reqName);
+                    
                     liClassHTML += '<li class="search-result"><a href="#" id="' + 
                         makeCondensedName(courseShortName)
                         + '-search-result"><table style="height: 20px"><tr><td class="search-result-cname">' +
                         '<span class="shortName">' + courseShortName  + '</span>: ' + courseLongName +  
-                        '</td><td class="search-result-info" align="middle">' + 
-                        (courseDict[courseShortName] != undefined ? '<i class="icon-ok"></i>'
-                            : (plan.hasExemption(courseShortName) ? '<i class="icon-check"></i>' : ''))
-                        + '</td>' + 
-                        '</tr></table></a></li>';
+                        '</td><td class="search-result-info" align="middle">';
+                                                
+                        if (reqDisplayCount == 1) {
+                            var req = plan.getRequirement(reqName, reqName);
+                            liClassHTML += makeCourseIcon(courseDict, courseShortName, true, req);
+                        } else {
+                            liClassHTML += (courseDict[makeCondensedName(courseShortName)] != undefined ? 
+                                '<i class="icon-ok"></i>'
+                                : (plan.hasExemption(courseShortName) ? '<i class="icon-check"></i>' : ''));
+                        } 
+                         
+                        liClassHTML += '</td></tr></table></a></li>';
                  }
                                 
                 var reqCount = 0;
