@@ -241,7 +241,7 @@ def filldb():
         except Exception:
             pass
 
-    json.loads(open("cs_major.xml").read())
+    json.loads(open("cs_major.json").read())
 """    
     math_corerg = add_requirement_group(m, "Math Core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
     math_electives = ['MATH51', 'MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
