@@ -5,6 +5,11 @@ from time import strptime
 import os
 import random
 from datetime import datetime
+import re
+import sys
+import collections
+import json
+
 try:
     from planner.models import *
 except Exception:
@@ -15,6 +20,8 @@ def catch_save(obj):
         obj.save()
     except Exception:
         return
+
+prereqs = collections.defaultdict(dict)
 
 def term_num_for_str(nstr):
     term_num = -1
@@ -83,6 +90,27 @@ def make_tags(tag_strs, course):
         tm = TagMapping(tag=indb, course=course)
         tm.save()
 
+def find_prereqs(desc, dept):
+    pat_match = re.search("[pP]rerequisites?:?\s*(?P<content>.*)", desc, re.UNICODE)
+    reqs = []
+    if pat_match is not None:
+        pat_str = pat_match.group('content')
+        if( pat_str.find("or") != -1):
+            pat_str = pat_str[:pat_str.find("or")]
+
+        ms = [s for s in re.finditer("(?P<dept>[A-Z]{2,})\s*(?P<num>\d{1,3}[A-Z]?)", pat_str)]
+        if ms:
+            for m in ms:
+                req = m.group('dept') + m.group('num') 
+                req = 'CS106B'if req == 'CS106' else req
+                reqs.append(req)
+        else:
+            for m in re.finditer('(?P<num>\d{1,3}[A-Z]?)', pat_str):
+                req = dept + m.group('num') 
+                req = 'CS106B'if req == 'CS106' else req
+                reqs.append(req)
+    return reqs
+
 def parse_course(course_elem):
     dept = course_elem.find('subject').text
     code = course_elem.find('code').text
@@ -98,6 +126,9 @@ def parse_course(course_elem):
     desc = course_elem.find('description').text
     if(desc is None):
         desc = ""
+    course_prereqs = find_prereqs(desc, dept)
+    if course_prereqs:
+        prereqs[idstr] = course_prereqs
     max_u = int(course_elem.find('unitsMax').text)
     min_u = int(course_elem.find('unitsMin').text)
     c = Course.objects.filter(identifier=idstr, dept=dept, code=int_code, title=title, description=desc, class_number=idnum,
@@ -167,7 +198,7 @@ def add_requirement_group(m, rg_name, n, classes, exclusive=False):
     for r in reqs:
         r.save()
     return rg
-#
+
 def filldb():
     for i in range(3):
         t=Term(i)
@@ -197,7 +228,21 @@ def filldb():
      
                 e=Enrollment(course=co, plan=p, units=co.course.max_units)
                 e.save()
-    
+    print prereqs['ECON50']
+    for cname, pl in prereqs.iteritems():
+        try:
+            c = course=Course.objects.get(identifier=cname)
+            pg=PrereqGroup(for_course=c, mandatory=cname.startswith('ECON'))
+            pg.save()
+            for p in pl:
+                pc = Course.objects.get(identifier=p)
+                pg.satisfiers.add(pc)
+                pg.save()
+        except Exception:
+            pass
+
+    json.loads(open("cs_major.xml").read())
+"""    
     math_corerg = add_requirement_group(m, "Math Core", 4, ["MATH41", "MATH42", "CS103", "CS109"]) 
     math_electives = ['MATH51', 'MATH104','MATH108','MATH109','MATH110','MATH113','CS157','CS205A']
     math_electives = add_requirement_group(m, "Math Electives", 2, math_electives) 
@@ -272,73 +317,8 @@ def filldb():
         gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
         gerg.save()
         r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg, bypassable=False)
-        r.save()
+        r.save()"""
 
-    
-    econ1a = Course.objects.filter(identifier__startswith="ECON1A")[0]
-    econ1b = Course.objects.filter(identifier__startswith="ECON1B")[0]
-    econ50 = Course.objects.filter(identifier__startswith="ECON50")[0]
-    econ51 = Course.objects.filter(identifier__startswith="ECON51")[0]
-    econ52 = Course.objects.filter(identifier__startswith="ECON52")[0]
-    econ102a = Course.objects.filter(identifier__startswith="ECON102A")[0]
-    econ102b = Course.objects.filter(identifier__startswith="ECON102B")[0]
-    econ1bpg=PrereqGroup(for_course=econ1b, mandatory=True)
-    econ1bpg.save()
-    econ1bpg.satisfiers.add(econ1a)
-    econ1bpg.save()
-    econ50pg=PrereqGroup(for_course=econ50, mandatory=True)
-    econ50pg.save()
-    econ50pg.satisfiers.add(econ1a)
-    econ50pg.save()
-    econ51pg=PrereqGroup(for_course=econ51, mandatory=True)
-    econ51pg.save()
-    econ51pg.satisfiers.add(econ50)
-    econ51pg.save()
-    econ52pg=PrereqGroup(for_course=econ52, mandatory=True)
-    econ52pg.save()
-    econ52pg.satisfiers.add(econ1b)
-    econ52pg.satisfiers.add(econ50)
-    econ52pg.save()
-    econ102apg=PrereqGroup(for_course=econ102a, mandatory=True)
-    econ102apg.save()
-    econ102apg.satisfiers.add(econ1a)
-    econ102apg.save()
-    econ102bpg=PrereqGroup(for_course=econ102b, mandatory=True)
-    econ102bpg.save()
-    econ102bpg.satisfiers.add(econ102a)
-    econ102bpg.save()
-
-
-    cs106a = Course.objects.filter(identifier__startswith="CS106A")[0]
-    cs106b = Course.objects.filter(identifier__startswith="CS106B")[0]
-    cs106bpg=PrereqGroup(for_course=cs106b, mandatory=False)
-    cs106bpg.save()
-    cs106bpg.satisfiers.add(cs106a)
-    cs106bpg.save()
-
-    cs110 = Course.objects.filter(identifier__startswith="CS110")[0]
-    cs110pg=PrereqGroup(for_course=cs110, mandatory=False)
-    cs110pg.save()
-    cs110pg.satisfiers.add(cs106b)
-    cs110pg.save()
-
-    cs140 = Course.objects.filter(identifier__startswith="CS140")[0]
-    cs140pg=PrereqGroup(for_course=cs140, mandatory=False)
-    cs140pg.save()
-    cs140pg.satisfiers.add(cs110)
-    cs140pg.save()
-
-    cs155 = Course.objects.filter(identifier__startswith="CS155")[0]
-    cs155pg=PrereqGroup(for_course=cs155, mandatory=False)
-    cs155pg.save()
-    cs155pg.satisfiers.add(cs140)
-    cs155pg.save()
-
- 
-    #scr = add_req('Science', 'sci', ['PHYSICS41', 'PHYSICS43'])
-    #ef = add_req('Engineering Fundamentals', 'engr', ['CS106B', 'ENGR40'])
-    #csc = add_req('CS Core', 'cs_core', ['CS107', 'CS110', 'CS161'])
-    #sd = add_req('Systems Depth', 'cs_sys_depth', ['CS140', 'CS143'])
 
 def main():
     print "Wrong wrong wrong (not that there's anyway you'd know that...)"
