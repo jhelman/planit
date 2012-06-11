@@ -348,6 +348,14 @@ def create_plan(request):
         plan.track = tracks[0]
     plan.save()
     return HttpResponseRedirect('/plan/' + plan_name + '/')
+    
+def delete_plan(request):
+    params = request.POST.dict()
+    user User.objects.filter(username=request.user)[0]
+    plan_name = params['planName']
+    plan = Plan.objects.filter(user=user, name=plan_name)
+    plan.delete()
+    return HttpResponseRedirect("/")
 
 def edit_settings(request):
     params = request.POST.dict()
