@@ -455,6 +455,7 @@
             // Check for reqs
             for (var j in course.reqs) {
                 var r = course.reqs[j];
+                var rg = r.reqGroup;
                 
                 if (isExemption && !r.bypassable) {
                     continue;
