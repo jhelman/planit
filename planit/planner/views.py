@@ -348,6 +348,13 @@ def create_plan(request):
         plan.track = tracks[0]
     plan.save()
     return HttpResponseRedirect('/plan/' + plan_name + '/')
+
+def check_plan_name(request, plan_name):
+    user = User.objects.filter(username=request.user)[0]
+    if Plan.objects.filter(user=user, name=plan_name).count() > 0:
+        return HttpResponse("exists")
+    else:
+        return HttpResponse("does not exist")
     
 def delete_plan(request):
     params = request.POST.dict()
@@ -370,8 +377,3 @@ def edit_settings(request):
 def logout(request):
     dj_logout(request)
     return HttpResponseRedirect('/accounts/login')
-
-    
-    
-    
-    
