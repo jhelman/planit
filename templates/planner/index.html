@@ -3319,13 +3319,15 @@
             makeNewSpinner();
             
             cancelNext = false;
-                        
+            
+            var moreResults = false;
             var data = new Object();
-			if (courseArr.length > 15) {
+			if (courseArr.length > MAX_SEARCH) {
 				data['courseNames'] = [];
-				for (var i = 0; i < 15; i++) {
+				for (var i = 0; i < MAX_SEARC; i++) {
 					data['courseNames'].push(courseArr[i]);
 				}
+				moreResults = true;
 			} else {
 				data['courseNames'] = courseArr;
 			}
@@ -3343,7 +3345,7 @@
 					prereqsJSON = data.prereq_groups;
 					reqsJSON = data.reqs;
 					reqGroupsJSON = data.req_groups;
-                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, false, true);
+                    getReqsAndClasses($(bElems[1]).html(), reqJSON, reqCount, reqName, classesJSON, isForward, false, moreResults);
                     if (isForward) {
                         moveToNextBreadcrumbLevel(bElems.length, reqName, false);
                         animateForward(bElems.length);
@@ -3351,7 +3353,7 @@
                         animateBackward(bElems.length - 1);
                     }
 					
-					if (courseArr.length > 15) {
+					if (courseArr.length > MAX_SEARCH) {
 						var newData = new Object();
 						newData['courseNames'] = courseArr;
 						$.ajax({
