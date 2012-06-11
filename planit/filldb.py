@@ -191,7 +191,7 @@ def add_tags(arr):
             tm.save()
 
 def add_requirement_group(m, rg_name, n, classes, exclusive=False):
-    rg = RequirementGroup(major=m, name=rg_name, n_prereqs=n)
+    rg = RequirementGroup(major=m, name=rg_name, n_reqs=n)
     rg.save()
 
     tags = None
@@ -228,21 +228,7 @@ def filldb():
     user.first_name='Dan'
     user.last_name='Vinegrad'
     user.save()
-    p=Plan(user=user, name='Dan Vinegrad', university=u,
-        major=m,start_year=2008,num_years=4)
-    prefixes=['EC', 'HUM','ME'] 
-    p.save()
-    for y in range(4):
-        for t in range(3):
-            tn=Term(num=t)
-            print t, " ", y
-            co=CourseOffering.objects.filter(year=(2008 + y), term__num=t, course__identifier__startswith=prefixes[t])
-            if co:
-                co=co[random.randint(0, len(co) - 1)]
-     
-                e=Enrollment(course=co, plan=p, units=co.course.max_units)
-                e.save()
-
+    
     for cname, pl in prereqs.iteritems():
         try:
             c = course=Course.objects.get(identifier=cname)
@@ -254,25 +240,20 @@ def filldb():
                 pg.save()
         except Exception:
             pass
-
-    json.loads(open("cs_major.json").read())
-		
-    majors = json.loads(open("cs_major.json").read())
+	
+    majors = json.loads(open("majors.json").read())
     for major, rgs in majors.iteritems():
-        print major
         major_obj = Major.objects.get(name=major)
         for rg_name, rg_dict in rgs.iteritems():
-            print rg_name
             if rg_name == u"tracks":
                 for trackname, trackdata in rg_dict.iteritems():
-                    make_rg(major_obj, trackname, trackdata, True)
+                    make_rg(major_obj, trackname, trackdata, True, True)
                 continue
-            print rg_dict
             add_requirement_group(major_obj, major + " " + rg_name, rg_dict["n"], rg_dict["classes"])
             #rg = RequirementGroup(
 
     ecs = Tag.objects.filter(name__startswith='GER:EC')
-    ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
+    ecrg = RequirementGroup(major=None, name="GER:EC", n_reqs=2)  
     ecrg.save()
     for ec in ecs:
         r = Requirement(name=ec.name, fulfillers=ec, n_class=1, group=ecrg, bypassable=False)
@@ -282,14 +263,13 @@ def filldb():
     for ger in other_gers:
         if ger.name=='WritingSLE':
             continue
-        gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
+        gerg = RequirementGroup(major=None, name=ger.name, n_reqs=1)  
         gerg.save()
         r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg, bypassable=False)
         r.save()
-    #other_gers.remove("WritingSLE")
 
-def make_rg(m, name, rgdata, track, exclusive):
-    rg = RequirementGroup(major=m, name=name, n_prereqs=rgdata["n"])
+def make_rg(m, name, rgdata, track, exclusive=False):
+    rg = RequirementGroup(major=m, name=name, n_reqs=rgdata["n"])
     rg.save()
     del rgdata["n"]
     for reqname, reqdata in rgdata.iteritems():
@@ -306,7 +286,6 @@ def make_rg(m, name, rgdata, track, exclusive):
     return rg
 
 def main():
-    print "Wrong wrong wrong (not that there's anyway you'd know that...)"
     print "to fill the database:"
     print "$: python manage.py shell"
     print ">>> import filldb"

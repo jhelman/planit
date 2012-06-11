@@ -2,9 +2,3 @@ Hi!,
 
 {% block body %}
 {% endblock %}
-
-Ahem...
-
-Breasts.
-
-That is all.

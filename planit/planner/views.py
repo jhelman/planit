@@ -13,7 +13,7 @@ def get_python_dict_for_reqs(requirement_groups):
     req_groups = {}
     for group in requirement_groups:
         req_group_info = {}
-        req_group_info['num_reqs_to_fulfill'] = group.n_prereqs
+        req_group_info['num_reqs_to_fulfill'] = group.n_reqs
         reqs = {}
         for req in group.requirement_set.all():
             req_info = {}
