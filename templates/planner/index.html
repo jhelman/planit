@@ -1630,7 +1630,24 @@
 				content += '<br /><b>Prerequisites:</b> ' + makePrereqString(course.prereqGroups);
 			}
 			if (course.reqNames.length > 0) {
-				content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
+				if (course.isAdded) {
+					content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
+				} else {
+					content += '<br /><b>Requirements:</b> ';
+					var fulfilled = course.getFulfilledReqsForCourse(true);
+					console.log(course.name + ' ' + fulfilled);
+					for (var i in course.reqNames) {
+						var reqName = course.reqNames[i];
+						if ($.inArray(reqName, fulfilled) != -1) {
+							content += '<b><font color="#1d2a93">' + reqName + '</font></b>';
+						} else {
+							content += reqName;
+						}
+						if (i < course.reqNames.length - 1) {
+							content += ', ';
+						}
+					}
+				}
 			}
 				
 			
@@ -1717,9 +1734,7 @@
                 $(this).find('.grab-over').hide();
             });
 
-            makePopoverForCourse(termId, course);
                      
-            
             // Req == false, means fulfill all requirements
             course.confirmCourse(req, getTopLevelByBreadcrumb());
 
@@ -1732,6 +1747,9 @@
             makeDrag('#' + termId + course.cName);
 
             addCourseToDraggables(termId, course);
+			
+            makePopoverForCourse(termId, course);
+			
 
             // removeSelect($('#' + courseTableID).find('select'), units);
 
