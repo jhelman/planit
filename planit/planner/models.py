@@ -2,18 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 import datetime
 
-#class Course(models.Model):
-#    identifier = models.CharField(max_length=20) # i.e. CS 106A
-#    name = models.CharField(max_length=50) #i.e. Programming Methodology
-#    description = models.CharField(max_length=300)
-#    units = models.IntegerField()
-#    startTime = models.TimeField(default=datetime.time(9,0))
-#    endTime = models.TimeField(default=datetime.time(9,50))
-#    weekdays = models.CharField(max_length=5, default="MWF") # i.e. MWF, TR, MTWR, MTWRF
-#    
-#    def __unicode__(self):
-#        return self.identifier
-
 TRIMESTER = 0
 SEMESTER = 1
 
@@ -45,9 +33,6 @@ class University(models.Model):
     def __unicode__(self):
         return self.name
 
-# sort of a dummy class, multiplexed, should 
-# only ever be numberOfTermsPerYear of them
-# TODO better naming logic
 class Term(models.Model):
     num = models.IntegerField(primary_key=True)
     
@@ -68,7 +53,6 @@ class Tag(models.Model):
     def __unicode__(self):
         return self.name
 
-#underscore case for vars, as per python style guide
 class Course(models.Model):
     identifier = models.CharField(max_length=100)
     dept = models.CharField(max_length=100)
@@ -79,9 +63,6 @@ class Course(models.Model):
     max_units = models.IntegerField()
     min_units = models.IntegerField()
     tags = models.ManyToManyField(Tag, through='TagMapping')
-    #prereqs = models.ManyToManyField('self', null=True, through='Prereq', symmetrical=False)
-    #grading = models.IntegerField() #C/NC, P/F, ABCDF, etc
-    #repeatable_for_credit = models.BooleanField()
 
     def __unicode__(self):
         return self.identifier
@@ -93,7 +74,7 @@ class RequirementGroup(models.Model):
     n_prereqs = models.IntegerField() #gonna change the name of this
      
     def __unicode__(self):
-        return  self.name # i forget if python auto converts to string
+        return  self.name 
         
     def natural_key(self):
         return self.name
@@ -131,7 +112,7 @@ class Exemption(models.Model):
 
 class Plan(models.Model):
     user = models.ForeignKey(User)
-    name = models.CharField(max_length=100) # name of the plan (specified by the student upon creation)
+    name = models.CharField(max_length=100)
     university = models.ForeignKey(University)
     major = models.ForeignKey(Major)
     start_year = models.IntegerField()
