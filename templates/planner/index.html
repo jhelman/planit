@@ -404,15 +404,20 @@
         }
         
 
-        Course.prototype.getFulfilledReqsForCourse = function() {
+        Course.prototype.getFulfilledReqsForCourse = function(isGetName) {
             var fReqs = [];
             for (var x in this.reqs) {
                 if ($.inArray(this, this.reqs[x].usedToFulfill) != -1) {
-                    fReqs.push(this.reqs[x]);
+                    if (isGetName) {
+                        fReqs.push(this.reqs[x].name);
+                    } else {
+                        fReqs.push(this.reqs[x]);
+                    }
                 }
             }
             return fReqs;
         }
+
 
         function addCourseReqs(course, isExemption, req, tlGroup) {
          			      
