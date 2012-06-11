@@ -144,7 +144,7 @@ div.highlight-course {
   
 }
 
-div.course-missing-prereq {
+div.course-missing-prereqs {
 		 color: black;
   	  background: rgb(255,163,89); /* Old browsers */
       /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -158,6 +158,18 @@ div.course-missing-prereq {
       filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffa359', endColorstr='#ff7f00',GradientType=0 ); /* IE6-8 */
     
 }
+
+div.course-missing-prereq {
+	background: #ff4300; /* Old browsers */
+	background: -moz-linear-gradient(top,  #ff4300 0%, #722200 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ff4300), color-stop(100%,#722200)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #ff4300 0%,#722200 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #ff4300 0%,#722200 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #ff4300 0%,#722200 100%); /* IE10+ */
+	background: linear-gradient(top,  #ff4300 0%,#722200 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff4300', endColorstr='#722200',GradientType=0 ); /* IE6-9 */
+}
+
 
 
 /* Quarter div CSS */

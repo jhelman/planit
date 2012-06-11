@@ -338,9 +338,12 @@ def create_plan(request):
     params = request.POST.dict()
     plan_name = params['planName']
     major_name = params['major']
-    track_name = params['track']
     major = Major.objects.filter(name=major_name)[0]
-    tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major)
+    if 'track' in params:
+        track_name = params['track']
+        tracks = RequirementGroup.objects.filter(name=track_name, is_track=True, major=major)
+    else:
+        tracks = []
     univ = University.objects.filter(name='Stanford')[0]
     user = User.objects.filter(username=request.user)[0]
     plan = Plan(name=plan_name, user=user, university=univ, major=major, start_year=2008, num_years=4)
@@ -348,6 +351,22 @@ def create_plan(request):
         plan.track = tracks[0]
     plan.save()
     return HttpResponseRedirect('/plan/' + plan_name + '/')
+
+
+def check_plan_name(request, plan_name):
+    user = User.objects.filter(username=request.user)[0]
+    if Plan.objects.filter(user=user, name=plan_name).count() > 0:
+        return HttpResponse("exists")
+    else:
+        return HttpResponse("does not exist")
+    
+def delete_plan(request):
+    params = request.POST.dict()
+    user = User.objects.filter(username=request.user)[0]
+    plan_name = params['planName']
+    plan = Plan.objects.filter(user=user, name=plan_name)
+    plan.delete()
+    return HttpResponse()
 
 def edit_settings(request):
     params = request.POST.dict()
@@ -362,8 +381,3 @@ def edit_settings(request):
 def logout(request):
     dj_logout(request)
     return HttpResponseRedirect('/accounts/login')
-
-    
-    
-    
-    

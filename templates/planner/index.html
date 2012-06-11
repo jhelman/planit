@@ -1688,7 +1688,24 @@
 				content += '<br /><b>Prerequisites:</b> ' + makePrereqString(course.prereqGroups);
 			}
 			if (course.reqNames.length > 0) {
-				content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
+				if (course.isAdded) {
+					content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
+				} else {
+					content += '<br /><b>Requirements:</b> ';
+					var fulfilled = course.getFulfilledReqsForCourse(true);
+					console.log(course.name + ' ' + fulfilled);
+					for (var i in course.reqNames) {
+						var reqName = course.reqNames[i];
+						if ($.inArray(reqName, fulfilled) != -1) {
+							content += '<b><font color="#1d2a93">' + reqName + '</font></b>';
+						} else {
+							content += reqName;
+						}
+						if (i < course.reqNames.length - 1) {
+							content += ', ';
+						}
+					}
+				}
 			}
 				
 			
@@ -1772,9 +1789,7 @@
                 $(this).find('.grab-over').hide();
             });
 
-            makePopoverForCourse(termId, course);
                      
-            
             // Req == false, means fulfill all requirements
             course.confirmCourse(req, getTopLevelByBreadcrumb());
 
@@ -1787,6 +1802,9 @@
             makeDrag('#' + termId + course.cName);
 
             addCourseToDraggables(termId, course);
+			
+            makePopoverForCourse(termId, course);
+			
 
             // removeSelect($('#' + courseTableID).find('select'), units);
 
@@ -2392,7 +2410,7 @@
         }
         
         
-        function createSearchResults(courses, isReq, reqName, num, isRefresh, hasMoreResults) {
+        function createSearchResults(courses, isReq, reqName, num, isRefresh, hasMoreResults, numResults) {
                 
             var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
             var req = false;
@@ -2416,7 +2434,7 @@
             var html = scroller + '<div class="cdiv" id="cdiv' + num + '">';
                         
             var reqHTML = '<div class="requirement-heading">' +
-                        (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + courses.length + '): ')
+                        (!isReq ? (courses.length == 0 ? 'No results found.' : 'Search results (' + numResults + '): ')
                             : 'Select ' + numRequired + ' of the following:') +
                         '</div>' +
                         '<ul class="nav nav-pills nav-stacked">';
@@ -2710,7 +2728,7 @@
 			prereqsJSON = updatedSearchData.prereq_groups;
 			reqsJSON = updatedSearchData.reqs;
 			reqGroupsJSON = updatedSearchData.req_groups;
-            var html = createSearchResults(classesJSON, false, false, 0, true, false);
+            var html = createSearchResults(classesJSON, false, false, 0, true, false, updatedSearchData.numResults);
             $('#cdiv1').html(html);
             addButtonsToSearchResults(1);
 			refreshScroll(1);
@@ -2774,7 +2792,7 @@
 					if (data.numResults > MAX_SEARCH) {                    
                         moreResults = true;
                     }
-                    var html = createSearchResults(classesJSON, false, false, 0, false, moreResults);
+                    var html = createSearchResults(classesJSON, false, false, 0, false, moreResults, data.numResults);
                     $('#content-div').css('left', '0px');
                     $('#content-div').html(html);
                     addButtonsToSearchResults(1);
@@ -2998,7 +3016,7 @@
 			reqsJSON = updatedSearchData.reqs;
 			reqGroupsJSON = updatedSearchData.req_groups;
 			var bElems = $('#breadcrumb-div').find('.breadcrumb').find('li');
-            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, true, false);
+            var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, true, false, updatedSearchData.numResults);
             $('#cdiv3').html(html);
             addButtonsToSearchResults(3);
 			refreshScroll(3);
@@ -3043,7 +3061,7 @@
 					if (data.numResults > MAX_SEARCH) {                    
                         moreResults = true;
                     }
-                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, false, moreResults);
+                    var html = createSearchResults(classesJSON, true, elem.find('.req-name').html(), bElems.length, false, moreResults, data.numResults);
                     addClassesCDiv(html, 3, elem.find('.req-name').html());
                     addButtonsToSearchResults(3);
                     refreshScroll(3);
@@ -3429,9 +3447,22 @@
         function confirmDeletePlan() {
              $('#delete-plan-modal').modal('hide');
             var planName = $('#delete-plan-modal').find('.delete-plan-modal-name').html();
-            console.log(planName);
+          	var data = new Object();
+			data['planName'] = planName;
+			$.ajax({
+				type: 'POST',
+				url: '/deletePlan/',
+				data: data,
+				success: function(data, textStatus, jqXHR) {
+					window.location.replace('/');
+				},
+						
+				error: function(jqXHR, textStatus, errorThrown) {
+					ajaxMessage("Plan could not be deleted");
+				}
+						
+			});
             
-            // TODO Dan
             
             
         }
