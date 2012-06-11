@@ -63,3 +63,9 @@ To create a new Requirement, click the +Add button next to "Requirements" and fi
 
 Requirements also have "bypassable" and "exclusive" boolean fields, which respectively determine whether or not users can use exempt courses to fulfill the requirement or whether courses fulfilling this Requirement can't be double-counted for other exclusive requirements.
 
+
+
+
+Additional Libraries Not Mentioned in Contract:
+
+- django-registration
