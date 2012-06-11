@@ -1573,29 +1573,25 @@
 			if (course.prereqGroups.length > 0) {
 				content += '<br /><b>Prerequisites:</b> ' + makePrereqString(course.prereqGroups);
 			}
-			if (course.reqNames.length > 0) {
-				if (course.isAdded) {
-					content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
-				} else {
-					content += '<br /><b>Requirements:</b> ';
-					var fulfilled = course.getFulfilledReqsForCourse(true);
+			if (course.reqNames.length > 0 && !course.isAdded) {
+				content += '<br /><b>Requirements:</b> ';
+				var fulfilled = course.getFulfilledReqsForCourse(true);
 
-					for (var i in course.reqs) {
-						var req = course.reqs[i];
-						var reqName = req.name;
-						var displayName = reqName;
-						if (reqName == course.name) {
-							displayName = req.reqGroup.name;
-						}
+				for (var i in course.reqs) {
+					var req = course.reqs[i];
+					var reqName = req.name;
+					var displayName = reqName;
+					if (reqName == course.name) {
+						displayName = req.reqGroup.name;
+					}
 
-						if ($.inArray(reqName, fulfilled) != -1) {
-							content += '<b><font color="#1d2a93">' + displayName + '</font></b>';
-						} else {
-							content += reqName;
-						}
-						if (i < course.reqNames.length - 1) {
-							content += ', ';
-						}
+					if ($.inArray(reqName, fulfilled) != -1) {
+						content += '<b><font color="#1d2a93">' + displayName + '</font></b>';
+					} else {
+						content += reqName;
+					}
+					if (i < course.reqNames.length - 1) {
+						content += ', ';
 					}
 				}
 			}
