@@ -215,7 +215,7 @@ def filldb():
     for i in range(3):
         t=Term(i)
         t.save()
-    fnames = ['cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
+    fnames = ['all2.xml']#cs.xml', 'math.xml', 'ihum.xml', 'physics.xml', 'humbio.xml', 'econ.xml', 'me.xml', 'engr.xml']
     for fname in fnames:
         parse_document(fname)
     u=University(name='Stanford',max_units_per_quarter=20)
@@ -246,9 +246,9 @@ def filldb():
     for cname, pl in prereqs.iteritems():
         try:
             c = course=Course.objects.get(identifier=cname)
-            pg=PrereqGroup(for_course=c, mandatory=cname.startswith('ECON'))
-            pg.save()
             for p in pl:
+                pg=PrereqGroup(for_course=c, mandatory=cname.startswith('ECON'))
+                pg.save()
                 pc = Course.objects.get(identifier=p)
                 pg.satisfiers.add(pc)
                 pg.save()
@@ -266,11 +266,27 @@ def filldb():
             if rg_name == u"tracks":
                 for trackname, trackdata in rg_dict.iteritems():
                     make_rg(major_obj, trackname, trackdata, True)
-                    print "WAAAAHLOOOOO"
                 continue
             print rg_dict
             add_requirement_group(major_obj, rg_name, rg_dict["n"], rg_dict["classes"])
             #rg = RequirementGroup(
+
+    ecs = Tag.objects.filter(name__startswith='GER:EC')
+    ecrg = RequirementGroup(major=None, name="GER:EC", n_prereqs=2)  
+    ecrg.save()
+    for ec in ecs:
+        r = Requirement(name=ec.name, fulfillers=ec, n_class=1, group=ecrg, bypassable=False)
+        r.save()
+
+    other_gers = (set(Tag.objects.filter(name__startswith='GER:')) | set(Tag.objects.filter(name__startswith='Writing'))) - set(ecs)
+    for ger in other_gers:
+        if ger.name=='WritingSLE':
+            continue
+        gerg = RequirementGroup(major=None, name=ger.name, n_prereqs=1)  
+        gerg.save()
+        r = Requirement(name=ger.name, fulfillers=ger, n_class=1, group=gerg, bypassable=False)
+        r.save()
+    #other_gers.remove("WritingSLE")
 
 def make_rg(m, name, rgdata, track):
     rg = RequirementGroup(major=m, name=name, n_prereqs=rgdata["n"])
@@ -288,9 +304,6 @@ def make_rg(m, name, rgdata, track):
     rg.is_track=track
     rg.save()
     return rg
-
-    
-    
 
 def main():
     print "Wrong wrong wrong (not that there's anyway you'd know that...)"
