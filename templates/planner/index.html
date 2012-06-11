@@ -429,7 +429,15 @@
                 
                 // To prevent double counting
                 if (r.exclusive && r !== req) {
-                    continue;
+					var exclusiveCount = 0;
+					for (var k in course.reqs) {
+						if (course.reqs[k].exclusive) {
+							exclusiveCount++;
+						}
+					}
+					if (exclusiveCount > 1) {
+                    	continue;
+					}
                 }
                 
 				var oldF = r.isFulfilled();
