@@ -1543,20 +1543,22 @@
 			var unitsStr = '' + course.minUnits;
 			if (course.maxUnits > course.minUnits) {
 				unitsStr += '-' + course.maxUnits;
+				if (!course.isAdded) {
+					unitsStr += '<b><font color="#1d2a93"> (Enrolled:' + course.units + ')</font></b>'
+				}
 			}
             
-			var content =  descrip + 
-				'<br /><br /><b>Units:</b> ' + unitsStr +
-				'<br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
-				formatTime(course.offering.fields.start_time) + '-' + formatTime(course.offering.fields.end_time) +
-				'<br /><b>Instructor:</b> ' + course.offering.fields.instructor;
+			var content =  descrip + '<br /><br /><b>Units:</b> ' + unitsStr +
+			'<br /><b>Meets:</b> ' + course.offering.fields.weekdays + '&nbsp;' +
+			formatTime(course.offering.fields.start_time) + '-' + formatTime(course.offering.fields.end_time) +
+			'<br /><b>Instructor:</b> ' + course.offering.fields.instructor;
 				
-				if (course.prereqGroups.length > 0) {
-					content += '<br /><b>Prerequisites:</b> ' + makePrereqString(course.prereqGroups);
-				}
-				if (course.reqNames.length > 0) {
-					content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
-				}
+			if (course.prereqGroups.length > 0) {
+				content += '<br /><b>Prerequisites:</b> ' + makePrereqString(course.prereqGroups);
+			}
+			if (course.reqNames.length > 0) {
+				content += '<br /><b>Requirements:</b> ' + course.reqNames.join(', ');
+			}
 				
 			
             $('#' + termId + makeCondensedName(course.cName)).popover({
