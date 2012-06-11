@@ -157,8 +157,7 @@ class CourseOffering(models.Model):
         
     def __unicode__(self):
         return self.course.identifier + ' ' + self.term.__unicode__() + ' ' + str(self.year) + '-' + str(self.year + 1)
-##
-#does it scale
+
 class Enrollment(models.Model):
     course = models.ForeignKey(CourseOffering)
     plan = models.ForeignKey(Plan)
@@ -171,11 +170,3 @@ class Enrollment(models.Model):
         
     def __unicode__(self):
         return self.course.__unicode__() + ' ' + self.plan.__unicode__()
-
-#through class for manyToMany, will change
-class RequirementMapping(models.Model):
-    coursereq = models.ForeignKey(Requirement, related_name="course_requirement")
-    logreq = models.ForeignKey(Requirement, related_name="logical_requirement")
-
-    def get_logreq(self):
-        return 
