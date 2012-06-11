@@ -1,24 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="outer-floating-box">
+<div class="inner-floating-box">
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-<form method="post" action="{% url django.contrib.auth.views.login %}">
+<form class="well" method="post" action="{% url django.contrib.auth.views.login %}">
     {% csrf_token %}
+	
+    {% if form.errors %}
+	<div style="text-align: center">
+    <span><b><font color="#bd362f">Username or password incorrect.</font></b></span>
+	</div>
+	<br />
+    {% endif %}
+	
     <table>
         <tr>
             <td>{{ form.username.label_tag }}</td>
+            <td>&nbsp;</td>
             <td>{{ form.username }}</td>
         </tr>
         <tr>
-            <td>{{ form.password.label_tag }}</td>
+            <td >{{ form.password.label_tag }}</td>
+            <td>&nbsp;</td>
             <td>{{ form.password }}</td>
         </tr>
     </table>
-    <input type="submit" value="login" />
+    <br/>
+	<div style="text-align: center">
+        <button class="btn btn-primary" type="submit">Login</button>
+	</div>
     <input type="hidden" name="next" value="{{ next }}" />
+    <div style="text-align: right">
+	    <a href="{% url registration_register %}">Register</a>
+    </div>
+   
 </form>
+
+
+</div>
+</div>
 {% endblock %}

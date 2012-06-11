@@ -1,3 +1,5 @@
+{% extends 'base.html' %}
+
 <!DOCTYPE html>
     <title>PlanIt</title>
     
@@ -24,7 +26,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}spin/spin.min.js"></script>
 	
 
-
+	{% block extra_head %}
 	<script type="text/javascript">
 		
 		/* From Django website */
@@ -67,7 +69,6 @@
 
 
 		$(document).ready(function () {
-		   	console.log('hello');
 		    $('.dropdown-toggle').dropdown();            
 		    $('#new-plan-modal').modal({'show': false});
 		    $('#account-settings-modal').modal({'show': false});
@@ -76,7 +77,6 @@
 
 		{% autoescape off %}
 		var majorsJSON = jQuery.parseJSON({{ majors }});
-		console.log(majorsJSON);
 		{% endautoescape %}
 
 
@@ -118,9 +118,10 @@
 		    tracksShown = true;
     
 		    var majorName = $(elem).attr('value');
-    
+        
 		    if (majorName == "") {
 		        $('#track-select').closest('.control-group').hide();
+                tracksShown = false;
 		        return;
 		    }
     
@@ -131,6 +132,12 @@
 		            break;
 		        }
 		    }
+		    
+		    if (tracks.length == 0) {
+		        $('#track-select').closest('.control-group').hide();
+                tracksShown = false;
+		        return;
+	        }
     
     
 		    $('#track-select').html('<option value="">Choose a track</option>');
@@ -251,58 +258,48 @@
 
 		</script>
 		
-		{% block extra_head %}
 		{% endblock %}
 		
 	</head>
 
 
 
-	<body style="margin: 35px; background-image: url('{{ STATIC_URL }}backgrounds/pencil10.jpg');"> 
-		<div class="navbar navbar-fixed-top">
-		    <div class="navbar-inner">
-		            <div class="container-fluid">
-            
-		            <a href="#" class="brand"><font color="white">planit</font></a>
-
-                                
-		            <ul class="nav pull-right">
-		                <li class="dropdown">
-		                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-		                        Select a Plan&nbsp;<b class="caret"></b>  
-		                    </a>
-		                    <ul class="dropdown-menu">
-		                        <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
-		                        <li class="divider"></li>
-		                        {% for p in allPlans %}
-		                        <li><a href="/plan/{{ p.name }}"> 
-		                        {{ p.name }}&nbsp;
-		                        {% if p.name == plan.name %}
-		                        <i class="icon-ok"></i>
-		                        {% endif %}
-		                        </a></li>
-		                        {% endfor %}
-		                    </ul>
-		                 </li>
-		                <li class="divider-vertical"></li>
-		                <li class="dropdown">
-		                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-		                        <i class="icon-user icon-white"></i>&nbsp;<span id="navbar-fullname">{{ user.first_name }}&nbsp;{{ user.last_name }}</span>&nbsp;<b class="caret"></b>  
-		                    </a>
-		                    <ul class="dropdown-menu">
+					
+        {% block navbar_content %}            
+        <ul class="nav pull-right">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    Select a Plan&nbsp;<b class="caret"></b>  
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="#" onclick="openNewPlanModal()"><i class="icon-plus-sign"></i>&nbsp;Create New Four-Year Plan</a></li>
+                    <li class="divider"></li>
+                    {% for p in allPlans %}
+                    <li><a href="/plan/{{ p.name }}"> 
+                    {{ p.name }}&nbsp;
+                    {% if p.name == plan.name %}
+                    <i class="icon-ok"></i>
+                    {% endif %}
+                    </a></li>
+                    {% endfor %}
+                </ul>
+             </li>
+            <li class="divider-vertical"></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <i class="icon-user icon-white"></i>&nbsp;<span id="navbar-fullname">{{ user.first_name }}&nbsp;{{ user.last_name }}</span>&nbsp;<b class="caret"></b>  
+                </a>
+                <ul class="dropdown-menu">
                     
-		                        <li><a href="#" onclick="openAccountSettingsModal()">Account Settings</a></li>
+                    <li><a href="#" onclick="openAccountSettingsModal()">Account Settings</a></li>
 
-		                        <li><a href="#">Logout</a></li>
-		                    </ul>
-		                </li>
-		            </ul>
+                    <li><a href="/accounts/logout">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+		{% endblock %}
      
-            
-		        </div>
-		    </div>
-		</div>
-
+        {% block content %}    
 		<div class="modal fade" id="new-plan-modal">
 		    <div class="modal-header">
 		        <button class="close" data-dismiss="modal">&times;</button>
@@ -370,7 +367,7 @@
 		<div class="modal fade" id="account-settings-modal">
 		    <div class="modal-header">
 		       <button class="close" data-dismiss="modal">&times;</button>
-		       <h3>Account Settings: jhelman@stanford.edu</h3>
+		       <h3>Account Settings: {{ user.username }}</h3>
 		    </div>
 		     <div class="modal-body">
 		        <form class="form-horizontal" id="account-settings-form">
@@ -400,7 +397,7 @@
 
 		</div>
 		
-		{% block content %}
+		
 		{% endblock %}
 
 	</body>

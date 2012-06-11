@@ -13,12 +13,37 @@ information on how to display this in a template.
 {% endcomment %}
 
 {% block content %}
-<h1>Create new account</h1>
-<form action="" method="POST">
+
+
+<div class="outer-floating-box-reg">
+<div class="inner-floating-box">
+
+
+<form class="well form-horizontal" method="post" action="">
+	
     {% csrf_token %}
-    <table>
-        {{ form.as_table }}
-    </table>
-    <input type="submit" name="submit" value="Submit"/>
+	<div style="text-align: center; font-size: 18px; margin-bottom: 10px"><b>Create New Account</b></div>		
+		<fieldset>
+			<div class="control-group">
+				{% for field in form %}
+					<div class="fieldWrapper" style="margin-top: 10px">
+	                     <label class="control-label">{{ field.label }}:</label>
+	                     <div class="controls">{{ field }}</div>
+						 <div style="margin-left: 135px;"><b><font color="#bd362f">{{ field.errors }}</font></b></div>
+	                </div>
+	            {% endfor %}
+				
+			</div>
+		</fieldset>
+		<b><font color="#bd362f">{{ form.non_field_errors }}</font></b>
+	<div align="center">
+    <button class="btn btn-primary" type="submit">Submit</button>
+	</div>
+    <div style="text-align: right">
+	    <a href="/accounts/login">Login</a>
+    </div>
+	
 </form>
+</div>
+</div>
 {% endblock %}
