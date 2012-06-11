@@ -197,6 +197,7 @@ def add_requirement_group(m, rg_name, n, classes, exclusive=False):
     tags = None
     r_n = 1
     r_name = ""
+    classes = set(classes)
     for c in classes:
         if c.find(",") != -1:
             c = c.split(',')
@@ -247,7 +248,7 @@ def filldb():
         for rg_name, rg_dict in rgs.iteritems():
             if rg_name == u"tracks":
                 for trackname, trackdata in rg_dict.iteritems():
-                    make_rg(major_obj, trackname, trackdata, True, True)
+                    make_rg(major_obj, major + " " + trackname, trackdata, True, True)
                 continue
             add_requirement_group(major_obj, major + " " + rg_name, rg_dict["n"], rg_dict["classes"])
             #rg = RequirementGroup(
@@ -273,7 +274,7 @@ def make_rg(m, name, rgdata, track, exclusive=False):
     rg.save()
     del rgdata["n"]
     for reqname, reqdata in rgdata.iteritems():
-        classes = reqdata["classes"]
+        classes = set(reqdata["classes"])
         tag = add_tag(reqname, classes)
         req = Requirement(name=name + " " + tag.name, fulfillers=tag, n_class=reqdata["n"], group=rg, exclusive=exclusive)
         req.save()
