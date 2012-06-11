@@ -396,6 +396,11 @@
                     }
                     
                     // To prevent double counting
+                    console.log(course);
+                    console.log(r.name + " " + r.exclusive);
+                    console.log(r);
+                    console.log(req);
+                    console.log("------");
                     if (r.exclusive && r !== req) {
                         continue;
                     }
@@ -570,7 +575,22 @@
         {% endif %}
 		{% endfor %}
     	t.addCourse(c);
-    	addCourseReqs(c, false, false, false);
+    	var req = false;
+    	var reqStr = {{ course.mutex_req_fulfilled }};
+    	console.log(reqStr);
+        
+        if (reqStr != "None") {
+            console.log(reqStr);
+            var pos1 = reqStr.indexOf(',');
+        	var pos2 = reqStr.indexOf(',', pos1 + 1);
+        	var rgName = reqStr.substring(0, pos1);
+        	var rName = reqStr.substring(pos1 + 2, pos2); 
+        	console.log(rName);
+        	console.log(rgName);
+            var req = plan.getRequirement(rName, [rgName]);
+            console.log(req);
+	    }
+	    addCourseReqs(c, false, req, false);
     	{% endfor %}
     	{% endfor %}
     	{% endfor %}
@@ -582,7 +602,7 @@
 		{% endfor %}
 		{% endautoescape %}
 		
-		var minTotalUnits = 5;//{{ minUnits }};
+		var minTotalUnits = {{ minUnits }};
 		
 		{% autoescape off %}
 		var majorsJSON = jQuery.parseJSON({{ majors }});

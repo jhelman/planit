@@ -27,8 +27,9 @@ information on how to display this in a template.
 			<div class="control-group">
 				{% for field in form %}
 					<div class="fieldWrapper" style="margin-top: 10px">
-	                     {{ field.label }}:&nbsp;<div class="controls">{{ field }}</div>
-						 <b><font color="#bd362f">{{ field.errors }}</font></b>
+	                     <label class="control-label">{{ field.label }}:</label>
+	                     <div class="controls">{{ field }}</div>
+						 <div style="margin-left: 135px;"><b><font color="#bd362f">{{ field.errors }}</font></b></div>
 	                </div>
 	            {% endfor %}
 				

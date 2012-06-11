@@ -2,6 +2,10 @@
   display: none;
 }
 
+.errorlist {
+  list-style-type: none;
+}
+
 /* Login page boxes */
 
 div.outer-floating-box {
