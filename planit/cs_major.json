@@ -1,6 +1,6 @@
-{ "Computer Science" : {
+{ "CS" : {
     "Math Core"                 : { "n" : 4, "classes" : ["MATH41", "MATH42", "CS103", "CS109"] }, 
-    "Math Electives"            : { "n" : 4, "classes" : ["MATH51", "MATH104", "MATH108", "MATH109", "MATH110", "MATH113", "CS157", "CS205A", "MATH52,MATH53,1"] },
+    "Math Electives"            : { "n" : 1, "classes" : ["MATH51", "MATH104", "MATH108", "MATH109", "MATH110", "MATH113", "CS157", "CS205A", "MATH52,MATH53,2"] },
     "Science Core"              : { "n" : 2, "classes" : ["PHYSICS41", "PHYSICS43"] }, 
     "Science Electives"         : { "n" : 1, "classes" : ["BIO41" , "BIO42", "BIO43", "CEE63", "CEE64", "CEE70", "CHEM31A", "CHEM31B", "CHEM33", "CHEM35", "CHEM36", "CHEM131", "CHEM135", "EARTHSYS10", "ENGR31", "GES1A", "GES1B", "GES1C", "PHYSICS21", "PHYSICS23", "PHYSICS25", "PHYSICS45", "PHYSICS61", "PHYSICS63", "PHYSICS65"] },
     "Writing in the Major"      : { "n" : 1, "classes" : ["CS191W" ,"CS194W", "CS210B", "CS294W", "CS181W"] }, 
@@ -52,19 +52,18 @@
                                              "Track Depth G"   : { "n" : 1, "classes" : ["BIOE222A", "BIOE222B", "BIOE310", "CHEME150", "CHEME174", "CS262", "CS274", "CS278", "CS279", "CS374", "ME239", "APPPHYS294", "BIO104", "BIO118", "BIO129A", "BIO129B", "BIO188", "BIO189", "BIO203", "BIO214", "BIO217", "CHEM135", "CHEM171", "BIOCHEM218", "BIOCHEM241", "GENE211", "SBIO228", "BIOE220", "BIOE261", "BIOE282", "BIOE310", "ME280", "ME281", "BIO112", "BIO158", "BIO183", "BIO188", "BIO189", "BIO214", "BIO230"]}
                                  },
         "Unspecialized"         : { "n" : 4, "Track Depth A"   : { "n" : 1, "classes" : ["CS154"] },
-                                "Track Depth B"   : { "n" : 1, "classes" : ["CS140", "CS143"] } , 
-                                "Track Depth C"   : { "n" : 1, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B"] } , 
-                                "Track Depth D"   : { "n" : 1, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B",  "CS121", "CS221", "CS223A", "CS223B", "CS228", "CS229"] } , 
-                                "Track Depth E"   : { "n" : 1, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B",  "CS121", "CS221", "CS223A", "CS223B", "CS228", "CS229", "CS145", "CS147", "CS148", "CS248", "CS262"] } , 
-                                "Track Electives" : { "n" : 2, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B",  "CS121", "CS221", "CS223A", "CS223B", "CS228", "CS229", "CS145", "CS147", "CS148", "CS248", "CS262","CS108", "CS121",  "CS221", "CS124", "CS142","CS144", "CS145", "CS147", "CS148", "CS149", "CS154", "CS155", "CS156", "CS157", "CS151", "CS164", "CS205A", "CS205B", "CS210A", "CS222", "CS223A", "CS223B", "CS224M", "CS24N", "CS224S", "CS224U", "CS224W", "CS225A", "CS225B", "CS226", "CS227", "CS228", "CS228T", "CS229", "CS240", "CS241", "CS242", "CS243", "CS244", "CS244B", "CS245", "CS246", "CS247", "CS248", "CS249A", "CS249B", "CS254", "CS255", "CS256", "CS257", "CS258", "CS261", "CS262", "CS270", "CS271", "CS272", "CS273A", "CS274", "CS276", "CS277", "CS295", "CME108", "EE108B", "CS282"]}
-                     }
-            },
+                                             "Track Depth B"   : { "n" : 1, "classes" : ["CS140", "CS143"] } , 
+                                             "Track Depth C"   : { "n" : 1, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B"] } , 
+                                             "Track Depth D"   : { "n" : 1, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B",  "CS121", "CS221", "CS223A", "CS223B", "CS228", "CS229"] } , 
+                                             "Track Depth E"   : { "n" : 1, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B",  "CS121", "CS221", "CS223A", "CS223B", "CS228", "CS229", "CS145", "CS147", "CS148", "CS248", "CS262"] } , 
+                                             "Track Electives" : { "n" : 2, "classes" : ["CS140", "CS143", "CS144", "CS155", "CS242", "CS244", "EE108B",  "CS121", "CS221", "CS223A", "CS223B", "CS228", "CS229", "CS145", "CS147", "CS148", "CS248", "CS262","CS108", "CS121",  "CS221", "CS124", "CS142","CS144", "CS145", "CS147", "CS148", "CS149", "CS154", "CS155", "CS156", "CS157", "CS151", "CS164", "CS205A", "CS205B", "CS210A", "CS222", "CS223A", "CS223B", "CS224M", "CS24N", "CS224S", "CS224U", "CS224W", "CS225A", "CS225B", "CS226", "CS227", "CS228", "CS228T", "CS229", "CS240", "CS241", "CS242", "CS243", "CS244", "CS244B", "CS245", "CS246", "CS247", "CS248", "CS249A", "CS249B", "CS254", "CS255", "CS256", "CS257", "CS258", "CS261", "CS262", "CS270", "CS271", "CS272", "CS273A", "CS274", "CS276", "CS277", "CS295", "CME108", "EE108B", "CS282"]}
+                     },
         "Information" : { "n" : 4 , "Track Depth A"   : { "n" : 1, "classes" : ["CS124"] },
                                     "Track Depth B"   : { "n" : 1, "classes" : ["CS145"] } , 
                                     "Track Depth C"   : { "n" : 1, "classes" : ["CS224N", "CS224S", "CS229", "CS140", "CS142", "CS245", "CS246", "CS341", "CS345", "CS346", "CS347"] },
                                     "Track Depth D"   : { "n" : 1, "classes" : ["CS262", "CS270", "CS274", "CS224W", "CS276", "CS364B"] },
                                     "Elective"        : { "n" : 3, "classes" : ["CS262", "CS270", "CS274", "CS224W", "CS276", "CS364B", "CS224N", "CS224S", "CS229", "CS140", "CS142", "CS245", "CS246", "CS341", "CS345", "CS346", "CS347", "CS262", "CS270", "CS274", "CS224W", "CS276", "CS364B", "CS108", "CS121",  "CS221", "CS124", "CS142","CS144", "CS145", "CS147", "CS148", "CS149", "CS154", "CS155", "CS156", "CS157", "CS151", "CS164", "CS205A", "CS205B", "CS210A", "CS222", "CS223A", "CS223B", "CS224M", "CS24N", "CS224S", "CS224U", "CS224W", "CS225A", "CS225B", "CS226", "CS227", "CS228", "CS228T", "CS229", "CS240", "CS241", "CS242", "CS243", "CS244", "CS244B", "CS245", "CS246", "CS247", "CS248", "CS249A", "CS249B", "CS254", "CS255", "CS256", "CS257", "CS258", "CS261", "CS262", "CS270", "CS271", "CS272", "CS273A", "CS274", "CS276", "CS277", "CS295", "CME108", "EE108B", "CS282"]} 
                     }
-      },
-  "Economics" :{} 
+            }
+      }
  }
